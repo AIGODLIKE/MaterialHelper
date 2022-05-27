@@ -1,9 +1,10 @@
 import bpy
 from numpy import mean
+from math import sqrt
 
 # 节点偏移距离
-C_DIS_X = 50
-C_DIS_Y = 30
+C_DIS_X = 80
+C_DIS_Y = 40
 
 
 def connected_socket(self):
@@ -99,30 +100,109 @@ def get_center_point(node):
     mid_y = (node.location.y - dim_y) / 2
     return mid_x, mid_y
 
+
+def get_offset_from_anim(fac):
+    """从动画值获取偏移比例
+
+    :param fac: 动画完成比，0~1
+    :return: 偏移比
+    """
+
+    return sqrt(min(max(fac, 0), 1))
+
+
 ### TODO 上下对齐（仅限3.2：快捷键新功能）
-### TODO 制作动画
+
 
 class MATHP_OT_align_dependence(bpy.types.Operator):
     bl_idname = 'mathp.align_dependence'
     bl_label = 'Align Dependence'
 
-    aligned_nodes = []
-    aligned_twice = []
+    node_loc_dict = None  # node:{ori_loc:(x,y),tg_loc:(x,y)}
+
+    # 动画控制
+    anim_fac = 0  # 动画比例 0~1
+    anim_iter = 30  # 动画更新 秒
+    anim_time = 0.05  # 持续时间 秒
+
+    _timer = None
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'active_node') and context.active_node
+        if not context.window_manager.mathp_node_anim:
+            return hasattr(context, 'active_node') and context.active_node
 
-    def execute(self, context):
-        self.aligned_nodes.clear()
-        self.aligned_twice.clear()
-        selected_nodes = context.selected_nodes
-        print(selected_nodes)
+    def append_handle(self):
+        self._timer = bpy.context.window_manager.event_timer_add(self.anim_time / self.anim_iter,
+                                                                 window=bpy.context.window)  # 添加计时器检测状态
+        bpy.context.window_manager.modal_handler_add(self)
+        bpy.context.window_manager.mathp_node_anim = True
+
+    def remove_handle(self):
+        bpy.context.window_manager.event_timer_remove(self._timer)
+        bpy.context.window_manager.mathp_node_anim = False
+
+    def invoke(self, context, event):
+        # 初始化
+        self.node_loc_dict = dict()
+        self._timer = None
+        self.anim_fac = 0
+
+        # 获取位置与第一次对齐
+        selected_nodes = tuple(context.selected_nodes)
         self.align_dependence(context.active_node, selected_nodes)
+        # 还原位置，准备动画
+        for node, loc_info in self.node_loc_dict.items():
+            node.location = loc_info['ori_loc']
 
-        return {'FINISHED'}
+        self.append_handle()
+
+        return {"RUNNING_MODAL"}
+
+    def modal(self, context, event):
+        if event.type == 'TIMER':
+            if self.anim_fac >= 1 + 1:  # 添加1动画延迟以完成动画
+                self.remove_handle()
+                # 强制对齐
+                for node, loc_info in self.node_loc_dict.items():
+                    node.location = loc_info['tg_loc']
+
+                return {'FINISHED'}
+            # 对节点依次进行移动动画
+            for i, node in enumerate(self.node_loc_dict.keys()):
+                delay = i / len(self.node_loc_dict)
+                self.offset_node(node, self.anim_fac, delay)
+
+            self.anim_fac += 1 / (self.anim_iter + 1)  # last delay
+
+        return {"PASS_THROUGH"}
+
+    def offset_node(self, node, anim_fac, delay=0.1):
+        """
+
+        :param node: bpy.types.Node
+        :param anim_fac: 动画比 0~1
+        :param delay: 延迟
+        :return:
+        """
+        ori_loc = self.node_loc_dict[node]['ori_loc']
+        tg_loc = self.node_loc_dict[node]['tg_loc']
+
+        offset_fac = get_offset_from_anim(anim_fac - delay)
+
+        offset_x = (tg_loc[0] - ori_loc[0]) * offset_fac
+        offset_y = (tg_loc[1] - ori_loc[1]) * offset_fac
+
+        node.location = ori_loc[0] + offset_x, ori_loc[1] + offset_y
 
     def align_dependence(self, node, selected_nodes=None):
+        """提取节点的目标位置，用于动画
+
+        :param node: bpy.types.Node
+        :param selected_nodes: context.selected_nodes
+        :return: bpy.types.Node
+        """
+
         dependence = get_dependence(node, selected_nodes)
 
         # 设置初始值
@@ -140,29 +220,22 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
 
             sub_dim_x, sub_dim_y = get_dimensions(sub_node)
 
-            # 检查子节点是否已经被排列
-            if sub_node in self.aligned_nodes:
+            # 对其第一个节点到依赖节点
+            ori_loc = (sub_node.location.x, sub_node.location.y)
 
-                # 获取父依赖节点并取均值
-                dependent_nodes = get_dependent(sub_node)
+            sub_node.location.x = last_location_x - sub_dim_x - C_DIS_X
+            sub_node.location.y = last_location_y - last_dimensions_y - C_DIS_Y if i != 0 else last_location_y
 
-                sub_node.location.x = min(
-                    [depend_node.location.x for depend_node in dependent_nodes]) - sub_dim_x - C_DIS_X
-                sub_node.location.y = mean(
-                    [get_center_point(depend_node)[1] for depend_node in dependent_nodes]) + sub_dim_y / 2
-                self.aligned_twice.append(sub_node)  # not adjust anymore
+            tg_loc = (sub_node.location.x, sub_node.location.y)
 
-            else:
-                self.aligned_nodes.append(sub_node)
-                # 对其第一个节点到依赖节点
-                sub_node.location.x = last_location_x - sub_dim_x - C_DIS_X
-                sub_node.location.y = last_location_y - last_dimensions_y - C_DIS_Y if i != 0 else last_location_y
+            # 记录位置用于动画
+            self.node_loc_dict[sub_node] = {'ori_loc': ori_loc,
+                                            'tg_loc': tg_loc}
+            # 为下一个节点设置
+            last_location_y = sub_node.location.y
+            last_dimensions_y = sub_dim_y
 
-                # 为下一个节点设置
-                last_location_y = sub_node.location.y
-                last_dimensions_y = sub_dim_y
-
-            self.align_dependence(sub_node)
+            self.align_dependence(sub_node, selected_nodes)
 
         return node
 
@@ -170,6 +243,11 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
 def register():
     bpy.utils.register_class(MATHP_OT_align_dependence)
 
+    # 防止多个操作符同时运行
+    bpy.types.WindowManager.mathp_node_anim = bpy.props.BoolProperty(default=False)
+
 
 def unregister():
     bpy.utils.unregister_class(MATHP_OT_align_dependence)
+
+    del bpy.types.WindowManager.mathp_node_anim
