@@ -32,6 +32,7 @@ class MATHP_OT_set_tmp_asset(Operator):
             if mat.asset_data: continue
 
             mat.asset_mark()
+            mat.asset_generate_preview()
             mat.asset_data.tags.new(C_TMP_ASSET_TAG)
 
         tag_redraw()
