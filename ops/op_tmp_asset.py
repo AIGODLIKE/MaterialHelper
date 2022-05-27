@@ -5,6 +5,7 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .op_edit_material_asset import get_local_selected_assets
 
 C_TMP_ASSET_TAG = 'tmp_asset_mathp'
+G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
 
 
 def tag_redraw():
@@ -139,11 +140,26 @@ def draw_asset_browser(self, context):
     layout.menu('MATHP_MT_asset_browser_menu')
 
 
+from bpy.app.handlers import persistent
+
+
+@persistent
+def update_tmp_asset(scene, depsgraph):
+    global G_MATERIAL_COUNT
+    old_value = G_MATERIAL_COUNT
+
+    if len(bpy.data.materials) != old_value:
+        G_MATERIAL_COUNT = len(bpy.data.materials)
+        bpy.ops.mathp.set_tmp_asset()
+
+
 def register():
     bpy.utils.register_class(MATHP_OT_set_tmp_asset)
     bpy.utils.register_class(MATHP_OT_clear_tmp_asset)
     bpy.utils.register_class(MATHP_OT_set_true_asset)
     bpy.utils.register_class(MATHP_OT_delete_asset)
+
+    bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
 
     # ui
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
@@ -156,6 +172,8 @@ def unregister():
     bpy.utils.unregister_class(MATHP_OT_clear_tmp_asset)
     bpy.utils.unregister_class(MATHP_OT_set_true_asset)
     bpy.utils.unregister_class(MATHP_OT_delete_asset)
+
+    bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
 
     # ui
     bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)
