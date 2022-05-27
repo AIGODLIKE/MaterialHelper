@@ -89,15 +89,17 @@ def get_dimensions(node):
     return node.dimensions.x / dpifac(), node.dimensions.y / dpifac()
 
 
-def get_center_point(node):
+def get_center_point(node, loc):
     """获取节点中心点，用于评估尺寸和摆放位置
 
     :param node: bpy.types.Node
+    :param loc: (x,y)
     :return: (x,y) tuple
     """
+
     dim_x, dim_y = get_dimensions(node)
-    mid_x = (node.location.x - dim_x) / 2
-    mid_y = (node.location.y - dim_y) / 2
+    mid_x = (loc[0] - dim_x) / 2
+    mid_y = (loc[1] - dim_y) / 2
     return mid_x, mid_y
 
 
@@ -112,6 +114,7 @@ def get_offset_from_anim(fac):
 
 
 ### TODO 上下对齐（仅限3.2：快捷键新功能）
+### TODO 单个节点到多个父级，父级间有依赖关系时候该节点过低的
 
 
 class MATHP_OT_align_dependence(bpy.types.Operator):
@@ -120,6 +123,7 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
 
     node_loc_dict = None  # node:{ori_loc:(x,y),tg_loc:(x,y)}
 
+    iteration = 3  # 计算迭代
     # 动画控制
     anim_fac = 0  # 动画比例 0~1
     anim_iter = 30  # 动画更新 秒
@@ -150,14 +154,13 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
 
         # 获取位置与第一次对齐
         selected_nodes = tuple(context.selected_nodes)
-        self.align_dependence(context.active_node, selected_nodes)
-        # 还原位置，准备动画
-        for node, loc_info in self.node_loc_dict.items():
-            node.location = loc_info['ori_loc']
+        for i in range(self.iteration):
+            # 第二次后 用于检查多个父级依赖的节点
+            self.align_dependence(context.active_node, selected_nodes, check_dependent=bool(i == 0))
 
-        self.append_handle()
+            self.append_handle()
 
-        return {"RUNNING_MODAL"}
+            return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
         if event.type == 'TIMER':
@@ -195,11 +198,12 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
 
         node.location = ori_loc[0] + offset_x, ori_loc[1] + offset_y
 
-    def align_dependence(self, node, selected_nodes=None):
+    def align_dependence(self, node, selected_nodes=None, check_dependent=False):
         """提取节点的目标位置，用于动画
 
         :param node: bpy.types.Node
-        :param selected_nodes: context.selected_nodes
+        :param selected_nodes: list[bpy.types.Node]
+        :parm check_dependent: 检查父级依赖
         :return: bpy.types.Node
         """
 
@@ -208,34 +212,69 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
         # 设置初始值
         dim_x, dim_y = get_dimensions(node)
 
-        last_location_x = node.location.x
+        if node in self.node_loc_dict:
+            last_location_x, last_location_y = self.node_loc_dict[node]['tg_loc']
+        else:
+            last_location_x = node.location.x
+            last_location_y = node.location.y
+            # active node as dependent
+            self.node_loc_dict[node] = {'ori_loc': tuple(node.location),
+                                        'tg_loc': tuple(node.location)}
+
         last_dimensions_x = dim_x
-        last_location_y = node.location.y
         last_dimensions_y = dim_y
 
         for i, sub_node in enumerate(dependence):
             # 跳过未选中节点
-            if selected_nodes is not None:
-                if sub_node not in selected_nodes: continue
+            if selected_nodes and sub_node not in selected_nodes: continue
 
             sub_dim_x, sub_dim_y = get_dimensions(sub_node)
 
-            # 对其第一个节点到依赖节点
-            ori_loc = (sub_node.location.x, sub_node.location.y)
+            # 对齐父级依赖
+            if check_dependent:
+                dependent_nodes = get_dependent(sub_node, selected_nodes)
+                if len(dependent_nodes) != 1:
+                    ori_loc = (sub_node.location.x, sub_node.location.y)
 
-            sub_node.location.x = last_location_x - sub_dim_x - C_DIS_X
-            sub_node.location.y = last_location_y - last_dimensions_y - C_DIS_Y if i != 0 else last_location_y
+                    dep_loc_x = list()
+                    dep_loc_y = list()
 
-            tg_loc = (sub_node.location.x, sub_node.location.y)
+                    for i, depend_node in enumerate(dependent_nodes):
+                        if depend_node in self.node_loc_dict:
+                            dep_loc_x.append(self.node_loc_dict[depend_node]['tg_loc'][0])
+                            dep_loc_y.append(self.node_loc_dict[depend_node]['tg_loc'][1])
 
-            # 记录位置用于动画
-            self.node_loc_dict[sub_node] = {'ori_loc': ori_loc,
-                                            'tg_loc': tg_loc}
-            # 为下一个节点设置
-            last_location_y = sub_node.location.y
-            last_dimensions_y = sub_dim_y
+                        else:
+                            dep_loc_x.append(depend_node.location.x)
+                            dep_loc_y.append(depend_node.location.y)
 
-            self.align_dependence(sub_node, selected_nodes)
+                    tg_loc_x = min(dep_loc_x) - sub_dim_x - C_DIS_X
+                    tg_loc_y = mean(dep_loc_y)
+
+                    # 记录位置用于动画
+                    self.node_loc_dict[sub_node] = {'ori_loc': ori_loc,
+                                                    'tg_loc': (tg_loc_x, tg_loc_y)}
+
+                elif len(dependent_nodes) == 1:
+                    # 排列同层级自己
+                    parent_node = dependent_nodes[0]
+                    self.align_dependence(parent_node, selected_nodes)
+
+
+            # 忽略父级依赖
+            else:
+                ori_loc = (sub_node.location.x, sub_node.location.y)
+                # 目标位置 = 上一个节点位置-当前节点宽度-间隔，y轴向对其第一个节点到依赖节点
+                tg_loc_x = last_location_x - sub_dim_x - C_DIS_X
+                tg_loc_y = last_location_y - last_dimensions_y - C_DIS_Y if i != 0 else last_location_y
+                # 记录位置用于动画
+                self.node_loc_dict[sub_node] = {'ori_loc': ori_loc,
+                                                'tg_loc': (tg_loc_x, tg_loc_y)}
+                # 为下一个节点设置
+                last_location_y = tg_loc_y
+                last_dimensions_y = sub_dim_y
+
+            self.align_dependence(sub_node, selected_nodes, check_dependent)
 
         return node
 
