@@ -27,6 +27,7 @@ class selectedAsset:
 class MATHP_OT_set_tmp_asset(Operator):
     bl_idname = "mathp.set_tmp_asset"
     bl_label = "Set Temp Asset"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         for mat in bpy.data.materials:
@@ -44,6 +45,7 @@ class MATHP_OT_set_tmp_asset(Operator):
 class MATHP_OT_clear_tmp_asset(Operator):
     bl_idname = 'mathp.clear_tmp_asset'
     bl_label = 'Clear Temp Asset'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         for mat in bpy.data.materials:
@@ -129,8 +131,7 @@ class MATHP_MT_asset_browser_menu(Menu):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
 
-        layout.operator('mathp.set_tmp_asset')
-        layout.operator('mathp.clear_tmp_asset')
+        layout.prop(context.scene, 'mathp_update_mat')
         layout.separator()
         layout.operator('mathp.set_true_asset', icon='ASSET_MANAGER')
 
@@ -145,6 +146,8 @@ from bpy.app.handlers import persistent
 
 @persistent
 def update_tmp_asset(scene, depsgraph):
+    if scene.mathp_update_mat is False: return
+
     global G_MATERIAL_COUNT
     old_value = G_MATERIAL_COUNT
 
@@ -153,12 +156,21 @@ def update_tmp_asset(scene, depsgraph):
         bpy.ops.mathp.set_tmp_asset()
 
 
+def update_user_control(self, context):
+    if context.scene.mathp_update_mat is True:
+        bpy.ops.mathp.set_tmp_asset()
+    else:
+        bpy.ops.mathp.clear_tmp_asset()
+
+
 def register():
     bpy.utils.register_class(MATHP_OT_set_tmp_asset)
     bpy.utils.register_class(MATHP_OT_clear_tmp_asset)
     bpy.utils.register_class(MATHP_OT_set_true_asset)
     bpy.utils.register_class(MATHP_OT_delete_asset)
 
+    bpy.types.Scene.mathp_update_mat = BoolProperty(name='Auto Update', default=True,
+                                                    update=update_user_control)  # 用于控制功能开关
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
 
     # ui
@@ -174,7 +186,7 @@ def unregister():
     bpy.utils.unregister_class(MATHP_OT_delete_asset)
 
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
-
+    del bpy.types.Scene.mathp_update_mat
     # ui
     bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)
     bpy.utils.unregister_class(MATHP_MT_asset_delete_meun)
