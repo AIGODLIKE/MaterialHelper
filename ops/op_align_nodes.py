@@ -1,6 +1,6 @@
 import bpy
 from numpy import mean
-from math import sqrt
+from math import sqrt, hypot
 
 # 节点偏移距离
 C_DIS_X = 80
@@ -113,7 +113,7 @@ def get_offset_from_anim(fac):
     return sqrt(min(max(fac, 0), 1))
 
 
-### TODO 上下对齐（仅限3.2：快捷键新功能）
+### TODO 二级模态操作符（用于检测滑动方向。优点：不受版本快捷键限制；可以更改鼠标样式，更具提示性）
 ### TODO 单个节点到多个父级，父级间有依赖关系时候该节点过低的
 
 
@@ -134,7 +134,7 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         if not context.window_manager.mathp_node_anim:
-            return hasattr(context, 'active_node') and context.active_node
+            return hasattr(context, 'selected_nodes') and len(context.selected_nodes) != 0
 
     def append_handle(self):
         self._timer = bpy.context.window_manager.event_timer_add(self.anim_time / self.anim_iter,
@@ -151,12 +151,14 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
         self.node_loc_dict = dict()
         self._timer = None
         self.anim_fac = 0
+        # 获取鼠标下的节点
+        target_node = node_at_pos(context.space_data.edit_tree.nodes, context, event)
 
         # 获取位置与第一次对齐
         selected_nodes = tuple(context.selected_nodes)
         for i in range(self.iteration):
             # 第二次后 用于检查多个父级依赖的节点
-            self.align_dependence(context.active_node, selected_nodes, check_dependent=bool(i == 0))
+            self.align_dependence(target_node, selected_nodes, check_dependent=bool(i == 0))
 
             self.append_handle()
 
@@ -277,6 +279,78 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
             self.align_dependence(sub_node, selected_nodes, check_dependent)
 
         return node
+
+
+# 以下三个函数来自node wrangler
+# 用于替换原来操作逻辑：选中项对齐激活项 -> 选中项对齐鼠标所在位置项
+
+def abs_node_location(node):
+    if node.parent is None:
+        return node.location
+
+    return node.location + abs_node_location(node.parent)
+
+
+def store_mouse_cursor(context, event):
+    space = context.space_data
+    tree = space.edit_tree
+
+    # convert mouse position to the View2D for later node placement
+    if context.region.type == 'WINDOW':
+        space.cursor_location_from_region(event.mouse_region_x, event.mouse_region_y)
+    else:
+        space.cursor_location = tree.view_center
+
+
+def node_at_pos(nodes, context, event):
+    nodes_under_mouse = []
+    target_node = None
+
+    store_mouse_cursor(context, event)
+    x, y = context.space_data.cursor_location
+
+    # Make a list of each corner (and middle of border) for each node.
+    # Will be sorted to find nearest point and thus nearest node
+    node_points_with_dist = []
+    for node in nodes:
+        skipnode = False
+        if node.type == 'FRAME': continue  # no point trying to link to a frame node
+
+        dimx = node.dimensions.x / dpifac()
+        dimy = node.dimensions.y / dpifac()
+        locx, locy = abs_node_location(node)
+
+        if skipnode: continue
+
+        node_points_with_dist.append([node, hypot(x - locx, y - locy)])  # Top Left
+        node_points_with_dist.append([node, hypot(x - (locx + dimx), y - locy)])  # Top Right
+        node_points_with_dist.append([node, hypot(x - locx, y - (locy - dimy))])  # Bottom Left
+        node_points_with_dist.append([node, hypot(x - (locx + dimx), y - (locy - dimy))])  # Bottom Right
+
+        node_points_with_dist.append([node, hypot(x - (locx + (dimx / 2)), y - locy)])  # Mid Top
+        node_points_with_dist.append([node, hypot(x - (locx + (dimx / 2)), y - (locy - dimy))])  # Mid Bottom
+        node_points_with_dist.append([node, hypot(x - locx, y - (locy - (dimy / 2)))])  # Mid Left
+        node_points_with_dist.append([node, hypot(x - (locx + dimx), y - (locy - (dimy / 2)))])  # Mid Right
+
+    nearest_node = sorted(node_points_with_dist, key=lambda k: k[1])[0][0]
+
+    for node in nodes:
+        if node.type != 'FRAME' and skipnode == False:
+            locx, locy = abs_node_location(node)
+            dimx = node.dimensions.x / dpifac()
+            dimy = node.dimensions.y / dpifac()
+            if (locx <= x <= locx + dimx) and \
+                    (locy - dimy <= y <= locy):
+                nodes_under_mouse.append(node)
+
+    if len(nodes_under_mouse) == 1:
+        if nodes_under_mouse[0] != nearest_node:
+            target_node = nodes_under_mouse[0]  # use the node under the mouse if there is one and only one
+        else:
+            target_node = nearest_node  # else use the nearest node
+    else:
+        target_node = nearest_node
+    return target_node
 
 
 def register():
