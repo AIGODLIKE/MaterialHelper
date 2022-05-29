@@ -63,6 +63,9 @@ class MATHP_OT_set_true_asset(selectedAsset, Operator):
     bl_idname = 'mathp.set_true_asset'
     bl_label = 'Apply Selected as True Assets'
 
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
+
     def execute(self, context):
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
@@ -71,6 +74,7 @@ class MATHP_OT_set_true_asset(selectedAsset, Operator):
             if C_TMP_ASSET_TAG in mat.asset_data.tags:
                 tag = mat.asset_data.tags[C_TMP_ASSET_TAG]
                 mat.asset_data.tags.remove(tag)
+                self.report({'INFO'}, '{} is set as True Asset'.format(mat.name))
 
         tag_redraw()
 

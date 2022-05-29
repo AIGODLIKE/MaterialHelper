@@ -15,6 +15,10 @@ def register():
     kmi = km.keymap_items.new("wm.call_menu", 'X', 'PRESS', ctrl=False, shift=False)
     kmi.properties.name = 'MATHP_MT_asset_delete_meun'
     addon_keymaps.append((km, kmi))
+    # 应用资产
+    km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
+    kmi = km.keymap_items.new("mathp.set_true_asset", 'A', 'PRESS', ctrl=True, shift=False)
+    addon_keymaps.append((km, kmi))
     # 节点对齐
     km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
     kmi = km.keymap_items.new('mathp.align_dependence', 'A', 'PRESS', ctrl=True)
