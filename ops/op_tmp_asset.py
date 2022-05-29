@@ -156,6 +156,14 @@ def update_tmp_asset(scene, depsgraph):
         bpy.ops.mathp.set_tmp_asset()
 
 
+@persistent
+def update_load_file_post(scene):
+    if bpy.context.scene.mathp_update_mat is True:
+        bpy.ops.mathp.set_tmp_asset()
+    else:
+        bpy.ops.mathp.clear_tmp_asset()
+
+
 def update_user_control(self, context):
     if context.scene.mathp_update_mat is True:
         bpy.ops.mathp.set_tmp_asset()
@@ -168,11 +176,14 @@ def register():
     bpy.utils.register_class(MATHP_OT_clear_tmp_asset)
     bpy.utils.register_class(MATHP_OT_set_true_asset)
     bpy.utils.register_class(MATHP_OT_delete_asset)
-
-    bpy.types.Scene.mathp_update_mat = BoolProperty(name='Auto Update', default=True,
-                                                    update=update_user_control)  # 用于控制功能开关
+    # 用户总控制开关
+    bpy.types.Scene.mathp_update_mat = BoolProperty(name='Auto Update',
+                                                    default=True,
+                                                    description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
+                                                    update=update_user_control)
+    # handle
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
-
+    bpy.app.handlers.load_post.append(update_load_file_post)
     # ui
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
     bpy.utils.register_class(MATHP_MT_asset_delete_meun)
@@ -184,8 +195,9 @@ def unregister():
     bpy.utils.unregister_class(MATHP_OT_clear_tmp_asset)
     bpy.utils.unregister_class(MATHP_OT_set_true_asset)
     bpy.utils.unregister_class(MATHP_OT_delete_asset)
-
+    # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
+    bpy.app.handlers.load_post.remove(update_load_file_post)
     del bpy.types.Scene.mathp_update_mat
     # ui
     bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)

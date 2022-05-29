@@ -1,11 +1,12 @@
 {
   "Edit Material Asset": "编辑材质资产",
-  "Apply Selected as True Assets": "应用选定项目为真资产",
+  "Apply Selected as True Assets": "应用选定项为真资产",
   "Clear Asset": "清除资产",
   "Clear Asset (Set Fake User)": "清除资产（设置伪用户）",
   "Clear Asset (Delete)": "清除资产（删除）",
   "Align Dependence": "对齐子节点",
   "Move Dependence": "移动子节点/父节点",
   "Auto Update": "自动更新",
+  "If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared": "如果勾选，材质将自动添加为临时资产\n否则，临时资产将被清除",
   "Material Helper": "材质助手"
 }
