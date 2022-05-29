@@ -19,6 +19,10 @@ def register():
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
     kmi = km.keymap_items.new("mathp.set_true_asset", 'A', 'PRESS', ctrl=True, shift=False)
     addon_keymaps.append((km, kmi))
+    # 添加资产
+    km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
+    kmi = km.keymap_items.new("mathp.add_material", 'A', 'PRESS', ctrl=False, shift=True)
+    addon_keymaps.append((km, kmi))
     # 节点对齐
     km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
     kmi = km.keymap_items.new('mathp.align_dependence', 'A', 'PRESS', ctrl=True)

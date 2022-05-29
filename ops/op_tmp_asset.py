@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator, Menu
 from bpy.props import StringProperty, BoolProperty, EnumProperty
+from pathlib import Path
 
 from .op_edit_material_asset import get_local_selected_assets
 
@@ -81,7 +82,7 @@ class MATHP_OT_set_true_asset(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_delete_asset(selectedAsset, Operator):
+class MATHP_MT_delete_asset(selectedAsset, Operator):
     bl_idname = 'mathp.delete_asset'
     bl_label = 'Delete'
 
@@ -127,6 +128,63 @@ class MATHP_MT_asset_delete_meun(Menu):
         op.operate_type = 'DELETE'
 
 
+class MATHP_OT_add_material(Operator):
+    bl_idname = 'mathp.add_material'
+    bl_label = 'Add Material'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    dep_class = []
+
+    def invoke(self, context, event):
+        # 恢复初始值
+        for cls in self.dep_class:
+            bpy.utils.unregister_class(cls)
+        self.dep_class.clear()
+        # 获取材质库已有材质名
+        blend_file = str(Path(__file__).parent.parent.joinpath('mat_lib', 'mat.blend'))
+        with bpy.data.libraries.load(blend_file, link=False) as (data_from, data_to):
+            mats = data_from.materials
+
+        # 根据材质库材质动态注册
+        def dy_execute(self, context):
+            # 导入
+            with bpy.data.libraries.load(self.blend_file, link=False) as (data_from, data_to):
+                data_to.materials = [self.material]
+            # 刷新资产库
+            bpy.ops.asset.library_refresh()
+
+            return {'FINISHED'}
+
+        for i, mat in enumerate(mats):
+            op_cls = type("DynOp",
+                          (bpy.types.Operator,),
+                          {"bl_idname": f'wm.mathp_add_material_{i}',
+                           "bl_label": mat,
+                           "bl_description": 'Add',
+                           "execute": dy_execute,
+                           # 自定义参数传入
+                           'blend_file': blend_file,
+                           'material': mat,
+                           },
+                          )
+            self.dep_class.append(op_cls)
+
+        for cls in self.dep_class:
+            bpy.utils.register_class(cls)
+
+        # 绘制动态菜单
+        op = self
+
+        def draw_custom_menu(self, context):
+            layout = self.layout
+            for cls in op.dep_class:
+                layout.operator(cls.bl_idname)
+
+        # 弹出
+        context.window_manager.popup_menu(draw_custom_menu, title='Material', icon='ADD')
+        return {'FINISHED'}
+
+
 class MATHP_MT_asset_browser_menu(Menu):
     bl_label = 'Material Helper'
     bl_idname = 'MATHP_MT_asset_browser_menu'
@@ -137,6 +195,7 @@ class MATHP_MT_asset_browser_menu(Menu):
 
         layout.prop(context.scene, 'mathp_update_mat')
         layout.separator()
+        layout.operator('mathp.add_material', icon='ADD')
         layout.operator('mathp.set_true_asset', icon='ASSET_MANAGER')
 
 
@@ -179,7 +238,8 @@ def register():
     bpy.utils.register_class(MATHP_OT_set_tmp_asset)
     bpy.utils.register_class(MATHP_OT_clear_tmp_asset)
     bpy.utils.register_class(MATHP_OT_set_true_asset)
-    bpy.utils.register_class(MATHP_OT_delete_asset)
+    bpy.utils.register_class(MATHP_MT_delete_asset)
+    bpy.utils.register_class(MATHP_OT_add_material)
     # 用户总控制开关
     bpy.types.Scene.mathp_update_mat = BoolProperty(name='Auto Update',
                                                     default=True,
@@ -198,7 +258,8 @@ def unregister():
     bpy.utils.unregister_class(MATHP_OT_set_tmp_asset)
     bpy.utils.unregister_class(MATHP_OT_clear_tmp_asset)
     bpy.utils.unregister_class(MATHP_OT_set_true_asset)
-    bpy.utils.unregister_class(MATHP_OT_delete_asset)
+    bpy.utils.unregister_class(MATHP_MT_delete_asset)
+    bpy.utils.unregister_class(MATHP_OT_add_material)
     # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.load_post.remove(update_load_file_post)
