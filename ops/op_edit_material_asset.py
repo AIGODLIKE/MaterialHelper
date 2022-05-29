@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator
 from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty, BoolProperty)
+from bpy.types import GizmoGroup
 
 
 def get_local_selected_assets(context):
@@ -32,12 +33,13 @@ def pop_up_window(area_type='NODE_EDITOR', ui_type=None, size_x=1200, size_y=800
     window.resolution_y = size_y
     window.resolution_percentage = 100
     # 呼出窗口
-    bpy.ops.render.view_show('INVOKE_AREA')  # 创建新窗口
+    # bpy.ops.render.view_show('INVOKE_AREA')  # 创建新窗口
+    bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
     # bpy.ops.screen.region_flip('INVOKE_AREA')
     area = bpy.context.window_manager.windows[-1].screen.areas[0]
     # 更改窗口类型
     area.type = area_type
-    bpy.context.space_data.show_region_ui = True  # 侧边栏
+    bpy.context.space_data.show_region_ui = False  # 侧边栏
     if ui_type is not None:
         area.ui_type = ui_type
     # 恢复
@@ -118,9 +120,66 @@ class MATHP_OT_edit_material_asset(Operator):
         return {'FINISHED'}
 
 
+class MATHP_OT_update_mat_pv(Operator):
+    """Update Material Asset Preview"""
+    bl_idname = 'mathp.update_mat_pv'
+    bl_label = 'Update Material Preview'
+
+    mat_name: StringProperty(name='Material Name')
+
+    def execute(self, context):
+        # 更新材质预览
+        mat = bpy.data.materials.get(self.mat_name)
+        if mat:
+            mat.asset_generate_preview()
+
+        return {'FINISHED'}
+
+
+class MATHP_UI_update_mat_pv(GizmoGroup):
+    """use_tooltip"""
+    bl_idname = "MATHP_UI_update_mat_pv"
+    bl_label = "Update Material Preview"
+    bl_space_type = 'NODE_EDITOR'
+    bl_region_type = 'WINDOW'
+    bl_options = {'PERSISTENT', 'SCALE'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.area.type == 'NODE_EDITOR' and context.area.ui_type == 'ShaderNodeTree':
+            return hasattr(context, 'material') and context.material.asset_data is not None
+
+    def draw_prepare(self, context):
+        region = context.region
+
+        self.foo_gizmo.matrix_basis[0][3] = region.width - 40
+        self.foo_gizmo.matrix_basis[1][3] = 40
+        self.foo_gizmo.scale_basis = (80 * 0.35) / 2
+
+    def setup(self, context):
+        gz = self.gizmos.new("GIZMO_GT_button_2d")
+        gz.icon = 'FILE_REFRESH'
+        gz.draw_options = {'BACKDROP', 'OUTLINE'}
+        gz.use_tooltip = True
+        gz.alpha = 0
+        gz.color_highlight = 0.8, 0.8, 0.8
+        gz.alpha_highlight = 0.2
+
+        gz.scale_basis = (80 * 0.35) / 2  # Same as buttons defined in C
+
+        props = gz.target_set_operator("mathp.update_mat_pv")
+        props.mat_name = context.material.name
+
+        self.foo_gizmo = gz
+
+
 def register():
     bpy.utils.register_class(MATHP_OT_edit_material_asset)
+    bpy.utils.register_class(MATHP_OT_update_mat_pv)
+    bpy.utils.register_class(MATHP_UI_update_mat_pv)
 
 
 def unregister():
     bpy.utils.unregister_class(MATHP_OT_edit_material_asset)
+    bpy.utils.unregister_class(MATHP_OT_update_mat_pv)
+    bpy.utils.unregister_class(MATHP_UI_update_mat_pv)
