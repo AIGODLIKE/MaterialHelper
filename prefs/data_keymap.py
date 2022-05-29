@@ -21,7 +21,7 @@ def register():
     addon_keymaps.append((km, kmi))
     # 控制依赖项
     km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
-    kmi = km.keymap_items.new('mathp.move_nodes', 'D', 'PRESS')
+    kmi = km.keymap_items.new('mathp.move_dependence', 'D', 'PRESS')
     addon_keymaps.append((km, kmi))
 
 

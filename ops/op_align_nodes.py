@@ -158,9 +158,9 @@ def get_offset_from_anim(fac):
     return sqrt(min(max(fac, 0), 1))
 
 
-class MATHP_OT_move_nodes(bpy.types.Operator):
-    bl_idname = 'mathp.move_nodes'
-    bl_label = 'Move Nodes'
+class MATHP_OT_move_dependence(bpy.types.Operator):
+    bl_idname = 'mathp.move_dependence'
+    bl_label = 'Move Dependence'
     bl_options = {'GRAB_CURSOR', 'BLOCKING'}
 
     # 传递
@@ -183,7 +183,7 @@ class MATHP_OT_move_nodes(bpy.types.Operator):
     def poll(cls, context):
         if context.window_manager.mathp_node_move: return False
 
-        return hasattr(context, 'selected_nodes') and len(context.selected_nodes) != 0
+        return hasattr(context, 'selected_nodes')
 
     def remove_handler(self, context):
         context.window_manager.mathp_node_move = False
@@ -272,7 +272,7 @@ def draw_process_callback_px(self, context):
 
 class MATHP_OT_align_dependence(bpy.types.Operator):
     bl_idname = 'mathp.align_dependence'
-    bl_label = 'Align Dependence'
+    bl_label = 'Align Dependence Nodes'
 
     node_loc_dict = None  # node:{ori_loc:(x,y),tg_loc:(x,y)}
 
@@ -525,7 +525,7 @@ def node_at_pos(nodes, context, event):
 
 
 def register():
-    bpy.utils.register_class(MATHP_OT_move_nodes)
+    bpy.utils.register_class(MATHP_OT_move_dependence)
     bpy.utils.register_class(MATHP_OT_align_dependence)
 
     # 防止多个操作符同时运行
@@ -534,7 +534,7 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(MATHP_OT_move_nodes)
+    bpy.utils.unregister_class(MATHP_OT_move_dependence)
     bpy.utils.unregister_class(MATHP_OT_align_dependence)
 
     del bpy.types.WindowManager.mathp_node_move
