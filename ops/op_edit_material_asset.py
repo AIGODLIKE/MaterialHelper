@@ -16,36 +16,38 @@ def get_local_selected_assets(context):
     return match_obj
 
 
-def pop_up_window(area_type='NODE_EDITOR', ui_type=None, size_x=1200, size_y=800):
+def pop_up_window(area_type='NODE_EDITOR', area_ui_type=None, hide_ui=False, flip_header=True):
     """ 弹窗
     :param area_type: 区域类型 str
-    :parm ui_type: 区域ui类型 str
+    :parm area_ui_type: 区域ui类型 str
+    :param hide_ui: 隐藏侧边栏
+    :param flip_header: 翻转菜单栏到上方
     :return:
     """
 
-    window = bpy.context.scene.render
-    # 储存类型
-    ori_res_x = window.resolution_x
-    ori_res_y = window.resolution_y
-    ori_res_scale = window.resolution_percentage
-    # 设置窗口尺寸
-    window.resolution_x = size_x
-    window.resolution_y = size_y
-    window.resolution_percentage = 100
-    # 呼出窗口
-    # bpy.ops.render.view_show('INVOKE_AREA')  # 创建新窗口
-    bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
-    # bpy.ops.screen.region_flip('INVOKE_AREA')
+    # 创建新窗口
+    # bpy.ops.render.view_show('INVOKE_AREA')
+    # bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
+    bpy.ops.wm.window_new()  # 使用新窗口
+
     area = bpy.context.window_manager.windows[-1].screen.areas[0]
     # 更改窗口类型
     area.type = area_type
-    bpy.context.space_data.show_region_ui = False  # 侧边栏
-    if ui_type is not None:
-        area.ui_type = ui_type
-    # 恢复
-    window.resolution_x = ori_res_x
-    window.resolution_y = ori_res_y
-    window.resolution_percentage = ori_res_scale
+    if area_ui_type is not None:
+        area.ui_type = area_ui_type
+
+    # area.spaces[0].node_tree = bpy.context.object.active_material.node_tree
+    # 侧边栏
+    bpy.context.space_data.show_region_ui = False if hide_ui else True
+    # 翻转菜单栏
+    for region in area.regions:
+        if region.type in {'TOOLS', 'UI'}:
+            with bpy.context.temp_override(area=area, region=region):
+                if flip_header: bpy.ops.screen.region_flip('INVOKE_DEFAULT')
+
+        # if region.type == 'WINDOW':
+        #     with bpy.context.temp_override(area=area, region=region):
+        #         bpy.ops.node.view_all("INVOKE_AREA")
 
 
 class MATHP_OT_edit_material_asset(Operator):
@@ -115,7 +117,7 @@ class MATHP_OT_edit_material_asset(Operator):
         w_center_x, w_center_y = w.width / 2, w.height / 2
         w.cursor_warp(int(w_center_x), int(w_center_y))
         # 弹窗
-        pop_up_window(area_type='NODE_EDITOR', ui_type='ShaderNodeTree')
+        pop_up_window(area_type='NODE_EDITOR', area_ui_type='ShaderNodeTree')
 
         return {'FINISHED'}
 
