@@ -15,12 +15,21 @@ def register():
     kmi = km.keymap_items.new("wm.call_menu", 'X', 'PRESS', ctrl=False, shift=False)
     kmi.properties.name = 'MATHP_MT_asset_delete_meun'
     addon_keymaps.append((km, kmi))
-    # 节点对齐 3.2 版本下没有方向属性
+    # 应用资产
+    km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
+    kmi = km.keymap_items.new("mathp.set_true_asset", 'A', 'PRESS', ctrl=True, shift=False)
+    addon_keymaps.append((km, kmi))
+    # 添加资产
+    km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
+    kmi = km.keymap_items.new("mathp.add_material", 'A', 'PRESS', ctrl=False, shift=True)
+    addon_keymaps.append((km, kmi))
+    # 节点对齐
     km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
-    if bpy.app.version < (3, 2, 0):
-        kmi = km.keymap_items.new('mathp.align_dependence', 'A', 'CLICK_DRAG', ctrl=True)
-    else:
-        kmi = km.keymap_items.new('mathp.align_dependence', 'A', 'CLICK_DRAG', direction='WEST', ctrl=True)
+    kmi = km.keymap_items.new('mathp.align_dependence', 'A', 'PRESS', ctrl=True)
+    addon_keymaps.append((km, kmi))
+    # 控制依赖项
+    km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
+    kmi = km.keymap_items.new('mathp.move_dependence', 'D', 'PRESS')
     addon_keymaps.append((km, kmi))
 
 

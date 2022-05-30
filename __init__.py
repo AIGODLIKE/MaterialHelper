@@ -14,17 +14,19 @@ bl_info = {
 
 __ADDON_NAME__ = __name__
 
-from . import ops,prefs
+from . import ops, prefs, localization
 
 
 def register():
     ops.register()
     prefs.register()
+    localization.register()
 
 
 def unregister():
     ops.unregister()
     prefs.unregister()
+    localization.unregister()
 
 
 if __name__ == "__main__":

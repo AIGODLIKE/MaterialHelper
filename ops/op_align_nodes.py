@@ -1,6 +1,9 @@
 import bpy
 from numpy import mean
-from math import sqrt
+from math import sqrt, hypot
+from bpy.props import StringProperty
+
+import blf
 
 # 节点偏移距离
 C_DIS_X = 80
@@ -71,6 +74,48 @@ def get_dependent(node, selected_nodes=None):
     return dependent_nodes
 
 
+def get_all_dependence(node, selected_nodes=None):
+    """获取节点所有依赖项
+
+    :param node:  bpy.types.Node
+    :param selected_nodes:  list[bpy.types.Node]
+    :return: list[bpy.types.Node]
+    """
+    all_dependence_nodes = list()
+    dependence = get_dependence(node, selected_nodes)
+
+    for dependence_node in dependence:
+        all_dependence_nodes.append(dependence_node)
+
+        sub_dependence = get_all_dependence(dependence_node, selected_nodes)
+        for sub_node in sub_dependence:
+            if sub_node not in all_dependence_nodes:
+                all_dependence_nodes.append(sub_node)
+
+    return all_dependence_nodes
+
+
+def get_all_dependent(node, selected_nodes=None):
+    """获取节点所有父级依赖项
+
+    :param node:  bpy.types.Node
+    :param selected_nodes:  list[bpy.types.Node]
+    :return: list[bpy.types.Node]
+    """
+    all_dependent_nodes = list()
+    dependent = get_dependent(node, selected_nodes)
+
+    for dependent_node in dependent:
+        all_dependent_nodes.append(dependent_node)
+
+        sub_dependent = get_all_dependent(dependent_node, selected_nodes)
+        for sub_node in sub_dependent:
+            if sub_node not in all_dependent_nodes:
+                all_dependent_nodes.append(sub_node)
+
+    return all_dependent_nodes
+
+
 def dpifac():
     """获取用户屏幕缩放，用于矫正节点宽度/长度和摆放位置
 
@@ -113,36 +158,151 @@ def get_offset_from_anim(fac):
     return sqrt(min(max(fac, 0), 1))
 
 
-### TODO 上下对齐（仅限3.2：快捷键新功能）
-### TODO 单个节点到多个父级，父级间有依赖关系时候该节点过低的
+class MATHP_OT_move_dependence(bpy.types.Operator):
+    bl_idname = 'mathp.move_dependence'
+    bl_label = 'Move Dependence'
+    bl_options = {'GRAB_CURSOR', 'BLOCKING'}
 
+    # 传递
+    target_node = None  # 一开始鼠标所在节点
+    # 初始值
+    ori_mouse_x = None  # 用于检测鼠标位移是否超过阈值
+    ori_mouse_y = None
+    threshold_x = 50  # 用于检测命令指向
+
+    ori_selected_nodes = None  # 用于撤销操作
+    ori_node_loc_dict = None  # 用于撤销操作
+
+    # 储存
+    dependent = []
+    dependence = []
+    # 绘制
+    _handle = None
+
+    @classmethod
+    def poll(cls, context):
+        if context.window_manager.mathp_node_move: return False
+
+        return hasattr(context, 'selected_nodes')
+
+    def remove_handler(self, context):
+        context.window_manager.mathp_node_move = False
+        context.window.cursor_modal_restore()
+
+    def append_handler(self, context):
+        context.window_manager.mathp_node_move = True
+        context.window.cursor_modal_set('SCROLL_X')
+        # 添加
+        context.window_manager.modal_handler_add(self)
+
+    def invoke(self, context, event):
+        # 初始化
+        self.dependence.clear()
+        self.dependent.clear()
+        self.ori_selected_nodes = context.selected_nodes.copy()
+        self.ori_node_loc_dict = {node: tuple(node.location) for node in self.ori_selected_nodes}
+        # 储存初始鼠标位置
+        self.mouse_pos = [0, 0]
+        self.ori_mouse_x = event.mouse_x
+        self.ori_mouse_y = event.mouse_y
+        self.mouseDX = event.mouse_x
+        self.mouseDY = event.mouse_y
+        # 获取对应节点
+        self.target_node = node_at_pos(context.space_data.edit_tree.nodes, context, event)
+        self.dependence = get_all_dependence(self.target_node)
+        self.dependent = get_all_dependent(self.target_node)
+
+        self.append_handler(context)
+
+        return {"RUNNING_MODAL"}
+
+    def modal(self, context, event):
+        # 重绘制，用于更新节点尺寸
+        context.area.tag_redraw()
+        self.mouse_pos = event.mouse_region_x, event.mouse_region_y
+
+        # 移动子级
+        if event.type == 'MOUSEMOVE':
+            if event.mouse_x - self.ori_mouse_x < self.threshold_x:
+                bpy.ops.node.select_all(action='DESELECT')
+
+                for node in self.dependence:
+                    node.select = True
+
+            # 选择父级
+            elif event.mouse_x - self.ori_mouse_x > self.threshold_x:
+                bpy.ops.node.select_all(action='DESELECT')
+
+                for node in self.dependent:
+                    node.select = True
+
+
+        elif event.type in {'RIGHTMOUSE', 'ESC'}:
+            # 还原
+            bpy.ops.node.select_all(action='DESELECT')
+
+            for node in self.ori_selected_nodes:
+                node.select = True
+
+            for node in self.ori_node_loc_dict:
+                node.location = self.ori_node_loc_dict[node]
+
+            self.remove_handler(context)
+            return {'CANCELLED'}
+
+        elif event.type == 'LEFTMOUSE':
+            self.remove_handler(context)
+            bpy.ops.transform.translate('INVOKE_DEFAULT')
+            return {'FINISHED'}
+
+        return {'RUNNING_MODAL'}
+
+
+def draw_process_callback_px(self, context):
+    font_id = 0
+    step = 8
+
+    blf.size(font_id, 8, 120)
+    blf.position(font_id, self.draw_pos[0], self.draw_pos[1] + step, 0)
+    blf.color(font_id, 1, 1, 1, 0.5)
+    blf.draw(font_id, f"对齐中..{min(int(self.anim_fac / 2 * 100), 100)} %")
+
+
+### TODO 单个节点到多个父级，父级间有依赖关系时候该节点过低的
 
 class MATHP_OT_align_dependence(bpy.types.Operator):
     bl_idname = 'mathp.align_dependence'
-    bl_label = 'Align Dependence'
+    bl_label = 'Align Dependence Nodes'
 
     node_loc_dict = None  # node:{ori_loc:(x,y),tg_loc:(x,y)}
 
-    iteration = 3  # 计算迭代
+    target_node = None
     # 动画控制
     anim_fac = 0  # 动画比例 0~1
     anim_iter = 30  # 动画更新 秒
     anim_time = 0.05  # 持续时间 秒
-
+    # handle
     _timer = None
+    _handle = None
+    # ui
+    draw_pos = None
 
     @classmethod
     def poll(cls, context):
         if not context.window_manager.mathp_node_anim:
-            return hasattr(context, 'active_node') and context.active_node
+            return hasattr(context, 'selected_nodes') and len(context.selected_nodes) != 0
 
     def append_handle(self):
         self._timer = bpy.context.window_manager.event_timer_add(self.anim_time / self.anim_iter,
                                                                  window=bpy.context.window)  # 添加计时器检测状态
+        args = (self, bpy.context)
+        self._handle = bpy.types.SpaceNodeEditor.draw_handler_add(draw_process_callback_px, args, 'WINDOW',
+                                                                  'POST_PIXEL')
         bpy.context.window_manager.modal_handler_add(self)
         bpy.context.window_manager.mathp_node_anim = True
 
     def remove_handle(self):
+        bpy.types.SpaceNodeEditor.draw_handler_remove(self._handle, 'WINDOW')
         bpy.context.window_manager.event_timer_remove(self._timer)
         bpy.context.window_manager.mathp_node_anim = False
 
@@ -151,19 +311,32 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
         self.node_loc_dict = dict()
         self._timer = None
         self.anim_fac = 0
+        self.draw_pos = [0, 0]
+        # 获取鼠标下的节点
+        self.target_node = node_at_pos(context.space_data.edit_tree.nodes, context, event)
+        selected_nodes = tuple(list(context.selected_nodes) + [self.target_node])
+        # 获取位置
+        self.align_dependence(self.target_node, selected_nodes, check_dependent=True)
 
-        # 获取位置与第一次对齐
-        selected_nodes = tuple(context.selected_nodes)
-        for i in range(self.iteration):
-            # 第二次后 用于检查多个父级依赖的节点
-            self.align_dependence(context.active_node, selected_nodes, check_dependent=bool(i == 0))
-
-            self.append_handle()
-
-            return {"RUNNING_MODAL"}
+        self.append_handle()
+        return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
         if event.type == 'TIMER':
+            # 绘制
+            # --------
+            node = self.target_node
+            loc_x = (abs_node_location(node)[0] + 1) * dpifac()
+            loc_y = (abs_node_location(node)[1] + 1) * dpifac()
+
+            dim_x = node.dimensions.x
+            dim_y = node.dimensions.y
+
+            top_left = (loc_x, loc_y + dim_y / 2) if node.hide else (loc_x, loc_y)
+            # 获取视窗位置
+            self.draw_pos = bpy.context.region.view2d.view_to_region(top_left[0], top_left[1], clip=False)
+            # --------
+
             if self.anim_fac >= 1 + 1:  # 添加1动画延迟以完成动画
                 self.remove_handle()
                 # 强制对齐
@@ -233,7 +406,7 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
             # 对齐父级依赖
             if check_dependent:
                 dependent_nodes = get_dependent(sub_node, selected_nodes)
-                if len(dependent_nodes) != 1:
+                if len(dependent_nodes) > 1:
                     ori_loc = (sub_node.location.x, sub_node.location.y)
 
                     dep_loc_x = list()
@@ -279,14 +452,90 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
         return node
 
 
+# 以下三个函数来自node wrangler
+# 用于替换原来操作逻辑：选中项对齐激活项 -> 选中项对齐鼠标所在位置项
+
+def abs_node_location(node):
+    if node.parent is None:
+        return node.location
+
+    return node.location + abs_node_location(node.parent)
+
+
+def store_mouse_cursor(context, event):
+    space = context.space_data
+    tree = space.edit_tree
+
+    # convert mouse position to the View2D for later node placement
+    if context.region.type == 'WINDOW':
+        space.cursor_location_from_region(event.mouse_region_x, event.mouse_region_y)
+    else:
+        space.cursor_location = tree.view_center
+
+
+def node_at_pos(nodes, context, event):
+    nodes_under_mouse = []
+    target_node = None
+
+    store_mouse_cursor(context, event)
+    x, y = context.space_data.cursor_location
+
+    # Make a list of each corner (and middle of border) for each node.
+    # Will be sorted to find nearest point and thus nearest node
+    node_points_with_dist = []
+    for node in nodes:
+        skipnode = False
+        if node.type == 'FRAME': continue  # no point trying to link to a frame node
+
+        dimx = node.dimensions.x / dpifac()
+        dimy = node.dimensions.y / dpifac()
+        locx, locy = abs_node_location(node)
+
+        if skipnode: continue
+
+        node_points_with_dist.append([node, hypot(x - locx, y - locy)])  # Top Left
+        node_points_with_dist.append([node, hypot(x - (locx + dimx), y - locy)])  # Top Right
+        node_points_with_dist.append([node, hypot(x - locx, y - (locy - dimy))])  # Bottom Left
+        node_points_with_dist.append([node, hypot(x - (locx + dimx), y - (locy - dimy))])  # Bottom Right
+
+        node_points_with_dist.append([node, hypot(x - (locx + (dimx / 2)), y - locy)])  # Mid Top
+        node_points_with_dist.append([node, hypot(x - (locx + (dimx / 2)), y - (locy - dimy))])  # Mid Bottom
+        node_points_with_dist.append([node, hypot(x - locx, y - (locy - (dimy / 2)))])  # Mid Left
+        node_points_with_dist.append([node, hypot(x - (locx + dimx), y - (locy - (dimy / 2)))])  # Mid Right
+
+    nearest_node = sorted(node_points_with_dist, key=lambda k: k[1])[0][0]
+
+    for node in nodes:
+        if node.type != 'FRAME' and skipnode == False:
+            locx, locy = abs_node_location(node)
+            dimx = node.dimensions.x / dpifac()
+            dimy = node.dimensions.y / dpifac()
+            if (locx <= x <= locx + dimx) and \
+                    (locy - dimy <= y <= locy):
+                nodes_under_mouse.append(node)
+
+    if len(nodes_under_mouse) == 1:
+        if nodes_under_mouse[0] != nearest_node:
+            target_node = nodes_under_mouse[0]  # use the node under the mouse if there is one and only one
+        else:
+            target_node = nearest_node  # else use the nearest node
+    else:
+        target_node = nearest_node
+    return target_node
+
+
 def register():
+    bpy.utils.register_class(MATHP_OT_move_dependence)
     bpy.utils.register_class(MATHP_OT_align_dependence)
 
     # 防止多个操作符同时运行
+    bpy.types.WindowManager.mathp_node_move = bpy.props.BoolProperty(default=False)
     bpy.types.WindowManager.mathp_node_anim = bpy.props.BoolProperty(default=False)
 
 
 def unregister():
+    bpy.utils.unregister_class(MATHP_OT_move_dependence)
     bpy.utils.unregister_class(MATHP_OT_align_dependence)
 
+    del bpy.types.WindowManager.mathp_node_move
     del bpy.types.WindowManager.mathp_node_anim
