@@ -99,7 +99,6 @@ class MATHP_MT_delete_asset(selectedAsset, Operator):
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
         for mat in selected_mats:
-            mat.asset_clear()
             bpy.data.materials.remove(mat)
 
         return {'FINISHED'}
