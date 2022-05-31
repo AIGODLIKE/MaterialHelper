@@ -1,4 +1,5 @@
 import bpy
+from ..prefs.get_pref import get_pref
 
 
 class MATHP_PT_NodePanel(bpy.types.Panel):
@@ -9,11 +10,16 @@ class MATHP_PT_NodePanel(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_category = 'Node'
 
+    @classmethod
+    def poll(cls, context):
+        return get_pref().window_style == '2'
+
     def draw(self, context):
         layout = self.layout
         layout.template_ID_preview(context.object, 'active_material',
-                                   hide_buttons = True,
+                                   hide_buttons=True,
                                    rows=5, cols=5)
+
 
 def register():
     bpy.utils.register_class(MATHP_PT_NodePanel)
@@ -21,7 +27,3 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(MATHP_PT_NodePanel)
-
-
-if __name__ == "__main__":
-    register()

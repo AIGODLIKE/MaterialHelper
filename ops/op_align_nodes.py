@@ -2,12 +2,18 @@ import bpy
 from numpy import mean
 from math import sqrt, hypot
 from bpy.props import StringProperty
+from ..prefs.get_pref import get_pref
 
 import blf
 
+
 # 节点偏移距离
-C_DIS_X = 80
-C_DIS_Y = 40
+def dis_x():
+    return get_pref().node_dis_x
+
+
+def dis_y():
+    return get_pref().node_dis_y
 
 
 def connected_socket(self):
@@ -421,7 +427,7 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
                             dep_loc_x.append(depend_node.location.x)
                             dep_loc_y.append(depend_node.location.y)
 
-                    tg_loc_x = min(dep_loc_x) - sub_dim_x - C_DIS_X
+                    tg_loc_x = min(dep_loc_x) - sub_dim_x - dis_x()
                     tg_loc_y = mean(dep_loc_y)
 
                     # 记录位置用于动画
@@ -438,8 +444,8 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
             else:
                 ori_loc = (sub_node.location.x, sub_node.location.y)
                 # 目标位置 = 上一个节点位置-当前节点宽度-间隔，y轴向对其第一个节点到依赖节点
-                tg_loc_x = last_location_x - sub_dim_x - C_DIS_X
-                tg_loc_y = last_location_y - last_dimensions_y - C_DIS_Y if i != 0 else last_location_y
+                tg_loc_x = last_location_x - sub_dim_x - dis_x()
+                tg_loc_y = last_location_y - last_dimensions_y - dis_y() if i != 0 else last_location_y
                 # 记录位置用于动画
                 self.node_loc_dict[sub_node] = {'ori_loc': ori_loc,
                                                 'tg_loc': (tg_loc_x, tg_loc_y)}
