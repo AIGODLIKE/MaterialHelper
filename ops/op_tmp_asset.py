@@ -101,7 +101,62 @@ class MATHP_MT_delete_asset(selectedAsset, Operator):
         for mat in selected_mats:
             bpy.data.materials.remove(mat)
 
+        bpy.ops.asset.library_refresh()
+
         return {'FINISHED'}
+
+
+class MATHP_MT_duplicate_asset(selectedAsset, Operator):
+    bl_idname = 'mathp.duplicate_asset'
+    bl_label = 'Duplicate'
+    bl_options = {'UNDO'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
+
+    def execute(self, context):
+        match_obj = get_local_selected_assets(context)
+        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
+
+        for mat in selected_mats:
+            mat.copy()
+
+        for mat in selected_mats:
+            context.space_data.activate_asset_by_id(mat)
+
+        return {'FINISHED'}
+
+
+# icon注册
+G_PV_COLL = {}
+G_MAT_ICON_ID = {}  # name:id
+
+
+def register_icon():
+    global G_PV_COLL, G_MAT_ICON_ID
+
+    icon_dir = Path(__file__).parent.parent.joinpath('mat_lib')
+    mats_icon = []
+
+    for file in os.listdir(str(icon_dir)):
+        if file.endswith('.png'):
+            mats_icon.append(icon_dir.joinpath(file))
+    # 注册
+    for icon_path in mats_icon:
+        pcoll = previews.new()
+        pcoll.load(icon_path.name[:-4], str(icon_path), 'IMAGE')
+        G_PV_COLL['mathp_icon'] = pcoll
+        G_MAT_ICON_ID[icon_path.name[:-4]] = pcoll.get(icon_path.name[:-4]).icon_id
+
+
+def unregister_icon():
+    global G_PV_COLL, G_MAT_ICON_ID
+
+    G_MAT_ICON_ID.clear()
+
+    for pcoll in G_PV_COLL.values():
+        previews.remove(pcoll)
+        G_PV_COLL.clear()
 
 
 class MATHP_OT_add_material(Operator):
@@ -110,13 +165,12 @@ class MATHP_OT_add_material(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     dep_class = []  # 动态ops
-    preview_collections = {}  # 动态icon
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context, 'selected_asset_files')
 
     def invoke(self, context, event):
-        # 清空icon预览
-        for pcoll in self.preview_collections.values():
-            previews.remove(pcoll)
-        self.preview_collections.clear()
         # 清空动态注册op
         for cls in self.dep_class:
             bpy.utils.unregister_class(cls)
@@ -127,33 +181,20 @@ class MATHP_OT_add_material(Operator):
         blend_file = icon_dir.joinpath('mat.blend')
         with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
             mats = data_from.materials
-        # 寻找icon
-        mats_icon = []
-        mats_icon_id = []
 
-        for file in os.listdir(str(icon_dir)):
-            if file.endswith('.png') and file[:-4] in mats:
-                mats_icon.append(icon_dir.joinpath(file))
-        # 注册
-        for icon_path in mats_icon:
-            pcoll = previews.new()
-            pcoll.load(icon_path.name[:-4], str(icon_path), 'IMAGE')
-            self.preview_collections['mathp_icon'] = pcoll
-            mats_icon_id.append(pcoll.get(icon_path.name[:-4]).icon_id)
+        # 根据材质库材质动态注册
 
-            # 根据材质库材质动态注册
-
-        def dy_execute(self, context):
+        def dy_execute(_self, _context):
             # 导入
-            with bpy.data.libraries.load(self.blend_file, link=False) as (data_from, data_to):
-                data_to.materials = [self.material]
+            with bpy.data.libraries.load(_self.blend_file, link=False) as (data_from, data_to):
+                data_to.materials = [_self.material]
             # 刷新资产库
             bpy.ops.asset.library_refresh()
-
+            # context.space_data.activate_asset_by_id(data_to.materials[0])
             return {'FINISHED'}
 
-        for i, icon_path in enumerate(mats_icon):
-            mat_name = icon_path.name[:-4]
+        for i, mat in enumerate(mats):
+            mat_name = mat
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
                           {"bl_idname": f'wm.mathp_add_material_{i}',
@@ -174,9 +215,10 @@ class MATHP_OT_add_material(Operator):
         op = self
 
         def draw_custom_menu(self, context):
+            global G_MAT_ICON_ID
             layout = self.layout
             for i, cls in enumerate(op.dep_class):
-                layout.operator(cls.bl_idname, icon_value=mats_icon_id[i])
+                layout.operator(cls.bl_idname, icon_value=G_MAT_ICON_ID[cls.bl_label])
 
         # 弹出
         context.window_manager.popup_menu(draw_custom_menu, title='Material', icon='ADD')
@@ -232,12 +274,21 @@ def update_user_control(self, context):
         bpy.ops.mathp.clear_tmp_asset()
 
 
+classes = (
+    MATHP_OT_set_tmp_asset,
+    MATHP_OT_clear_tmp_asset,
+    MATHP_OT_set_true_asset,
+    MATHP_MT_delete_asset,
+    MATHP_MT_duplicate_asset,
+    MATHP_OT_add_material,
+)
+
+
 def register():
-    bpy.utils.register_class(MATHP_OT_set_tmp_asset)
-    bpy.utils.register_class(MATHP_OT_clear_tmp_asset)
-    bpy.utils.register_class(MATHP_OT_set_true_asset)
-    bpy.utils.register_class(MATHP_MT_delete_asset)
-    bpy.utils.register_class(MATHP_OT_add_material)
+    register_icon()
+
+    for cls in classes:
+        bpy.utils.register_class(cls)
     # 用户总控制开关
     bpy.types.Scene.mathp_update_mat = BoolProperty(name='Auto Update',
                                                     default=True,
@@ -252,11 +303,10 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(MATHP_OT_set_tmp_asset)
-    bpy.utils.unregister_class(MATHP_OT_clear_tmp_asset)
-    bpy.utils.unregister_class(MATHP_OT_set_true_asset)
-    bpy.utils.unregister_class(MATHP_MT_delete_asset)
-    bpy.utils.unregister_class(MATHP_OT_add_material)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
+    unregister_icon()
     # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.load_post.remove(update_load_file_post)
