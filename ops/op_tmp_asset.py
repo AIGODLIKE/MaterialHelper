@@ -1,9 +1,13 @@
 import bpy
+import os
+
 from bpy.types import Operator, Menu
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from pathlib import Path
 
 from .op_edit_material_asset import get_local_selected_assets
+
+from bpy.utils import previews
 
 C_TMP_ASSET_TAG = 'tmp_asset_mathp'
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
@@ -85,47 +89,19 @@ class MATHP_OT_set_true_asset(selectedAsset, Operator):
 class MATHP_MT_delete_asset(selectedAsset, Operator):
     bl_idname = 'mathp.delete_asset'
     bl_label = 'Delete'
+    bl_options = {'UNDO'}
 
-    operate_type: EnumProperty(items=[
-        ('NONE', 'None', ''),
-        ('SET_FAKE_USER', 'SET_FAKE_USER', ''),
-        ('DELETE', 'Delete', ''),
-    ],
-        options={'SKIP_SAVE'})
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
 
     def execute(self, context):
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
         for mat in selected_mats:
-            mat.asset_clear()
-
-            if self.operate_type == 'DELETE':
-                bpy.data.materials.remove(mat)
-            elif self.operate_type == 'SET_FAKE_USER':
-                mat.use_fake_user = True
+            bpy.data.materials.remove(mat)
 
         return {'FINISHED'}
-
-
-class MATHP_MT_asset_delete_meun(Menu):
-    bl_label = 'Clear Asset'
-    bl_idname = 'MATHP_MT_asset_delete_meun'
-
-    def draw(self, context):
-        layout = self.layout
-        layout.operator_context = 'INVOKE_DEFAULT'
-
-        op = layout.operator('mathp.delete_asset', text='Clear Asset')
-        op.operate_type = 'NONE'
-
-        op = layout.operator('mathp.delete_asset', text='Clear Asset (Set Fake User)')
-        op.operate_type = 'SET_FAKE_USER'
-
-        layout.separator()
-
-        op = layout.operator('mathp.delete_asset', text='Clear Asset (Delete)')
-        op.operate_type = 'DELETE'
 
 
 class MATHP_OT_add_material(Operator):
@@ -133,19 +109,40 @@ class MATHP_OT_add_material(Operator):
     bl_label = 'Add Material'
     bl_options = {'REGISTER', 'UNDO'}
 
-    dep_class = []
+    dep_class = []  # 动态ops
+    preview_collections = {}  # 动态icon
 
     def invoke(self, context, event):
-        # 恢复初始值
+        # 清空icon预览
+        for pcoll in self.preview_collections.values():
+            previews.remove(pcoll)
+        self.preview_collections.clear()
+        # 清空动态注册op
         for cls in self.dep_class:
             bpy.utils.unregister_class(cls)
         self.dep_class.clear()
-        # 获取材质库已有材质名
-        blend_file = str(Path(__file__).parent.parent.joinpath('mat_lib', 'mat.blend'))
-        with bpy.data.libraries.load(blend_file, link=False) as (data_from, data_to):
-            mats = data_from.materials
 
-        # 根据材质库材质动态注册
+        # 获取材质库已有材质名
+        icon_dir = Path(__file__).parent.parent.joinpath('mat_lib')
+        blend_file = icon_dir.joinpath('mat.blend')
+        with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
+            mats = data_from.materials
+        # 寻找icon
+        mats_icon = []
+        mats_icon_id = []
+
+        for file in os.listdir(str(icon_dir)):
+            if file.endswith('.png') and file[:-4] in mats:
+                mats_icon.append(icon_dir.joinpath(file))
+        # 注册
+        for icon_path in mats_icon:
+            pcoll = previews.new()
+            pcoll.load(icon_path.name[:-4], str(icon_path), 'IMAGE')
+            self.preview_collections['mathp_icon'] = pcoll
+            mats_icon_id.append(pcoll.get(icon_path.name[:-4]).icon_id)
+
+            # 根据材质库材质动态注册
+
         def dy_execute(self, context):
             # 导入
             with bpy.data.libraries.load(self.blend_file, link=False) as (data_from, data_to):
@@ -155,16 +152,17 @@ class MATHP_OT_add_material(Operator):
 
             return {'FINISHED'}
 
-        for i, mat in enumerate(mats):
+        for i, icon_path in enumerate(mats_icon):
+            mat_name = icon_path.name[:-4]
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
                           {"bl_idname": f'wm.mathp_add_material_{i}',
-                           "bl_label": mat,
+                           "bl_label": mat_name,
                            "bl_description": 'Add',
                            "execute": dy_execute,
                            # 自定义参数传入
-                           'blend_file': blend_file,
-                           'material': mat,
+                           'blend_file': str(blend_file),
+                           'material': mat_name,
                            },
                           )
             self.dep_class.append(op_cls)
@@ -177,8 +175,8 @@ class MATHP_OT_add_material(Operator):
 
         def draw_custom_menu(self, context):
             layout = self.layout
-            for cls in op.dep_class:
-                layout.operator(cls.bl_idname)
+            for i, cls in enumerate(op.dep_class):
+                layout.operator(cls.bl_idname, icon_value=mats_icon_id[i])
 
         # 弹出
         context.window_manager.popup_menu(draw_custom_menu, title='Material', icon='ADD')
@@ -250,7 +248,6 @@ def register():
     bpy.app.handlers.load_post.append(update_load_file_post)
     # ui
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
-    bpy.utils.register_class(MATHP_MT_asset_delete_meun)
     bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
 
 
@@ -266,5 +263,4 @@ def unregister():
     del bpy.types.Scene.mathp_update_mat
     # ui
     bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)
-    bpy.utils.unregister_class(MATHP_MT_asset_delete_meun)
     bpy.types.ASSETBROWSER_MT_editor_menus.remove(draw_asset_browser)

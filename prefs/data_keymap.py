@@ -10,10 +10,9 @@ def register():
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
     kmi = km.keymap_items.new("mathp.edit_material_asset", 'LEFTMOUSE', 'DOUBLE_CLICK', ctrl=False, shift=False)
     addon_keymaps.append((km, kmi))
-    # 删除材质菜单
+    # 删除材质
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
-    kmi = km.keymap_items.new("wm.call_menu", 'X', 'PRESS', ctrl=False, shift=False)
-    kmi.properties.name = 'MATHP_MT_asset_delete_meun'
+    kmi = km.keymap_items.new("mathp.delete_asset", 'X', 'PRESS', ctrl=False, shift=False)
     addon_keymaps.append((km, kmi))
     # 应用资产
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')

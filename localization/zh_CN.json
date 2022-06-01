@@ -6,8 +6,12 @@
   "Clear Asset (Delete)": "清除资产 (删除)",
   "Update Material Asset Preview": "更新材质资产预览",
   "Add Material": "添加材质",
+  "Material Window": "材质窗口",
   "Align Dependence": "对齐子节点",
+  "Align Dependence Nodes": "对齐子节点",
   "Move Dependence": "移动子节点/父节点",
+  "Node Distance X": "节点间距X",
+  "Node Distance Y": "节点间距Y",
   "Auto Update": "自动更新",
   "If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared": "如果勾选，材质将自动添加为临时资产\n否则，临时资产将被清除",
   "Material Helper": "材质助手"
