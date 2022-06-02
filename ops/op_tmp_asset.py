@@ -11,6 +11,7 @@ from bpy.utils import previews
 
 C_TMP_ASSET_TAG = 'tmp_asset_mathp'
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
+G_ACTIVE_MATS_LIST = []  # 选中材质列表
 
 
 def tag_redraw():
@@ -86,7 +87,7 @@ class MATHP_OT_set_true_asset(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_MT_delete_asset(selectedAsset, Operator):
+class MATHP_OT_delete_asset(selectedAsset, Operator):
     bl_idname = 'mathp.delete_asset'
     bl_label = 'Delete'
     bl_options = {'UNDO'}
@@ -106,7 +107,7 @@ class MATHP_MT_delete_asset(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_MT_duplicate_asset(selectedAsset, Operator):
+class MATHP_OT_duplicate_asset(selectedAsset, Operator):
     bl_idname = 'mathp.duplicate_asset'
     bl_label = 'Duplicate'
     bl_options = {'UNDO'}
@@ -234,6 +235,7 @@ class MATHP_MT_asset_browser_menu(Menu):
         layout.operator_context = 'INVOKE_DEFAULT'
 
         layout.prop(context.scene, 'mathp_update_mat')
+        layout.prop(context.scene, 'mathp_update_active_obj_mats')
         layout.separator()
         layout.operator('mathp.add_material', icon='ADD')
         layout.operator('mathp.set_true_asset', icon='ASSET_MANAGER')
@@ -260,6 +262,44 @@ def update_tmp_asset(scene, depsgraph):
 
 
 @persistent
+def update_active_object_material(scene, depsgraph):
+    print('FINDING OBJECT!!!')
+    if scene.mathp_update_mat is False:
+        return
+    elif scene.mathp_update_active_obj_mats is False:
+        return
+    elif bpy.context.object is None:
+        return
+    elif bpy.context.object.type not in {'MESH', 'CURVE', 'FONT', 'META', 'VOLUME', 'GPENCIL', 'SURFACE'}:
+        return
+    elif len(bpy.context.object.material_slots) == 0:
+        return
+    print("FINDING AREA!!!")
+    # 获取面板
+    asset_area = None
+    for area in bpy.context.window.screen.areas:
+        if area.type == 'FILE_BROWSER' and area.ui_type == 'ASSETS':
+            asset_area = area
+            break
+
+    if asset_area is None: return
+
+    # 获取材质
+    global G_ACTIVE_MATS_LIST
+    G_ACTIVE_MATS_LIST.clear()
+
+    for mat_slot in bpy.context.object.material_slots:
+        G_ACTIVE_MATS_LIST.append(mat_slot.material)
+
+    asset_area.spaces[0].deselect_all()
+    # 激活材质
+    if bpy.context.object.select_get():
+        for mat in G_ACTIVE_MATS_LIST:
+            asset_area.spaces[0].activate_asset_by_id(mat)
+            asset_area.regions.update()
+
+
+@persistent
 def update_load_file_post(scene):
     if bpy.context.scene.mathp_update_mat is True:
         bpy.ops.mathp.set_tmp_asset()
@@ -278,8 +318,8 @@ classes = (
     MATHP_OT_set_tmp_asset,
     MATHP_OT_clear_tmp_asset,
     MATHP_OT_set_true_asset,
-    MATHP_MT_delete_asset,
-    MATHP_MT_duplicate_asset,
+    MATHP_OT_delete_asset,
+    MATHP_OT_duplicate_asset,
     MATHP_OT_add_material,
 )
 
@@ -294,8 +334,12 @@ def register():
                                                     default=True,
                                                     description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
                                                     update=update_user_control)
+    bpy.types.Scene.mathp_update_active_obj_mats = BoolProperty(name='Select Active Object Materials',
+                                                                description="If checked, the active object's materials will be automatically selected",
+                                                                default=True)
     # handle
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
+    bpy.app.handlers.depsgraph_update_post.append(update_active_object_material)
     bpy.app.handlers.load_post.append(update_load_file_post)
     # ui
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
@@ -309,6 +353,7 @@ def unregister():
     unregister_icon()
     # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
+    bpy.app.handlers.depsgraph_update_post.remove(update_active_object_material)
     bpy.app.handlers.load_post.remove(update_load_file_post)
     del bpy.types.Scene.mathp_update_mat
     # ui
