@@ -1,7 +1,13 @@
 import bpy
 import rna_keymap_ui
 from .. import __ADDON_NAME__
-from bpy.props import EnumProperty, StringProperty, IntProperty
+from bpy.props import EnumProperty, StringProperty, IntProperty, BoolProperty, PointerProperty
+from bpy.types import PropertyGroup
+
+
+class WindowStyleProperty(PropertyGroup):
+    show_UI: BoolProperty(name='Show UI Panel')
+    UI_direction: EnumProperty(name='UI Panel Direction', items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')])
 
 
 class MATHP_Preference(bpy.types.AddonPreferences):
@@ -16,6 +22,8 @@ class MATHP_Preference(bpy.types.AddonPreferences):
         ('1', 'Big Window', ''),
         ('2', 'Small Window', ''),
     ], default='2')
+
+    small_window: PointerProperty(type=WindowStyleProperty)
 
     node_dis_x: IntProperty(name='Node Distance X', default=100, min=0, soft_max=200)
     node_dis_y: IntProperty(name='Node Distance Y', default=50, min=0, soft_max=100)
@@ -34,12 +42,24 @@ class MATHP_Preference(bpy.types.AddonPreferences):
     def draw_settings(self, context, layout):
         col = layout.column()
         col.use_property_split = True
-        row = col.row(align=True)
+
+        box = col.box()
+        box.label(text='Edit Material Asset', icon='MATERIAL')
+        row = box.row(align=True)
         row.prop(self, 'window_style', expand=True)
 
+        if self.window_style == '2':
+            w = self.small_window
+            subcol = box.column()
+            subcol.prop(w, 'show_UI')
+            subcol.prop(w, 'UI_direction')
+
         col.separator()
-        col.prop(self, 'node_dis_x', slider=True)
-        col.prop(self, 'node_dis_y', slider=True)
+
+        box = col.box()
+        box.label(text='Align Dependence', icon='NODETREE')
+        box.prop(self, 'node_dis_x', slider=True)
+        box.prop(self, 'node_dis_y', slider=True)
 
     def draw_keymap(self, context, layout):
         col = layout.box().column()
@@ -76,8 +96,10 @@ class MATHP_Preference(bpy.types.AddonPreferences):
 
 
 def register():
+    bpy.utils.register_class(WindowStyleProperty)
     bpy.utils.register_class(MATHP_Preference)
 
 
 def unregister():
     bpy.utils.unregister_class(MATHP_Preference)
+    bpy.utils.unregister_class(WindowStyleProperty)

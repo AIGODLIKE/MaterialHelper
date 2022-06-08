@@ -41,7 +41,7 @@ def window_style_1():
         pass
 
 
-def window_style_2(flip_header=True, hide_ui=True):
+def window_style_2(flip_header=True):
     """小面板
 
     :return:
@@ -55,13 +55,15 @@ def window_style_2(flip_header=True, hide_ui=True):
     area.ui_type = 'ShaderNodeTree'
     # area.spaces[0].node_tree = bpy.context.object.active_material.node_tree
     # 侧边栏
-    bpy.context.space_data.show_region_ui = False if hide_ui else True
+    bpy.context.space_data.show_region_ui = True if get_pref().small_window.show_UI else False
     # 翻转菜单栏
     for region in area.regions:
-        if region.type in {'TOOLS', 'UI'}:
-            override = {'area': area, 'region': region}
-
-            if flip_header: bpy.ops.screen.region_flip(override, 'INVOKE_DEFAULT')
+        override = {'area': area, 'region': region}
+        if region == 'UI':
+            if get_pref().small_window.UI_direction == 'LEFT':
+                bpy.ops.screen.region_flip(override, 'INVOKE_DEFAULT')
+        elif region == 'UI' and flip_header:
+            bpy.ops.screen.region_flip(override, 'INVOKE_DEFAULT')
 
             # 3.2
             # with bpy.context.temp_override(**override):

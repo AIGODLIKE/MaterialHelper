@@ -263,7 +263,6 @@ def update_tmp_asset(scene, depsgraph):
 
 @persistent
 def update_active_object_material(scene, depsgraph):
-    print('FINDING OBJECT!!!')
     if scene.mathp_update_mat is False:
         return
     elif scene.mathp_update_active_obj_mats is False:
@@ -274,7 +273,6 @@ def update_active_object_material(scene, depsgraph):
         return
     elif len(bpy.context.object.material_slots) == 0:
         return
-    print("FINDING AREA!!!")
     # 获取面板
     asset_area = None
     for area in bpy.context.window.screen.areas:
