@@ -6,6 +6,10 @@ from bpy.types import GizmoGroup
 
 from ..prefs.get_pref import get_pref
 
+G_WINDOW_COUNT = None  # 使用handle检测窗口数量
+G_NEW_WINDOW = False  # 用于减少handle消耗
+G_UPDATE = False  # 更新保护
+
 
 def get_local_selected_assets(context):
     """获取选择的本地资产
@@ -24,8 +28,14 @@ def window_style_1():
 
     :return:
     """
-
+    global G_WINDOW_COUNT, G_NEW_WINDOW
     bpy.ops.wm.window_new()  # 使用新窗口
+
+    G_WINDOW_COUNT = len(bpy.context.window_manager.windows)
+    G_NEW_WINDOW = True
+
+    screen = bpy.context.window_manager.windows[-1].screen
+    screen.name = 'mathp'
 
     area_shader = bpy.context.window_manager.windows[-1].screen.areas[0]
     # 拆分 拆分区域大的是原面板
@@ -35,10 +45,15 @@ def window_style_1():
     area_shader.type = 'NODE_EDITOR'
     area_shader.ui_type = 'ShaderNodeTree'
 
+    # 窗口设置
     area_3d.type = 'VIEW_3D'
-    area_3d.spaces[0].overlay.show_overlays = False
-    area_3d.spaces[0].show_gizmo = False
-    area_3d.spaces[0].region_3d.view_perspective = 'PERSP'
+    space = area_3d.spaces[0]
+    space.overlay.show_overlays = False
+    space.show_gizmo = False
+    space.region_3d.view_perspective = 'PERSP'
+    space.shading.type = 'RENDERED'
+    space.shading.use_scene_world_render = False
+    space.show_region_header = False
 
     # solo
     override = {'area': area_3d}
@@ -140,7 +155,8 @@ class MATHP_OT_edit_material_asset(Operator):
             self._return(msg='请选择一个材质资产', type='WARNING')
 
         # 创建
-
+        global G_UPDATE
+        G_UPDATE = True
         # 集合
         tmp_coll = bpy.data.collections[
             'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
@@ -178,6 +194,8 @@ class MATHP_OT_edit_material_asset(Operator):
         w.cursor_warp(int(w_center_x), int(w_center_y))
         # 弹窗
         pop_up_window(style=get_pref().window_style)
+
+        G_UPDATE = False
 
         return {'FINISHED'}
 
@@ -235,13 +253,38 @@ class MATHP_UI_update_mat_pv(GizmoGroup):
         self.foo_gizmo = gz
 
 
+from bpy.app.handlers import persistent
+
+
+@persistent
+def del_tmp_obj(scene, depsgraph):
+    global G_WINDOW_COUNT, G_UPDATE, G_NEW_WINDOW
+
+    if G_NEW_WINDOW is False: return
+    if G_UPDATE: return
+    if G_WINDOW_COUNT is None: return
+
+    if G_WINDOW_COUNT > len(bpy.context.window_manager.windows):
+        if 'tmp_mathp' in bpy.data.objects:
+            G_UPDATE = True
+
+            bpy.data.objects.remove(bpy.data.objects['tmp_mathp'])
+            bpy.data.collections.remove(bpy.data.collections['tmp_mathp'])
+
+            G_UPDATE = False
+
+            G_NEW_WINDOW = False
+
+
 def register():
     bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)
     bpy.utils.register_class(MATHP_UI_update_mat_pv)
+    bpy.app.handlers.depsgraph_update_post.append(del_tmp_obj)
 
 
 def unregister():
+    bpy.app.handlers.depsgraph_update_post.remove(del_tmp_obj)
     bpy.utils.unregister_class(MATHP_OT_edit_material_asset)
     bpy.utils.unregister_class(MATHP_OT_update_mat_pv)
     bpy.utils.unregister_class(MATHP_UI_update_mat_pv)
