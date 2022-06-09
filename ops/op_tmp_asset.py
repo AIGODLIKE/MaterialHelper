@@ -155,7 +155,8 @@ def unregister_icon():
 
     G_MAT_ICON_ID.clear()
 
-    for pcoll in G_PV_COLL.values():
+    values = tuple(G_PV_COLL.values())
+    for pcoll in values :
         previews.remove(pcoll)
         G_PV_COLL.clear()
 

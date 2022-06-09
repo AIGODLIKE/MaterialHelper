@@ -35,7 +35,7 @@ def window_style_1():
     G_NEW_WINDOW = True
 
     screen = bpy.context.window_manager.windows[-1].screen
-    screen.name = 'mathp'
+    screen.name = 'tmp_mathp'
 
     area_shader = bpy.context.window_manager.windows[-1].screen.areas[0]
     # 拆分 拆分区域大的是原面板
@@ -260,16 +260,21 @@ from bpy.app.handlers import persistent
 def del_tmp_obj(scene, depsgraph):
     global G_WINDOW_COUNT, G_UPDATE, G_NEW_WINDOW
 
-    if G_NEW_WINDOW is False: return
-    if G_UPDATE: return
-    if G_WINDOW_COUNT is None: return
+    if (G_NEW_WINDOW is False) or (
+            G_UPDATE is True) or (
+            G_WINDOW_COUNT is None): return
 
     if G_WINDOW_COUNT > len(bpy.context.window_manager.windows):
         if 'tmp_mathp' in bpy.data.objects:
             G_UPDATE = True
-
+            # 清理临时物体
             bpy.data.objects.remove(bpy.data.objects['tmp_mathp'])
             bpy.data.collections.remove(bpy.data.collections['tmp_mathp'])
+
+            # 清理多余screen
+            for s in bpy.data.screen:
+                if s.name.startswith('tmp_mathp'):
+                    s.user_clear()
 
             G_UPDATE = False
 
