@@ -1,4 +1,5 @@
 import bpy
+import bmesh
 from bpy.types import Operator
 from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty, BoolProperty)
 from bpy.types import GizmoGroup
@@ -23,22 +24,32 @@ def window_style_1():
 
     :return:
     """
+
     bpy.ops.wm.window_new()  # 使用新窗口
 
     area_shader = bpy.context.window_manager.windows[-1].screen.areas[0]
     # 拆分 拆分区域大的是原面板
-    bpy.ops.screen.area_split(direction='VERTICAL', factor=0.15)
-    area_props = bpy.context.window_manager.windows[-1].screen.areas[-1]
+    bpy.ops.screen.area_split(direction='VERTICAL', factor=0.25)
+    area_3d = bpy.context.window_manager.windows[-1].screen.areas[-1]
     # 更改窗口类型
     area_shader.type = 'NODE_EDITOR'
     area_shader.ui_type = 'ShaderNodeTree'
 
-    area_props.type = 'PROPERTIES'
-    # 等待blender修复
-    try:
-        area_props.spaces[0].context = "MATERIAL"
-    except Exception:
-        pass
+    area_3d.type = 'VIEW_3D'
+    area_3d.spaces[0].overlay.show_overlays = False
+    area_3d.spaces[0].show_gizmo = False
+    area_3d.spaces[0].region_3d.view_perspective = 'PERSP'
+
+    # solo
+    override = {'area': area_3d}
+    bpy.ops.view3d.localview(override, 'INVOKE_DEFAULT')
+
+    # 前视图
+    for region in area_3d.regions:
+        if region.type == 'WINDOW':
+            override = {'area': area_3d, 'region': region}
+            bpy.ops.view3d.view_axis(override, type='FRONT', align_active=True)
+            break
 
 
 def window_style_2(flip_header=True):
@@ -128,24 +139,37 @@ class MATHP_OT_edit_material_asset(Operator):
         if len(selected_mat) == 0:
             self._return(msg='请选择一个材质资产', type='WARNING')
 
-        # 创建集合
+        # 创建
+
+        # 集合
         tmp_coll = bpy.data.collections[
             'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
             'tmp_mathp')
         if 'tmp_mathp' not in context.scene.collection.children:
             context.scene.collection.children.link(tmp_coll)
-        # 创建物体
+        # 物体
         tmp_mesh = bpy.data.meshes['tmp_mathp'] if 'tmp_mathp' in bpy.data.meshes else bpy.data.meshes.new(
             'tmp_mathp')
         tmp_mesh.from_pydata([], [], [])
         tmp_mesh.update()
 
+        # 创建网格
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=1, calc_uvs=True)
+        bm.to_mesh(tmp_mesh)
+        bm.free()
+        # 关联
         tmp_obj = bpy.data.objects['tmp_mathp'] if 'tmp_mathp' in bpy.data.objects else bpy.data.objects.new(
             'tmp_mathp', tmp_mesh)
         if 'tmp_mathp' not in tmp_coll.objects:
             tmp_coll.objects.link(tmp_obj)
+
         # 设置激活项和材质
         context.view_layer.objects.active = tmp_obj
+        bpy.context.object.select_set(True)
+        bpy.ops.object.shade_smooth()
+
+        tmp_obj.select_set(True)
         tmp_obj.active_material = selected_mat[0]
 
         # 设置鼠标位置，以便弹窗出现在正中央
