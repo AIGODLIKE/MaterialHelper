@@ -58,8 +58,9 @@ class MATHP_OT_clear_tmp_asset(Operator):
 
 
 class MATHP_OT_set_true_asset(selectedAsset, Operator):
+    """Apply Selected as True Assets"""
     bl_idname = 'mathp.set_true_asset'
-    bl_label = 'Apply Selected as True Assets'
+    bl_label = 'Apply'
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(self, event)
@@ -80,6 +81,7 @@ class MATHP_OT_set_true_asset(selectedAsset, Operator):
 
 
 class MATHP_OT_delete_asset(selectedAsset, Operator):
+    """Delete Selected Materials"""
     bl_idname = 'mathp.delete_asset'
     bl_label = 'Delete'
     bl_options = {'UNDO'}
@@ -100,6 +102,7 @@ class MATHP_OT_delete_asset(selectedAsset, Operator):
 
 
 class MATHP_OT_duplicate_asset(selectedAsset, Operator):
+    """Duplicate Active Item"""
     bl_idname = 'mathp.duplicate_asset'
     bl_label = 'Duplicate'
     bl_options = {'UNDO'}
@@ -117,6 +120,32 @@ class MATHP_OT_duplicate_asset(selectedAsset, Operator):
         for mat in selected_mats:
             context.space_data.activate_asset_by_id(mat)
 
+        return {'FINISHED'}
+
+
+class MATHP_OT_rename_asset(selectedAsset, Operator):
+    """Rename Active Item"""
+    bl_idname = 'mathp.rename_asset'
+    bl_label = 'Rename'
+    bl_options = {'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_file and isinstance(context.active_file, bpy.types.Material)
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_popup(self)
+
+    def draw(self, context):
+        active = context.active_file
+
+        layout = self.layout
+        layout.separator()
+        layout.label(text='Material Name')
+        layout.prop(active, 'name', icon='MATERIAL', text='')
+        layout.separator()
+
+    def execute(self, context):
         return {'FINISHED'}
 
 
@@ -154,6 +183,7 @@ def unregister_icon():
 
 
 class MATHP_OT_add_material(Operator):
+    """Add Material"""
     bl_idname = 'mathp.add_material'
     bl_label = 'Add Material'
     bl_options = {'REGISTER', 'UNDO'}
@@ -230,7 +260,13 @@ class MATHP_MT_asset_browser_menu(Menu):
         layout.prop(context.scene, 'mathp_update_mat')
         layout.prop(context.scene, 'mathp_update_active_obj_mats')
         layout.separator()
+
         layout.operator('mathp.add_material', icon='ADD')
+        layout.operator('mathp.duplicate_asset')
+        layout.operator('mathp.rename_asset')
+        layout.operator('mathp.delete_asset')
+        layout.separator()
+
         layout.operator('mathp.set_true_asset', icon='ASSET_MANAGER')
 
 
@@ -311,6 +347,7 @@ classes = (
     MATHP_OT_set_true_asset,
     MATHP_OT_delete_asset,
     MATHP_OT_duplicate_asset,
+    MATHP_OT_rename_asset,
     MATHP_OT_add_material,
 )
 

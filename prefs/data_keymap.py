@@ -22,6 +22,10 @@ def register():
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
     kmi = km.keymap_items.new("mathp.duplicate_asset", 'D', 'PRESS', ctrl=False, shift=True)
     addon_keymaps.append((km, kmi))
+    # 重命名资产
+    km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
+    kmi = km.keymap_items.new("mathp.rename_asset", 'F2', 'PRESS', ctrl=False, shift=False)
+    addon_keymaps.append((km, kmi))
     # 添加资产
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
     kmi = km.keymap_items.new("mathp.add_material", 'A', 'PRESS', ctrl=False, shift=True)

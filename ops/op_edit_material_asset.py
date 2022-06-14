@@ -286,16 +286,20 @@ def del_tmp_obj(scene, depsgraph):
             G_WINDOW_COUNT is None): return
 
     if G_WINDOW_COUNT > len(bpy.context.window_manager.windows):
-        if 'tmp_mathp' in bpy.data.collections:
-            G_UPDATE = True
+        G_UPDATE = True
+
+        coll = bpy.data.collections.get('tmp_mathp')
+
+        if coll:
             # 清理临时物体
             for obj in bpy.data.collections['tmp_mathp'].objects:
                 me = obj.data
-                bpy.data.meshes.remove(me)
                 bpy.data.objects.remove(obj)
+                bpy.data.meshes.remove(me)
 
-            bpy.data.collections.remove(bpy.data.collections['tmp_mathp'])
+            bpy.data.collections.remove(coll)
 
+        if 'tmp_mathp' in bpy.data.screens:
             # 清理多余screen
             for s in bpy.data.screens:
                 if not s.name.startswith('tmp_mathp'): continue
@@ -312,9 +316,8 @@ def del_tmp_obj(scene, depsgraph):
                                 bpy.ops.view3d.localview(override)
                                 break
 
-            G_UPDATE = False
-
-            G_NEW_WINDOW = False
+        G_UPDATE = False
+        G_NEW_WINDOW = False
 
 
 def register():
