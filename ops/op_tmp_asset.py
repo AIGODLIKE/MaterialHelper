@@ -5,21 +5,13 @@ from bpy.types import Operator, Menu
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from pathlib import Path
 
-from .op_edit_material_asset import get_local_selected_assets
+from .op_edit_material_asset import get_local_selected_assets, tag_redraw
 
 from bpy.utils import previews
 
 C_TMP_ASSET_TAG = 'tmp_asset_mathp'
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
 G_ACTIVE_MATS_LIST = []  # 选中材质列表
-
-
-def tag_redraw():
-    '''Redraw every region in Blender.'''
-    for window in bpy.context.window_manager.windows:
-        for area in window.screen.areas:
-            for region in area.regions:
-                region.tag_redraw()
 
 
 class selectedAsset:
@@ -156,7 +148,7 @@ def unregister_icon():
     G_MAT_ICON_ID.clear()
 
     values = tuple(G_PV_COLL.values())
-    for pcoll in values :
+    for pcoll in values:
         previews.remove(pcoll)
         G_PV_COLL.clear()
 

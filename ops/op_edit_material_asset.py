@@ -1,5 +1,9 @@
 import bpy
 import bmesh
+import mathutils
+
+from pathlib import Path
+
 from bpy.types import Operator
 from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty, BoolProperty)
 from bpy.types import GizmoGroup
@@ -10,6 +14,12 @@ G_WINDOW_COUNT = None  # 使用handle检测窗口数量
 G_NEW_WINDOW = False  # 用于减少handle消耗
 G_UPDATE = False  # 更新保护
 
+def tag_redraw():
+    '''Redraw every region in Blender.'''
+    for window in bpy.context.window_manager.windows:
+        for area in window.screen.areas:
+            for region in area.regions:
+                region.tag_redraw()
 
 def get_local_selected_assets(context):
     """获取选择的本地资产
@@ -51,20 +61,24 @@ def window_style_1():
     space.overlay.show_overlays = False
     space.show_gizmo = False
     space.region_3d.view_perspective = 'PERSP'
+
     space.shading.type = 'RENDERED'
+    space.lock_object = bpy.context.object  # 锁定物体
     space.shading.use_scene_world_render = False
-    space.show_region_header = False
+    space.shading.use_scene_lights_render = False
+    space.shading.studio_light = 'city.exr'
+
+    # set view
+    space.region_3d.view_rotation = (0.62, 0.38, 0.35, 0.58)
+    space.region_3d.view_location = (0.16, 0, 0.16)
 
     # solo
     override = {'area': area_3d}
     bpy.ops.view3d.localview(override, 'INVOKE_DEFAULT')
+    # header
+    space.show_region_header = False
+    space.shading.studio_light = 'forest.exr'
 
-    # 前视图
-    for region in area_3d.regions:
-        if region.type == 'WINDOW':
-            override = {'area': area_3d, 'region': region}
-            bpy.ops.view3d.view_axis(override, type='FRONT', align_active=True)
-            break
 
 
 def window_style_2(flip_header=True):
@@ -163,25 +177,24 @@ class MATHP_OT_edit_material_asset(Operator):
             'tmp_mathp')
         if 'tmp_mathp' not in context.scene.collection.children:
             context.scene.collection.children.link(tmp_coll)
-        # 物体
-        tmp_mesh = bpy.data.meshes['tmp_mathp'] if 'tmp_mathp' in bpy.data.meshes else bpy.data.meshes.new(
-            'tmp_mathp')
-        tmp_mesh.from_pydata([], [], [])
-        tmp_mesh.update()
 
-        # 创建网格
-        bm = bmesh.new()
-        bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=1, calc_uvs=True)
-        bm.to_mesh(tmp_mesh)
-        bm.free()
-        # 关联
-        tmp_obj = bpy.data.objects['tmp_mathp'] if 'tmp_mathp' in bpy.data.objects else bpy.data.objects.new(
-            'tmp_mathp', tmp_mesh)
-        if 'tmp_mathp' not in tmp_coll.objects:
-            tmp_coll.objects.link(tmp_obj)
+        # 获取设置
+        mat_pv_type = selected_mat[0].preview_render_type
+
+        shader_ball_lib = Path(__file__).parent.parent.joinpath('shader_ball_lib')
+        blend_file = shader_ball_lib.joinpath('shader_ball.blend')
+
+        with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
+            data_to.objects = [mat_pv_type]
+
+        tmp_obj = data_to.objects[0]
+
+        tmp_coll.objects.link(tmp_obj)
 
         # 设置激活项和材质
         context.view_layer.objects.active = tmp_obj
+
+        bpy.ops.object.select_all(action='DESELECT')
         bpy.context.object.select_set(True)
         bpy.ops.object.shade_smooth()
 
@@ -265,14 +278,16 @@ def del_tmp_obj(scene, depsgraph):
             G_WINDOW_COUNT is None): return
 
     if G_WINDOW_COUNT > len(bpy.context.window_manager.windows):
-        if 'tmp_mathp' in bpy.data.objects:
+        if 'tmp_mathp' in bpy.data.collections:
             G_UPDATE = True
             # 清理临时物体
-            bpy.data.objects.remove(bpy.data.objects['tmp_mathp'])
+            for obj in bpy.data.collections['tmp_mathp'].objects:
+                bpy.data.objects.remove(obj)
+
             bpy.data.collections.remove(bpy.data.collections['tmp_mathp'])
 
             # 清理多余screen
-            for s in bpy.data.screen:
+            for s in bpy.data.screens:
                 if s.name.startswith('tmp_mathp'):
                     s.user_clear()
 
