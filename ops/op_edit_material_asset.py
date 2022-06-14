@@ -14,12 +14,14 @@ G_WINDOW_COUNT = None  # 使用handle检测窗口数量
 G_NEW_WINDOW = False  # 用于减少handle消耗
 G_UPDATE = False  # 更新保护
 
+
 def tag_redraw():
     '''Redraw every region in Blender.'''
     for window in bpy.context.window_manager.windows:
         for area in window.screen.areas:
             for region in area.regions:
                 region.tag_redraw()
+
 
 def get_local_selected_assets(context):
     """获取选择的本地资产
@@ -62,7 +64,9 @@ def window_style_1():
     space.show_gizmo = False
     space.region_3d.view_perspective = 'PERSP'
 
-    space.shading.type = 'RENDERED'
+    shading_type = get_pref().big_window.shading_type
+
+    space.shading.type = shading_type
     space.lock_object = bpy.context.object  # 锁定物体
     space.shading.use_scene_world_render = False
     space.shading.use_scene_lights_render = False
@@ -80,7 +84,6 @@ def window_style_1():
     space.shading.studio_light = 'forest.exr'
 
 
-
 def window_style_2(flip_header=True):
     """小面板
 
@@ -90,7 +93,10 @@ def window_style_2(flip_header=True):
     # bpy.ops.render.view_show('INVOKE_AREA')
     bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
 
-    area = bpy.context.window_manager.windows[-1].screen.areas[0]
+    screen = bpy.context.window_manager.windows[-1].screen
+    screen.name = 'tmp_mathp'
+
+    area = screen.areas[0]
     area.type = 'NODE_EDITOR'
     area.ui_type = 'ShaderNodeTree'
     # area.spaces[0].node_tree = bpy.context.object.active_material.node_tree
@@ -179,7 +185,9 @@ class MATHP_OT_edit_material_asset(Operator):
             context.scene.collection.children.link(tmp_coll)
 
         # 获取设置
-        mat_pv_type = selected_mat[0].preview_render_type
+        mat_pv_type = get_pref().big_window.shader_ball
+        if mat_pv_type == 'NONE':
+            mat_pv_type = selected_mat[0].preview_render_type
 
         shader_ball_lib = Path(__file__).parent.parent.joinpath('shader_ball_lib')
         blend_file = shader_ball_lib.joinpath('shader_ball.blend')
@@ -282,14 +290,27 @@ def del_tmp_obj(scene, depsgraph):
             G_UPDATE = True
             # 清理临时物体
             for obj in bpy.data.collections['tmp_mathp'].objects:
+                me = obj.data
+                bpy.data.meshes.remove(me)
                 bpy.data.objects.remove(obj)
 
             bpy.data.collections.remove(bpy.data.collections['tmp_mathp'])
 
             # 清理多余screen
             for s in bpy.data.screens:
-                if s.name.startswith('tmp_mathp'):
-                    s.user_clear()
+                if not s.name.startswith('tmp_mathp'): continue
+                # 清除屏幕
+                s.user_clear()
+                # 清除局部视图
+                for area in s.areas:
+                    if area.type != 'VIEW_3D': continue
+
+                    if area.spaces[0].local_view is not None:
+                        for region in area.regions:
+                            if region.type == 'WINDOW':
+                                override = {'area': area, 'region': region}  # override context
+                                bpy.ops.view3d.localview(override)
+                                break
 
             G_UPDATE = False
 

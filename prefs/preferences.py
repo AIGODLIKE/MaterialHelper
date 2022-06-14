@@ -10,6 +10,27 @@ class WindowStyleProperty(PropertyGroup):
     UI_direction: EnumProperty(name='UI Panel Direction', items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')])
 
 
+class WindowStyleProperty2(PropertyGroup):
+    shader_ball: EnumProperty(name='Shader Ball',
+                              items=[
+                                  ('NONE', 'Follow Material', ''),
+                                  ('FLAT', 'Flat', ''),
+                                  ('SPHERE', 'Sphere', ''),
+                                  ('CUBE', 'Cube', ''),
+                                  ('HAIR', 'Hair', ''),
+                                  ('SHADERBALL', 'Shader Ball', ''),
+                                  ('CLOTH', 'Cloth', ''),
+                                  ('FLUID', 'Fluid', ''),
+                              ],
+                              default='NONE')
+    shading_type: EnumProperty(name='Shading',
+                               items=[
+                                   ('SOLID', 'Solid', ''),
+                                   ('MATERIAL', 'Material', '', 'SHADING_SOLID', 1),
+                                   ('RENDERED', 'Rendered', '', 'SHADING_RENDERED', 2),
+                               ], default='MATERIAL')
+
+
 class MATHP_Preference(bpy.types.AddonPreferences):
     bl_idname = __ADDON_NAME__
 
@@ -21,9 +42,11 @@ class MATHP_Preference(bpy.types.AddonPreferences):
     window_style: EnumProperty(name='Material Window', items=[
         ('1', 'Big Window', ''),
         ('2', 'Small Window', ''),
-    ], default='2')
+    ], default='1')
 
     small_window: PointerProperty(type=WindowStyleProperty)
+
+    big_window: PointerProperty(type=WindowStyleProperty2)
 
     node_dis_x: IntProperty(name='Node Distance X', default=100, min=0, soft_max=200)
     node_dis_y: IntProperty(name='Node Distance Y', default=50, min=0, soft_max=100)
@@ -48,7 +71,14 @@ class MATHP_Preference(bpy.types.AddonPreferences):
         row = box.row(align=True)
         row.prop(self, 'window_style', expand=True)
 
-        if self.window_style == '2':
+        if self.window_style == '1':
+            w = self.big_window
+            subcol = box.column()
+            subcol.prop(w, 'shader_ball')
+            subrow = subcol.row(align=True)
+            subrow.prop(w, 'shading_type', expand=True)
+
+        elif self.window_style == '2':
             w = self.small_window
             subcol = box.column()
             subcol.prop(w, 'show_UI')
@@ -97,9 +127,11 @@ class MATHP_Preference(bpy.types.AddonPreferences):
 
 def register():
     bpy.utils.register_class(WindowStyleProperty)
+    bpy.utils.register_class(WindowStyleProperty2)
     bpy.utils.register_class(MATHP_Preference)
 
 
 def unregister():
     bpy.utils.unregister_class(MATHP_Preference)
     bpy.utils.unregister_class(WindowStyleProperty)
+    bpy.utils.unregister_class(WindowStyleProperty2)
