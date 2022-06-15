@@ -5,12 +5,28 @@ from bpy.props import EnumProperty, StringProperty, IntProperty, BoolProperty, P
 from bpy.types import PropertyGroup
 
 
-class WindowStyleProperty(PropertyGroup):
+class MATHP_Preference(bpy.types.AddonPreferences):
+    bl_idname = __ADDON_NAME__
+
+    ui: EnumProperty(name='UI', items=[
+        ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
+        ('KEYMAP', 'Keymap', '', 'KEYINGSET', 1),
+    ], default='SETTINGS')
+
+    window_style: EnumProperty(name='Material Window', items=[
+        ('1', 'Big Window', ''),
+        ('2', 'Small Window', ''),
+    ], default='1')
+
+    # small_window
     show_UI: BoolProperty(name='Show UI Panel')
-    UI_direction: EnumProperty(name='UI Panel Direction', items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')])
+    UI_direction: EnumProperty(name='UI Panel Direction', items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')],
+                               default='RIGHT')
+    use_shader_ball_pv: BoolProperty(name='Realtime Preview', default=True)
 
+    # big_window
 
-class WindowStyleProperty2(PropertyGroup):
+    # general window setting
     shader_ball: EnumProperty(name='Shader Ball',
                               items=[
                                   ('NONE', 'Follow Material', ''),
@@ -30,24 +46,7 @@ class WindowStyleProperty2(PropertyGroup):
                                    ('RENDERED', 'Rendered', '', 'SHADING_RENDERED', 2),
                                ], default='MATERIAL')
 
-
-class MATHP_Preference(bpy.types.AddonPreferences):
-    bl_idname = __ADDON_NAME__
-
-    ui: EnumProperty(name='UI', items=[
-        ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
-        ('KEYMAP', 'Keymap', '', 'KEYINGSET', 1),
-    ], default='SETTINGS')
-
-    window_style: EnumProperty(name='Material Window', items=[
-        ('1', 'Big Window', ''),
-        ('2', 'Small Window', ''),
-    ], default='1')
-
-    small_window: PointerProperty(type=WindowStyleProperty)
-
-    big_window: PointerProperty(type=WindowStyleProperty2)
-
+    # align
     node_dis_x: IntProperty(name='Node Distance X', default=100, min=0, soft_max=200)
     node_dis_y: IntProperty(name='Node Distance Y', default=50, min=0, soft_max=100)
 
@@ -72,17 +71,23 @@ class MATHP_Preference(bpy.types.AddonPreferences):
         row.prop(self, 'window_style', expand=True)
 
         if self.window_style == '1':
-            w = self.big_window
             subcol = box.column()
-            subcol.prop(w, 'shader_ball')
+            subcol.prop(self, 'shader_ball')
             subrow = subcol.row(align=True)
-            subrow.prop(w, 'shading_type', expand=True)
+            subrow.prop(self, 'shading_type', expand=True)
 
         elif self.window_style == '2':
-            w = self.small_window
             subcol = box.column()
-            subcol.prop(w, 'show_UI')
-            subcol.prop(w, 'UI_direction')
+            subcol.prop(self, 'show_UI')
+            subcol.prop(self, 'UI_direction')
+
+            subcol = box.column()
+            subcol.prop(self, 'use_shader_ball_pv')
+            if self.use_shader_ball_pv:
+                subcol = box.column()
+                subcol.prop(self, 'shader_ball')
+                subrow = subcol.row(align=True)
+                subrow.prop(self, 'shading_type', expand=True)
 
         col.separator()
 
@@ -126,12 +131,8 @@ class MATHP_Preference(bpy.types.AddonPreferences):
 
 
 def register():
-    bpy.utils.register_class(WindowStyleProperty)
-    bpy.utils.register_class(WindowStyleProperty2)
     bpy.utils.register_class(MATHP_Preference)
 
 
 def unregister():
     bpy.utils.unregister_class(MATHP_Preference)
-    bpy.utils.unregister_class(WindowStyleProperty)
-    bpy.utils.unregister_class(WindowStyleProperty2)

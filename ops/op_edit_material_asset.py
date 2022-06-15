@@ -35,16 +35,13 @@ def get_local_selected_assets(context):
     return match_obj
 
 
-def window_style_1():
-    """大窗口,左属性面板右节点面板
+def split_shader_3d_area():
+    """用于切分设置实时预览area
 
     :return:
     """
-    global G_WINDOW_COUNT, G_NEW_WINDOW
-    bpy.ops.wm.window_new()  # 使用新窗口
-
-    G_WINDOW_COUNT = len(bpy.context.window_manager.windows)
-    G_NEW_WINDOW = True
+    screen = bpy.context.window_manager.windows[-1].screen
+    screen.name = 'tmp_mathp'
 
     screen = bpy.context.window_manager.windows[-1].screen
     screen.name = 'tmp_mathp'
@@ -64,7 +61,7 @@ def window_style_1():
     space.show_gizmo = False
     space.region_3d.view_perspective = 'PERSP'
 
-    shading_type = get_pref().big_window.shading_type
+    shading_type = get_pref().shading_type
 
     space.shading.type = shading_type
     space.lock_object = bpy.context.object  # 锁定物体
@@ -83,6 +80,22 @@ def window_style_1():
     space.show_region_header = False
     space.shading.studio_light = 'forest.exr'
 
+    return area_shader, area_3d
+
+
+def window_style_1():
+    """大窗口,左属性面板右节点面板
+
+    :return:
+    """
+    global G_WINDOW_COUNT, G_NEW_WINDOW
+    bpy.ops.wm.window_new()  # 使用新窗口
+
+    G_WINDOW_COUNT = len(bpy.context.window_manager.windows)
+    G_NEW_WINDOW = True
+
+    split_shader_3d_area()
+
 
 def window_style_2(flip_header=True):
     """小面板
@@ -93,20 +106,23 @@ def window_style_2(flip_header=True):
     # bpy.ops.render.view_show('INVOKE_AREA')
     bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
 
-    screen = bpy.context.window_manager.windows[-1].screen
-    screen.name = 'tmp_mathp'
+    if get_pref().use_shader_ball_pv:
+        area_3d, area_shader = split_shader_3d_area()
+    else:
+        screen = bpy.context.window_manager.windows[-1].screen
+        screen.name = 'tmp_mathp'
 
-    area = screen.areas[0]
-    area.type = 'NODE_EDITOR'
-    area.ui_type = 'ShaderNodeTree'
-    # area.spaces[0].node_tree = bpy.context.object.active_material.node_tree
+        area_shader = screen.areas[0]
+        area_shader.type = 'NODE_EDITOR'
+        area_shader.ui_type = 'ShaderNodeTree'
+
     # 侧边栏
-    bpy.context.space_data.show_region_ui = True if get_pref().small_window.show_UI else False
+    bpy.context.space_data.show_region_ui = True if get_pref().show_UI else False
     # 翻转菜单栏
-    for region in area.regions:
-        override = {'area': area, 'region': region}
+    for region in area_shader.regions:
+        override = {'area': area_shader, 'region': region}
         if region == 'UI':
-            if get_pref().small_window.UI_direction == 'LEFT':
+            if get_pref().UI_direction == 'LEFT':
                 bpy.ops.screen.region_flip(override, 'INVOKE_DEFAULT')
         elif region == 'UI' and flip_header:
             bpy.ops.screen.region_flip(override, 'INVOKE_DEFAULT')
@@ -130,6 +146,39 @@ def pop_up_window(style='2'):
         window_style_1()
     else:
         window_style_2()
+
+
+def set_shader_ball_mat(mat, coll):
+    """导入并设置材质球模型/材质
+
+    :param mat: bpy.types.Material
+    :param coll: bpy.types.Collection
+    :return:
+    """
+    # 获取设置
+    mat_pv_type = get_pref().shader_ball
+    if mat_pv_type == 'NONE':
+        mat_pv_type = mat.mathp_preview_render_type
+
+    shader_ball_lib = Path(__file__).parent.parent.joinpath('shader_ball_lib')
+    blend_file = shader_ball_lib.joinpath('shader_ball.blend')
+
+    with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
+        data_to.objects = [mat_pv_type]
+
+    tmp_obj = data_to.objects[0]
+
+    coll.objects.link(tmp_obj)
+
+    # 设置激活项和材质
+    bpy.context.view_layer.objects.active = tmp_obj
+
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.object.select_set(True)
+    bpy.ops.object.shade_smooth()
+
+    tmp_obj.select_set(True)
+    tmp_obj.active_material = mat
 
 
 class MATHP_OT_edit_material_asset(Operator):
@@ -184,30 +233,8 @@ class MATHP_OT_edit_material_asset(Operator):
         if 'tmp_mathp' not in context.scene.collection.children:
             context.scene.collection.children.link(tmp_coll)
 
-        # 获取设置
-        mat_pv_type = get_pref().big_window.shader_ball
-        if mat_pv_type == 'NONE':
-            mat_pv_type = selected_mat[0].preview_render_type
-
-        shader_ball_lib = Path(__file__).parent.parent.joinpath('shader_ball_lib')
-        blend_file = shader_ball_lib.joinpath('shader_ball.blend')
-
-        with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
-            data_to.objects = [mat_pv_type]
-
-        tmp_obj = data_to.objects[0]
-
-        tmp_coll.objects.link(tmp_obj)
-
-        # 设置激活项和材质
-        context.view_layer.objects.active = tmp_obj
-
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.context.object.select_set(True)
-        bpy.ops.object.shade_smooth()
-
-        tmp_obj.select_set(True)
-        tmp_obj.active_material = selected_mat[0]
+        # 设置材质球/材质
+        set_shader_ball_mat(selected_mat[0], tmp_coll)
 
         # 设置鼠标位置，以便弹窗出现在正中央
         w = context.window
@@ -320,10 +347,41 @@ def del_tmp_obj(scene, depsgraph):
         G_NEW_WINDOW = False
 
 
+def update_shader_ball(self, context):
+    coll = bpy.data.collections.get('tmp_mathp')
+
+    if not coll: return
+
+    mat = self.id_data
+
+    for obj in bpy.data.collections['tmp_mathp'].objects:
+        me = obj.data
+        bpy.data.objects.remove(obj)
+        bpy.data.meshes.remove(me)
+
+    set_shader_ball_mat(mat, coll)
+
+    for a in context.window.screen.areas:
+        if a.type == 'VIEW_3D':
+            a.spaces[0].lock_object = bpy.context.object
+
+
 def register():
+    bpy.types.Material.mathp_preview_render_type = EnumProperty(name='Shader Ball',
+                                                                items=[
+                                                                    ('FLAT', 'Flat', '', 'MATPLANE', 0),
+                                                                    ('SPHERE', 'Sphere', '', 'MATSPHERE', 1),
+                                                                    ('CUBE', 'Cube', '', 'MATCUBE', 2),
+                                                                    ('HAIR', 'Hair', '', 'CURVES', 3),
+                                                                    ('SHADERBALL', 'Shader Ball', '', 'MATSHADERBALL',
+                                                                     4),
+                                                                    ('CLOTH', 'Cloth', '', 'MATCLOTH', 5),
+                                                                    ('FLUID', 'Fluid', '', 'MATFLUID', 6),
+                                                                ], default='SPHERE', update=update_shader_ball)
+
     bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)
-    bpy.utils.register_class(MATHP_UI_update_mat_pv)
+    # bpy.utils.register_class(MATHP_UI_update_mat_pv)
     bpy.app.handlers.depsgraph_update_post.append(del_tmp_obj)
 
 
@@ -331,4 +389,6 @@ def unregister():
     bpy.app.handlers.depsgraph_update_post.remove(del_tmp_obj)
     bpy.utils.unregister_class(MATHP_OT_edit_material_asset)
     bpy.utils.unregister_class(MATHP_OT_update_mat_pv)
-    bpy.utils.unregister_class(MATHP_UI_update_mat_pv)
+    # bpy.utils.unregister_class(MATHP_UI_update_mat_pv)
+
+    del bpy.types.Material.mathp_preview_render_type

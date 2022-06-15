@@ -12,13 +12,15 @@ class MATHP_PT_NodePanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return get_pref().window_style == '2'
+        return len(context.window_manager.windows) > 1 and context.window == context.window_manager.windows[-1]
 
     def draw(self, context):
         layout = self.layout
         layout.template_ID_preview(context.object, 'active_material',
                                    hide_buttons=True,
                                    rows=5, cols=5)
+        row = layout.row(align=True)
+        row.prop(context.object.active_material, 'mathp_preview_render_type', expand=True)
 
 
 def register():

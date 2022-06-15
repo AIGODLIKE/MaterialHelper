@@ -14,21 +14,21 @@ bl_info = {
 
 __ADDON_NAME__ = __name__
 
-from . import ops, prefs, ui, localization
+from . import ops, prefs, ui, localdb
 
 
 def register():
     ops.register()
     prefs.register()
     ui.register()
-    localization.register()
+    localdb.register()
 
 
 def unregister():
     ops.unregister()
     prefs.unregister()
     ui.unregister()
-    localization.unregister()
+    localdb.unregister()
 
 
 if __name__ == "__main__":
