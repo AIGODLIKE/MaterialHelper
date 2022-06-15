@@ -155,7 +155,7 @@ G_MAT_ICON_ID = {}  # name:id
 
 
 def register_icon():
-    global G_PV_COLL, G_MAT_ICON_ID
+    # global G_PV_COLL, G_MAT_ICON_ID
 
     icon_dir = Path(__file__).parent.parent.joinpath('mat_lib')
     mats_icon = []
@@ -164,22 +164,23 @@ def register_icon():
         if file.endswith('.png'):
             mats_icon.append(icon_dir.joinpath(file))
     # 注册
+    pcoll = previews.new()
+
     for icon_path in mats_icon:
-        pcoll = previews.new()
         pcoll.load(icon_path.name[:-4], str(icon_path), 'IMAGE')
-        G_PV_COLL['mathp_icon'] = pcoll
         G_MAT_ICON_ID[icon_path.name[:-4]] = pcoll.get(icon_path.name[:-4]).icon_id
+
+    G_PV_COLL['mathp_icon'] = pcoll
 
 
 def unregister_icon():
-    global G_PV_COLL, G_MAT_ICON_ID
+    # global G_PV_COLL, G_MAT_ICON_ID
 
-    G_MAT_ICON_ID.clear()
-
-    values = tuple(G_PV_COLL.values())
-    for pcoll in values:
+    for pcoll in G_PV_COLL.values():
         previews.remove(pcoll)
         G_PV_COLL.clear()
+
+    G_MAT_ICON_ID.clear()
 
 
 class MATHP_OT_add_material(Operator):

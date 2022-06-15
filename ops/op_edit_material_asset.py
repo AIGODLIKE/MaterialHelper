@@ -15,8 +15,23 @@ G_NEW_WINDOW = False  # 用于减少handle消耗
 G_UPDATE = False  # 更新保护
 
 
+class SaveUpdate():
+    """使用with来保护执行内容免受depsgraph handle的删除"""
+
+    def __init__(self):
+        global G_UPDATE
+        G_UPDATE = True
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        global G_UPDATE
+        G_UPDATE = False
+
+
 def tag_redraw():
-    '''Redraw every region in Blender.'''
+    '''所有区域重绘制更新'''
     for window in bpy.context.window_manager.windows:
         for area in window.screen.areas:
             for region in area.regions:
@@ -223,27 +238,23 @@ class MATHP_OT_edit_material_asset(Operator):
         if len(selected_mat) == 0:
             self._return(msg='请选择一个材质资产', type='WARNING')
 
-        # 创建
-        global G_UPDATE
-        G_UPDATE = True
-        # 集合
-        tmp_coll = bpy.data.collections[
-            'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
-            'tmp_mathp')
-        if 'tmp_mathp' not in context.scene.collection.children:
-            context.scene.collection.children.link(tmp_coll)
+        with SaveUpdate():
+            # 创建集合
+            tmp_coll = bpy.data.collections[
+                'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
+                'tmp_mathp')
+            if 'tmp_mathp' not in context.scene.collection.children:
+                context.scene.collection.children.link(tmp_coll)
 
-        # 设置材质球/材质
-        set_shader_ball_mat(selected_mat[0], tmp_coll)
+            # 设置材质球/材质
+            set_shader_ball_mat(selected_mat[0], tmp_coll)
 
-        # 设置鼠标位置，以便弹窗出现在正中央
-        w = context.window
-        w_center_x, w_center_y = w.width / 2, w.height / 2
-        w.cursor_warp(int(w_center_x), int(w_center_y))
-        # 弹窗
-        pop_up_window(style=get_pref().window_style)
-
-        G_UPDATE = False
+            # 设置鼠标位置，以便弹窗出现在正中央
+            w = context.window
+            w_center_x, w_center_y = w.width / 2, w.height / 2
+            w.cursor_warp(int(w_center_x), int(w_center_y))
+            # 弹窗
+            pop_up_window(style=get_pref().window_style)
 
         return {'FINISHED'}
 
@@ -306,6 +317,12 @@ from bpy.app.handlers import persistent
 
 @persistent
 def del_tmp_obj(scene, depsgraph):
+    """删除用于预览的模型/网格/屏幕缓存
+
+    :param scene:
+    :param depsgraph:
+    :return:
+    """
     global G_WINDOW_COUNT, G_UPDATE, G_NEW_WINDOW
 
     if (G_NEW_WINDOW is False) or (
@@ -313,37 +330,36 @@ def del_tmp_obj(scene, depsgraph):
             G_WINDOW_COUNT is None): return
 
     if G_WINDOW_COUNT > len(bpy.context.window_manager.windows):
-        G_UPDATE = True
 
-        coll = bpy.data.collections.get('tmp_mathp')
+        with SaveUpdate():
+            coll = bpy.data.collections.get('tmp_mathp')
 
-        if coll:
-            # 清理临时物体
-            for obj in bpy.data.collections['tmp_mathp'].objects:
-                me = obj.data
-                bpy.data.objects.remove(obj)
-                bpy.data.meshes.remove(me)
+            if coll:
+                # 清理临时物体
+                for obj in bpy.data.collections['tmp_mathp'].objects:
+                    me = obj.data
+                    bpy.data.objects.remove(obj)
+                    bpy.data.meshes.remove(me)
 
-            bpy.data.collections.remove(coll)
+                bpy.data.collections.remove(coll)
 
-        if 'tmp_mathp' in bpy.data.screens:
-            # 清理多余screen
-            for s in bpy.data.screens:
-                if not s.name.startswith('tmp_mathp'): continue
-                # 清除屏幕
-                s.user_clear()
-                # 清除局部视图
-                for area in s.areas:
-                    if area.type != 'VIEW_3D': continue
+            if 'tmp_mathp' in bpy.data.screens:
+                # 清理多余screen
+                for s in bpy.data.screens:
+                    if not s.name.startswith('tmp_mathp'): continue
+                    # 清除屏幕
+                    s.user_clear()
+                    # 清除局部视图
+                    for area in s.areas:
+                        if area.type != 'VIEW_3D': continue
 
-                    if area.spaces[0].local_view is not None:
-                        for region in area.regions:
-                            if region.type == 'WINDOW':
-                                override = {'area': area, 'region': region}  # override context
-                                bpy.ops.view3d.localview(override)
-                                break
+                        if area.spaces[0].local_view is not None:
+                            for region in area.regions:
+                                if region.type == 'WINDOW':
+                                    override = {'area': area, 'region': region}  # override context
+                                    bpy.ops.view3d.localview(override)
+                                    break
 
-        G_UPDATE = False
         G_NEW_WINDOW = False
 
 
