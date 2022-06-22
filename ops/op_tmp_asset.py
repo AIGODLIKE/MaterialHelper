@@ -297,6 +297,8 @@ def update_active_object_material(scene, depsgraph):
         return
     elif scene.mathp_update_active_obj_mats is False:
         return
+    elif not hasattr(bpy.context, 'object'):
+        return
     elif bpy.context.object is None:
         return
     elif bpy.context.object.type not in {'MESH', 'CURVE', 'FONT', 'META', 'VOLUME', 'GPENCIL', 'SURFACE'}:
