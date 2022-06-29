@@ -131,7 +131,8 @@ class MATHP_OT_rename_asset(selectedAsset, Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.active_file and isinstance(context.active_file, bpy.types.Material)
+        if hasattr(context,'active_file'):
+            return context.active_file and isinstance(context.active_file, bpy.types.Material)
 
     def invoke(self, context, event):
         return context.window_manager.invoke_popup(self)
@@ -215,7 +216,8 @@ class MATHP_OT_add_material(Operator):
                 data_to.materials = [_self.material]
             # 刷新资产库
             bpy.ops.asset.library_refresh()
-            # context.space_data.activate_asset_by_id(data_to.materials[0])
+            # _context.area.spaces[0].activate_asset_by_id(data_to.materials[0])
+            # _context.area.tag_redraw()
             return {'FINISHED'}
 
         for i, mat in enumerate(mats):

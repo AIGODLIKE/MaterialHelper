@@ -1,4 +1,4 @@
-from . import op_edit_material_asset,op_tmp_asset,op_align_nodes
+from . import op_edit_material_asset,op_tmp_asset,op_align_nodes,op_category
 
 def register():
     op_edit_material_asset.register()
