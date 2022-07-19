@@ -131,19 +131,30 @@ class MATHP_OT_rename_asset(selectedAsset, Operator):
 
     @classmethod
     def poll(cls, context):
-        if hasattr(context,'active_file'):
-            return context.active_file and isinstance(context.active_file, bpy.types.Material)
+        if hasattr(context, 'active_file'):
+            return context.active_file and get_local_selected_assets(context)
 
     def invoke(self, context, event):
         return context.window_manager.invoke_popup(self)
 
     def draw(self, context):
-        active = context.active_file
+        active = get_local_selected_assets(context)[0]
 
         layout = self.layout
         layout.separator()
-        layout.label(text='Material Name')
-        layout.prop(active, 'name', icon='MATERIAL', text='')
+        layout.label(text='Name')
+        if isinstance(active, bpy.types.Material):
+            icon = 'MATERIAL'
+        elif isinstance(active, bpy.types.Object):
+            icon = 'OBJECT_DATA'
+        elif isinstance(active, bpy.types.Collection):
+            icon = 'GROUP'
+        elif isinstance(active, bpy.types.World):
+            icon = 'WORLD'
+        else:
+            icon = "ASSET_MANAGER"
+
+        layout.prop(active, 'name', text='', icon=icon)
         layout.separator()
 
     def execute(self, context):
