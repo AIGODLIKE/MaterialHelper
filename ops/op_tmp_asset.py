@@ -190,7 +190,7 @@ def unregister_icon():
 
     for pcoll in G_PV_COLL.values():
         previews.remove(pcoll)
-        G_PV_COLL.clear()
+    G_PV_COLL.clear()
 
     G_MAT_ICON_ID.clear()
 
