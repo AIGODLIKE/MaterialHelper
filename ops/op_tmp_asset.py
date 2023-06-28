@@ -220,16 +220,31 @@ class MATHP_OT_add_material(Operator):
             mats = data_from.materials
 
         # 根据材质库材质动态注册
+        def dy_modal(_self, _context, _event):
+            if _event.type == 'TIMER':
+                if _self.count < 10:
+                    _self.count += 1
+                else:
+                    _context.area.spaces[0].activate_asset_by_id(_self.material)
+                    _context.area.tag_redraw()
 
-        def dy_execute(_self, _context):
-            # 导入
+                    if _self._timer:
+                        _context.window_manager.event_timer_remove(_self._timer)
+                        _self._timer = None
+                        return {'FINISHED'}
+
+            return {'PASS_THROUGH'}
+
+        def dy_invoke(_self, _context, _event):
             with bpy.data.libraries.load(_self.blend_file, link=False) as (data_from, data_to):
                 data_to.materials = [_self.material]
+
             # 刷新资产库
             bpy.ops.asset.library_refresh()
-            # _context.area.spaces[0].activate_asset_by_id(data_to.materials[0])
-            # _context.area.tag_redraw()
-            return {'FINISHED'}
+            _self.material = data_to.materials[0]
+            _self._timer = _context.window_manager.event_timer_add(0.01, window=_context.window)
+            _context.window_manager.modal_handler_add(_self)
+            return {"RUNNING_MODAL"}
 
         for i, mat in enumerate(mats):
             mat_name = mat
@@ -238,10 +253,14 @@ class MATHP_OT_add_material(Operator):
                           {"bl_idname": f'wm.mathp_add_material_{i}',
                            "bl_label": mat_name,
                            "bl_description": 'Add',
-                           "execute": dy_execute,
+                           # "execute": dy_execute,
+                           'invoke': dy_invoke,
+                           'modal': dy_modal,
                            # 自定义参数传入
                            'blend_file': str(blend_file),
                            'material': mat_name,
+                           '_timer': None,
+                           'count': 0
                            },
                           )
             self.dep_class.append(op_cls)
@@ -255,12 +274,13 @@ class MATHP_OT_add_material(Operator):
         def draw_custom_menu(self, context):
             global G_MAT_ICON_ID
             layout = self.layout
+            layout.operator_context = 'INVOKE_DEFAULT'
             for i, cls in enumerate(op.dep_class):
-                layout.operator(cls.bl_idname, icon_value=G_MAT_ICON_ID[cls.bl_label])
+                o = layout.operator(cls.bl_idname, icon_value=G_MAT_ICON_ID[cls.bl_label])
 
         # 弹出
         context.window_manager.popup_menu(draw_custom_menu, title='Material', icon='ADD')
-        return {'FINISHED'}
+        return {"RUNNING_MODAL"}
 
 
 class MATHP_MT_asset_browser_menu(Menu):
