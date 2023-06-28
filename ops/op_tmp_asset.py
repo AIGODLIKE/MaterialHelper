@@ -322,6 +322,10 @@ def update_tmp_asset(scene, depsgraph):
     if len(bpy.data.materials) != old_value:
         G_MATERIAL_COUNT = len(bpy.data.materials)
         bpy.ops.mathp.set_tmp_asset()
+        try:
+            bpy.ops.mathp.set_category('INVOKE_DEFAULT')
+        except Exception as e:
+            print(e)
 
 
 @persistent
@@ -365,16 +369,24 @@ def update_active_object_material(scene, depsgraph):
 @persistent
 def update_load_file_post(scene):
     if bpy.context.scene.mathp_update_mat is True:
-        bpy.ops.mathp.set_tmp_asset()
+        bpy.ops.mathp.set_category()
     else:
         bpy.ops.mathp.clear_tmp_asset()
 
 
 def update_user_control(self, context):
     if context.scene.mathp_update_mat is True:
-        bpy.ops.mathp.set_tmp_asset()
+        bpy.ops.mathp.set_category()
     else:
         bpy.ops.mathp.clear_tmp_asset()
+
+
+def remove_all_tmp_tags():
+    for mat in bpy.data.materials:
+        if mat.asset_data is None: continue
+        for tag in mat.asset_data.tags:
+            if tag.name == C_TMP_ASSET_TAG:
+                mat.asset_data.tags.remove(tag)
 
 
 classes = (
@@ -414,6 +426,7 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
+    remove_all_tmp_tags()
     unregister_icon()
     # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
