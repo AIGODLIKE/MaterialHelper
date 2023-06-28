@@ -185,6 +185,9 @@ def set_shader_ball_mat(mat, coll):
 
     tmp_obj = data_to.objects[0]
 
+    # 移动到比较远的地方
+    tmp_obj.location = (10000, 10000, 10000)
+
     coll.objects.link(tmp_obj)
 
     # 设置激活项和材质
