@@ -309,6 +309,17 @@ def draw_asset_browser(self, context):
     layout.menu('MATHP_MT_asset_browser_menu')
 
 
+def draw_context_menu(self, context):
+    if not hasattr(context, 'selected_asset_files'): return
+    if len(context.selected_asset_files) == 0: return
+    if not isinstance(context.selected_asset_files[0].local_id, bpy.types.Material): return
+
+    layout = self.layout
+    layout.operator('mathp.duplicate_asset')
+    layout.operator('mathp.delete_asset')
+    layout.separator()
+
+
 from bpy.app.handlers import persistent
 
 
@@ -420,6 +431,7 @@ def register():
     # ui
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
     bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
+    bpy.types.ASSETBROWSER_MT_context_menu.prepend(draw_context_menu)
 
 
 def unregister():
@@ -436,3 +448,4 @@ def unregister():
     # ui
     bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)
     bpy.types.ASSETBROWSER_MT_editor_menus.remove(draw_asset_browser)
+    bpy.types.ASSETBROWSER_MT_context_menu.remove(draw_context_menu)

@@ -47,7 +47,7 @@ def get_local_selected_assets(context):
     print(cur_lib_name)
 
     match_obj = [asset_file.local_id for asset_file in context.selected_asset_files if
-                 cur_lib_name in  {"LOCAL","ALL"}]
+                 cur_lib_name in {"LOCAL", "ALL"}]
 
     return match_obj
 
@@ -335,38 +335,39 @@ def del_tmp_obj(scene, depsgraph):
             G_UPDATE is True) or (
             G_WINDOW_COUNT is None): return
 
-    if G_WINDOW_COUNT > len(bpy.context.window_manager.windows):
+    if G_WINDOW_COUNT < len(bpy.context.window_manager.windows): return
 
-        with SaveUpdate():
-            coll = bpy.data.collections.get('tmp_mathp')
+    with SaveUpdate():
+        coll = bpy.data.collections.get('tmp_mathp')
 
-            if coll:
-                # 清理临时物体
-                for obj in bpy.data.collections['tmp_mathp'].objects:
-                    me = obj.data
-                    bpy.data.objects.remove(obj)
-                    bpy.data.meshes.remove(me)
+        if coll:
+            # 清理临时物体
+            for obj in bpy.data.collections['tmp_mathp'].objects:
+                me = obj.data
+                bpy.data.objects.remove(obj)
+                bpy.data.meshes.remove(me)
 
-                bpy.data.collections.remove(coll)
+            bpy.data.collections.remove(coll)
 
-            if 'tmp_mathp' in bpy.data.screens:
-                # 清理多余screen
-                for s in bpy.data.screens:
-                    if not s.name.startswith('tmp_mathp'): continue
-                    # 清除屏幕
-                    s.user_clear()
-                    # 清除局部视图
-                    for area in s.areas:
-                        if area.type != 'VIEW_3D': continue
+        if 'tmp_mathp' in bpy.data.screens:
+            # 清理多余screen
+            for s in bpy.data.screens:
+                if not s.name.startswith('tmp_mathp'): continue
+                # 清除屏幕
+                s.user_clear()
+                # 清除局部视图
+                for area in s.areas:
+                    if area.type != 'VIEW_3D': continue
 
-                        if area.spaces[0].local_view is not None:
-                            for region in area.regions:
-                                if region.type == 'WINDOW':
-                                    override = {'area': area, 'region': region}  # override context
-                                    bpy.ops.view3d.localview(override)
-                                    break
+                    if area.spaces[0].local_view is not None:
+                        for region in area.regions:
+                            if region.type != 'WINDOW': continue
 
-        G_NEW_WINDOW = False
+                            override = {'area': area, 'region': region}  # override context
+                            bpy.ops.view3d.localview(override)
+                            break
+
+    G_NEW_WINDOW = False
 
 
 def update_shader_ball(self, context):
