@@ -57,30 +57,23 @@ def ensure_asset_cats_txt():
         append_asset_cats_txt(asset_cats_txt)
 
 
-class MATHP_OT_set_category(selectedAsset, bpy.types.Operator):
+class MATHP_OT_set_category(bpy.types.Operator):
     bl_idname = 'mathp.set_category'
     bl_label = 'Set Category'
 
     target_catalog: bpy.props.StringProperty(name="Target Catalog", default="Material Helper")
 
-    @classmethod
-    def poll(cls, context):
-        return True
-
     def execute(self, context):
         # objs = get_local_selected_assets(context)
-
-        if context and context.area:
-            for mat in bpy.data.materials:
-                if mat.asset_data is None: continue
-                if C_TMP_ASSET_TAG in mat.asset_data.tags:
-                    mat.asset_data.catalog_id = _uuid
-            if context.area.type == 'FILE_BROWSER':
-                try:
-                    bpy.ops.asset.library_refresh()
-                except Exception:
-                    pass
-                tag_redraw()
+        for mat in bpy.data.materials:
+            if mat.asset_data is None: continue
+            if C_TMP_ASSET_TAG in mat.asset_data.tags:
+                mat.asset_data.catalog_id = _uuid
+        try:
+            bpy.ops.asset.library_refresh()
+        except Exception:
+            pass
+        tag_redraw()
 
         return {'FINISHED'}
 

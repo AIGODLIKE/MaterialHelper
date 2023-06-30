@@ -334,7 +334,7 @@ def update_tmp_asset(scene, depsgraph):
         G_MATERIAL_COUNT = len(bpy.data.materials)
         bpy.ops.mathp.set_tmp_asset()
         try:
-            bpy.ops.mathp.set_category('INVOKE_DEFAULT')
+            bpy.ops.mathp.set_category()
         except Exception as e:
             print(e)
 
