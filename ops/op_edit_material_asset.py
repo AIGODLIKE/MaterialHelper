@@ -242,7 +242,7 @@ class MATHP_OT_edit_material_asset(Operator):
 
         if len(selected_mat) == 0:
             self._return(msg='请选择一个材质资产', type='WARNING')
-        print(selected_mat)
+        # print(selected_mat)
 
         with SaveUpdate():
             # 创建集合
@@ -329,14 +329,6 @@ def del_tmp_obj(scene, depsgraph):
     :param depsgraph:
     :return:
     """
-    global G_WINDOW_COUNT, G_UPDATE, G_NEW_WINDOW
-
-    if (G_NEW_WINDOW is False) or (
-            G_UPDATE is True) or (
-            G_WINDOW_COUNT is None): return
-
-    if G_WINDOW_COUNT < len(bpy.context.window_manager.windows): return
-
     with SaveUpdate():
         coll = bpy.data.collections.get('tmp_mathp')
 
@@ -366,8 +358,6 @@ def del_tmp_obj(scene, depsgraph):
                             override = {'area': area, 'region': region}  # override context
                             bpy.ops.view3d.localview(override)
                             break
-
-    G_NEW_WINDOW = False
 
 
 def update_shader_ball(self, context):
@@ -405,11 +395,11 @@ def register():
     bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)
     # bpy.utils.register_class(MATHP_UI_update_mat_pv)
-    bpy.app.handlers.depsgraph_update_post.append(del_tmp_obj)
+    bpy.app.handlers.save_pre.append(del_tmp_obj)
 
 
 def unregister():
-    bpy.app.handlers.depsgraph_update_post.remove(del_tmp_obj)
+    bpy.app.handlers.save_pre.remove(del_tmp_obj)
     bpy.utils.unregister_class(MATHP_OT_edit_material_asset)
     bpy.utils.unregister_class(MATHP_OT_update_mat_pv)
     # bpy.utils.unregister_class(MATHP_UI_update_mat_pv)

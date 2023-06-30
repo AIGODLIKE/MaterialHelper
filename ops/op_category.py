@@ -68,7 +68,8 @@ class MATHP_OT_set_category(bpy.types.Operator):
         for mat in bpy.data.materials:
             if mat.asset_data is None: continue
             if C_TMP_ASSET_TAG in mat.asset_data.tags:
-                mat.asset_data.catalog_id = _uuid
+                if mat.asset_data.catalog_id != _uuid:
+                    mat.asset_data.catalog_id = _uuid
         try:
             bpy.ops.asset.library_refresh()
         except Exception:
@@ -76,7 +77,6 @@ class MATHP_OT_set_category(bpy.types.Operator):
         tag_redraw()
 
         return {'FINISHED'}
-
 
 def register():
     ensure_asset_cats_txt()
