@@ -380,14 +380,14 @@ def update_active_object_material(scene, depsgraph):
 @persistent
 def update_load_file_post(scene):
     if bpy.context.scene.mathp_update_mat is True:
-        bpy.ops.mathp.set_category()
+        bpy.ops.mathp.set_tmp_asset()
     else:
         bpy.ops.mathp.clear_tmp_asset()
 
 
 def update_user_control(self, context):
     if context.scene.mathp_update_mat is True:
-        bpy.ops.mathp.set_category()
+        bpy.ops.mathp.set_tmp_asset()
     else:
         bpy.ops.mathp.clear_tmp_asset()
 
