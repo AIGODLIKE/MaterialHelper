@@ -293,6 +293,10 @@ class MATHP_MT_asset_browser_menu(Menu):
 
         layout.prop(context.scene, 'mathp_update_mat')
         layout.prop(context.scene, 'mathp_update_active_obj_mats')
+
+        layout.separator()
+        layout.operator('mathp.clear_unused_material', icon='X')
+
         layout.separator()
 
         layout.operator('mathp.add_material', icon='ADD')
@@ -326,6 +330,9 @@ from bpy.app.handlers import persistent
 @persistent
 def update_tmp_asset(scene, depsgraph):
     if scene.mathp_update_mat is False: return
+
+    from .op_edit_material_asset import G_UPDATE
+    if G_UPDATE is True: return
 
     global G_MATERIAL_COUNT
     old_value = G_MATERIAL_COUNT
