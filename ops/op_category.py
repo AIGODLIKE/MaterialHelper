@@ -19,9 +19,11 @@ def is_cat_find_in_file(path, uuid=_uuid):
 
 
 def append_asset_cats_txt(path):
-    with open(path, 'a', encoding='utf-8') as f:
-        f.write(f"{_uuid}:Material Helper:Material Helper\n")
-
+    try:
+        with open(path, 'a', encoding='utf-8') as f:
+            f.write(f"{_uuid}:Material Helper:Material Helper\n")
+    except Exception as e:
+        print(e)
 
 def get_asset_cats_txt():
     # D:\SteamLibrary\steamapps\common\Blender\3.6\datafiles\assets
@@ -41,20 +43,25 @@ def get_asset_cats_txt():
 def remove_asset_cats_txt(uuid=_uuid):
     asset_cats_txt = get_asset_cats_txt()
     line_index = is_cat_find_in_file(asset_cats_txt)
-    if line_index is not None:
-        # remove line at line index
-        with open(asset_cats_txt, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-        with open(asset_cats_txt, 'w', encoding='utf-8') as f:
-            for i, line in enumerate(lines):
-                if i == line_index: continue
-                f.write(line)
-
+    try:
+        if line_index is not None:
+            # remove line at line index
+            with open(asset_cats_txt, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            with open(asset_cats_txt, 'w', encoding='utf-8') as f:
+                for i, line in enumerate(lines):
+                    if i == line_index: continue
+                    f.write(line)
+    except Exception as e:
+        print(e)
 
 def ensure_asset_cats_txt():
     asset_cats_txt = get_asset_cats_txt()
     if not is_cat_find_in_file(asset_cats_txt):
-        append_asset_cats_txt(asset_cats_txt)
+        try:
+            append_asset_cats_txt(asset_cats_txt)
+        except Exception as e:
+            print(e)
 
 
 class MATHP_OT_set_category(bpy.types.Operator):

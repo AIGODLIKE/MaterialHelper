@@ -391,8 +391,8 @@ def register():
                                                                     ('CLOTH', 'Cloth', '', 'MATCLOTH', 5),
                                                                     ('FLUID', 'Fluid', '', 'MATFLUID', 6),
                                                                 ], default='SPHERE', update=update_shader_ball)
-
-    bpy.utils.register_class(MATHP_OT_edit_material_asset)
+    if not MATHP_OT_edit_material_asset.is_registered:
+        bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)
     # bpy.utils.register_class(MATHP_UI_update_mat_pv)
     bpy.app.handlers.save_pre.append(del_tmp_obj)
