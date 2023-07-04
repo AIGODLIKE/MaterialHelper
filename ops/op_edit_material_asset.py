@@ -92,7 +92,29 @@ def split_shader_3d_area():
 
     # solo
     override = {'area': area_3d}
-    bpy.ops.view3d.localview(override, 'INVOKE_DEFAULT')
+    try:
+        bpy.ops.view3d.localview(override, 'INVOKE_DEFAULT')
+    except RuntimeError:
+        if 'tmp_mathp' in bpy.data.screens:
+            # 清理多余screen
+            for s in bpy.data.screens:
+                if not s.name.startswith('tmp_mathp'): continue
+                # 清除屏幕
+                s.user_clear()
+                # 清除局部视图
+                for area in s.areas:
+                    if area.type != 'VIEW_3D': continue
+
+                    if area.spaces[0].local_view is not None:
+                        for region in area.regions:
+                            if region.type != 'WINDOW': continue
+
+                            override2 = {'area': area, 'region': region}  # override context
+                            bpy.ops.view3d.localview(override2)
+                            break
+
+        bpy.ops.view3d.localview(override, 'INVOKE_DEFAULT')
+
     # header
     space.show_region_header = False
     space.shading.studio_light = 'forest.exr'
