@@ -1,3 +1,5 @@
+import os
+
 import bpy
 from pathlib import Path
 from .op_tmp_asset import selectedAsset, C_TMP_ASSET_TAG
@@ -18,12 +20,43 @@ def is_cat_find_in_file(path, uuid=_uuid):
     return False
 
 
+def find_user_lib_dir():
+    for fp in bpy.context.preferences.filepaths.asset_libraries:
+        p = fp.path
+
+        exist_txt = False
+        for file in os.listdir(p):
+            if file != 'blender_assets.cats.txt': continue
+            exist_txt = True
+            if is_cat_find_in_file(os.path.join(p, file)): continue
+            try:
+                append_asset_cats_txt(os.path.join(p, file))
+            except Exception as e:
+                print('材质助手：尝试写入资产库目录失败')
+
+        if not exist_txt:
+            file = os.path.join(p, 'blender_assets.cats.txt')
+            line_index = is_cat_find_in_file()
+            try:
+                if line_index is not None:
+                    # remove line at line index
+                    with open(file, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                    with open(file, 'w', encoding='utf-8') as f:
+                        for i, line in enumerate(lines):
+                            if i == line_index: continue
+                            f.write(line)
+            except Exception as e:
+                print(e)
+
+
 def append_asset_cats_txt(path):
     try:
         with open(path, 'a', encoding='utf-8') as f:
             f.write(f"{_uuid}:Material Helper:Material Helper\n")
     except Exception as e:
         print(e)
+
 
 def get_asset_cats_txt():
     # D:\SteamLibrary\steamapps\common\Blender\3.6\datafiles\assets
@@ -55,6 +88,17 @@ def remove_asset_cats_txt(uuid=_uuid):
     except Exception as e:
         print(e)
 
+
+def ensure_curent_file_asset_cats():
+    if bpy.data.filepath == '':
+        return None
+
+    cat_path = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt')
+    if cat_path.exists():
+        if not is_cat_find_in_file(cat_path):
+            append_asset_cats_txt(cat_path)
+
+
 def ensure_asset_cats_txt():
     asset_cats_txt = get_asset_cats_txt()
     if not is_cat_find_in_file(asset_cats_txt):
@@ -72,6 +116,11 @@ class MATHP_OT_set_category(bpy.types.Operator):
 
     def execute(self, context):
         # objs = get_local_selected_assets(context)
+        if bpy.data.filepath == '':
+            return {'CANCELLED'}
+
+        ensure_curent_file_asset_cats()
+
         for mat in bpy.data.materials:
             if mat.asset_data is None: continue
             if C_TMP_ASSET_TAG in mat.asset_data.tags:
@@ -85,11 +134,10 @@ class MATHP_OT_set_category(bpy.types.Operator):
 
         return {'FINISHED'}
 
+
 def register():
-    ensure_asset_cats_txt()
     bpy.utils.register_class(MATHP_OT_set_category)
 
 
 def unregister():
-    remove_asset_cats_txt()
     bpy.utils.unregister_class(MATHP_OT_set_category)
