@@ -384,14 +384,6 @@ def update_active_object_material(scene, depsgraph):
             asset_area.regions.update()
 
 
-@persistent
-def update_load_file_post(scene):
-    if bpy.context.scene.mathp_update_mat is True:
-        bpy.ops.mathp.set_tmp_asset()
-    else:
-        bpy.ops.mathp.clear_tmp_asset()
-
-
 def update_user_control(self, context):
     if context.scene.mathp_update_mat is True:
         bpy.ops.mathp.set_tmp_asset()
@@ -434,7 +426,6 @@ def register():
     # handle
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_post.append(update_active_object_material)
-    bpy.app.handlers.load_post.append(update_load_file_post)
     # ui
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
     bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
@@ -450,7 +441,6 @@ def unregister():
     # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_post.remove(update_active_object_material)
-    bpy.app.handlers.load_post.remove(update_load_file_post)
     del bpy.types.Scene.mathp_update_mat
     # ui
     bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)

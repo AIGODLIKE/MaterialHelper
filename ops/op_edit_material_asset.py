@@ -14,6 +14,8 @@ G_WINDOW_COUNT = None  # 使用handle检测窗口数量
 G_NEW_WINDOW = False  # 用于减少handle消耗
 G_UPDATE = False  # 更新保护
 
+G_LAST_EDIT_MAT = None
+
 
 class SaveUpdate():
     """使用with来保护执行内容免受depsgraph handle的删除"""
@@ -222,6 +224,9 @@ def set_shader_ball_mat(mat, coll):
     tmp_obj.select_set(True)
     tmp_obj.active_material = mat
 
+    global G_LAST_EDIT_MAT
+    G_LAST_EDIT_MAT = mat.name
+
 
 class MATHP_OT_edit_material_asset(Operator):
     bl_idname = 'mathp.edit_material_asset'
@@ -276,6 +281,7 @@ class MATHP_OT_edit_material_asset(Operator):
 
             # 设置材质球/材质
             set_shader_ball_mat(selected_mat[0], tmp_coll)
+            selected_mat[0].asset_generate_preview()
 
             # 设置鼠标位置，以便弹窗出现在正中央
             w = context.window
@@ -395,6 +401,7 @@ def update_shader_ball(self, context):
         bpy.data.meshes.remove(me)
 
     set_shader_ball_mat(mat, coll)
+    mat.asset_generate_preview()
 
     for a in context.window.screen.areas:
         if a.type == 'VIEW_3D':
