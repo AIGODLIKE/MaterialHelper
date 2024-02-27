@@ -1,4 +1,4 @@
-{
+data = {
   "Edit Material Asset": "编辑材质资产",
   "Apply Selected as True Assets": "应用选定项为真资产",
   "Clear Asset": "清除资产",
