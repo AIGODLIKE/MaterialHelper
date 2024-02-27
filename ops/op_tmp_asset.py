@@ -19,7 +19,7 @@ class selectedAsset:
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'selected_asset_files') and context.selected_asset_files
+        return hasattr(context, 'selected_assets') and context.selected_assets
 
 
 class MATHP_OT_set_tmp_asset(Operator):
@@ -205,7 +205,7 @@ class MATHP_OT_add_material(Operator):
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'selected_asset_files')
+        return hasattr(context, 'selected_assets')
 
     def invoke(self, context, event):
         # 清空动态注册op
@@ -314,9 +314,9 @@ def draw_asset_browser(self, context):
 
 
 def draw_context_menu(self, context):
-    if not hasattr(context, 'selected_asset_files'): return
-    if len(context.selected_asset_files) == 0: return
-    if not isinstance(context.selected_asset_files[0].local_id, bpy.types.Material): return
+    if not hasattr(context, 'selected_assets'): return
+    if len(context.selected_assets) == 0: return
+    if not isinstance(context.selected_assets[0].local_id, bpy.types.Material): return
 
     layout = self.layout
     layout.operator('mathp.duplicate_asset')

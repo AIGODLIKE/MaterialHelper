@@ -45,10 +45,10 @@ def get_local_selected_assets(context):
     :param context: bpy.context
     :return: 选择项里的本地资产(任何资产类型) bpy.types.Object/Material/World
     """
-    cur_lib_name = context.area.spaces.active.params.asset_library_ref
+    cur_lib_name = context.area.spaces.active.params.asset_library_reference
     print(cur_lib_name)
 
-    match_obj = [asset_file.local_id for asset_file in context.selected_asset_files if
+    match_obj = [asset_file.local_id for asset_file in context.selected_assets if
                  cur_lib_name in {"LOCAL", "ALL"}]
 
     return match_obj
@@ -95,7 +95,8 @@ def split_shader_3d_area():
     # solo
     override = {'area': area_3d}
     try:
-        bpy.ops.view3d.localview(override, 'INVOKE_DEFAULT')
+        with bpy.context.temp_override(**override):
+            bpy.ops.view3d.localview('INVOKE_DEFAULT')
     except RuntimeError:
         if 'tmp_mathp' in bpy.data.screens:
             # 清理多余screen
@@ -112,10 +113,12 @@ def split_shader_3d_area():
                             if region.type != 'WINDOW': continue
 
                             override2 = {'area': area, 'region': region}  # override context
-                            bpy.ops.view3d.localview(override2)
+                            with bpy.context.temp_override(**override2):
+                                bpy.ops.view3d.localview()
                             break
 
-        bpy.ops.view3d.localview(override, 'INVOKE_DEFAULT')
+        with bpy.context.temp_override(**override):
+            bpy.ops.view3d.localview('INVOKE_DEFAULT')
 
     # header
     space.show_region_header = False
@@ -234,7 +237,7 @@ class MATHP_OT_edit_material_asset(Operator):
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'selected_asset_files') and context.selected_asset_files
+        return hasattr(context, 'selected_assets') and context.selected_assets
 
     def _return(self, msg, type='INFO'):
         """
@@ -384,7 +387,8 @@ def del_tmp_obj(scene, depsgraph):
                             if region.type != 'WINDOW': continue
 
                             override = {'area': area, 'region': region}  # override context
-                            bpy.ops.view3d.localview(override)
+                            with bpy.context.temp_override(**override):
+                                bpy.ops.view3d.localview()
                             break
 
 
