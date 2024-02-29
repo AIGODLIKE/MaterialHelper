@@ -9,6 +9,9 @@ _uuid = '11451419-1981-0aaa-aaaa-aaaaaaaaaaaa'
 
 
 def is_cat_find_in_file(path, uuid=_uuid):
+    # with open(path, 'r', encoding='utf-8') as f:
+    #     for line in f.readlines():
+    #         print(line)
     with open(path, 'r', encoding='utf-8') as f:
         for i, line in enumerate(f.readlines()):
             if line.startswith(("#", "VERSION", "\n")):
@@ -73,13 +76,18 @@ def ensure_curent_file_asset_cats():
         return None
 
     cat_path = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt')
+    cat_path_mod = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt~')
+
+    if cat_path_mod.exists():  # delete
+        cat_path_mod.unlink()
+
     if cat_path.exists():
         if not is_cat_find_in_file(cat_path):
             print('Material Helper: Writing category to current file')
             append_asset_cats_txt(cat_path)
     else:
         with open(cat_path, "w", encoding='utf-8') as f:
-            print('Material Helper: Creating category to current file')
+            print('Material Helper Creating Category')
             f.write("""# This is an Asset Catalog Definition file for Blender.
 #
 # Empty lines and lines starting with `#` will be ignored.

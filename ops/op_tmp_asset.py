@@ -341,11 +341,9 @@ def update_tmp_asset(scene, depsgraph):
         G_MATERIAL_COUNT = len(bpy.data.materials)
         bpy.ops.mathp.set_tmp_asset()
         try:
-            print('Material Helper Set Category')
             bpy.ops.mathp.set_category()
         except Exception as e:
             print(e)
-
 
 @persistent
 def update_active_object_material(scene, depsgraph):
@@ -411,6 +409,14 @@ classes = (
 )
 
 
+@persistent
+def init_category(noob):
+    try:
+        bpy.ops.mathp.set_category()
+    except Exception as e:
+        print(e)
+
+
 def register():
     register_icon()
 
@@ -424,6 +430,7 @@ def register():
     bpy.types.Scene.mathp_update_active_obj_mats = BoolProperty(name='Select Active Object Materials',
                                                                 description="If checked, the active object's materials will be automatically selected",
                                                                 default=True)
+    bpy.app.handlers.save_post.append(init_category)
     # handle
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_post.append(update_active_object_material)
@@ -440,6 +447,7 @@ def unregister():
     remove_all_tmp_tags()
     unregister_icon()
     # handle
+    bpy.app.handlers.save_post.remove(init_category)
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_post.remove(update_active_object_material)
     del bpy.types.Scene.mathp_update_mat
