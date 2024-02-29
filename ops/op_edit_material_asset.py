@@ -46,7 +46,7 @@ def get_local_selected_assets(context):
     :return: 选择项里的本地资产(任何资产类型) bpy.types.Object/Material/World
     """
     cur_lib_name = context.area.spaces.active.params.asset_library_reference
-    print(cur_lib_name)
+    # print(cur_lib_name)
 
     match_obj = [asset_file.local_id for asset_file in context.selected_assets if
                  cur_lib_name in {"LOCAL", "ALL"}]
@@ -270,8 +270,8 @@ class MATHP_OT_edit_material_asset(Operator):
         match_obj = get_local_selected_assets(context)
         selected_mat = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
-        if len(selected_mat) == 0:
-            self._return(msg='请选择一个材质资产', type='WARNING')
+        if not selected_mat:
+            return self._return(msg='请选择一个本地材质资产', type='WARNING')
         # print(selected_mat)
 
         with SaveUpdate():
@@ -283,6 +283,7 @@ class MATHP_OT_edit_material_asset(Operator):
                 context.scene.collection.children.link(tmp_coll)
 
             # 设置材质球/材质
+
             set_shader_ball_mat(selected_mat[0], tmp_coll)
             selected_mat[0].asset_generate_preview()
 

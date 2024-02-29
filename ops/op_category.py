@@ -17,37 +17,8 @@ def is_cat_find_in_file(path, uuid=_uuid):
             # print(uuid)
             if uuid != _uuid: continue
             return i
+    print('Material Helper: Category not found in file')
     return False
-
-
-def find_user_lib_dir():
-    for fp in bpy.context.preferences.filepaths.asset_libraries:
-        p = fp.path
-
-        exist_txt = False
-        for file in os.listdir(p):
-            if file != 'blender_assets.cats.txt': continue
-            exist_txt = True
-            if is_cat_find_in_file(os.path.join(p, file)): continue
-            try:
-                append_asset_cats_txt(os.path.join(p, file))
-            except Exception as e:
-                print('材质助手：尝试写入资产库目录失败')
-
-        if not exist_txt:
-            file = os.path.join(p, 'blender_assets.cats.txt')
-            line_index = is_cat_find_in_file()
-            try:
-                if line_index is not None:
-                    # remove line at line index
-                    with open(file, 'r', encoding='utf-8') as f:
-                        lines = f.readlines()
-                    with open(file, 'w', encoding='utf-8') as f:
-                        for i, line in enumerate(lines):
-                            if i == line_index: continue
-                            f.write(line)
-            except Exception as e:
-                print(e)
 
 
 def append_asset_cats_txt(path):
@@ -68,44 +39,66 @@ def get_asset_cats_txt():
     if not asset_cats_txt.exists():
         asset_cats_txt.touch()
         with open(asset_cats_txt, "w", encoding='utf-8') as f:
-            f.write("#VERSION: 1.0\n\n")
+            f.write("""# This is an Asset Catalog Definition file for Blender.
+#
+# Empty lines and lines starting with `#` will be ignored.
+# The first non-ignored line should be the version indicator.
+# Other lines are of the format "UUID:catalog/path/for/assets:simple catalog name"
+
+VERSION 1
+""")
 
     return asset_cats_txt
 
 
-def remove_asset_cats_txt(uuid=_uuid):
-    asset_cats_txt = get_asset_cats_txt()
-    line_index = is_cat_find_in_file(asset_cats_txt)
-    try:
-        if line_index is not None:
-            # remove line at line index
-            with open(asset_cats_txt, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-            with open(asset_cats_txt, 'w', encoding='utf-8') as f:
-                for i, line in enumerate(lines):
-                    if i == line_index: continue
-                    f.write(line)
-    except Exception as e:
-        print(e)
+# def remove_asset_cats_txt(uuid=_uuid):
+#     asset_cats_txt = get_asset_cats_txt()
+#     line_index = is_cat_find_in_file(asset_cats_txt)
+#     try:
+#         if line_index is not None:
+#             # remove line at line index
+#             with open(asset_cats_txt, 'r', encoding='utf-8') as f:
+#                 lines = f.readlines()
+#             with open(asset_cats_txt, 'w', encoding='utf-8') as f:
+#                 for i, line in enumerate(lines):
+#                     if i == line_index: continue
+#                     f.write(line)
+#     except Exception as e:
+#         print(e)
 
 
 def ensure_curent_file_asset_cats():
     if bpy.data.filepath == '':
+        print("Material Helper: File Not Save! Set category failed")
         return None
 
     cat_path = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt')
     if cat_path.exists():
         if not is_cat_find_in_file(cat_path):
+            print('Material Helper: Writing category to current file')
             append_asset_cats_txt(cat_path)
+    else:
+        with open(cat_path, "w", encoding='utf-8') as f:
+            print('Material Helper: Creating category to current file')
+            f.write("""# This is an Asset Catalog Definition file for Blender.
+#
+# Empty lines and lines starting with `#` will be ignored.
+# The first non-ignored line should be the version indicator.
+# Other lines are of the format "UUID:catalog/path/for/assets:simple catalog name"
+
+VERSION 1
+
+11451419-1981-0aaa-aaaa-aaaaaaaaaaaa:Material Helper:Material Helper
+""")
 
 
-def ensure_asset_cats_txt():
-    asset_cats_txt = get_asset_cats_txt()
-    if not is_cat_find_in_file(asset_cats_txt):
-        try:
-            append_asset_cats_txt(asset_cats_txt)
-        except Exception as e:
-            print(e)
+# def ensure_asset_cats_txt():
+#     asset_cats_txt = get_asset_cats_txt()
+#     if not is_cat_find_in_file(asset_cats_txt):
+#         try:
+#             append_asset_cats_txt(asset_cats_txt)
+#         except Exception as e:
+#             print(e)
 
 
 class MATHP_OT_set_category(bpy.types.Operator):
