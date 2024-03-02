@@ -26,8 +26,8 @@ class MATHP_OT_clear_unused_material(bpy.types.Operator):
         with SaveUpdate():
             for mat in bpy.data.materials:
                 if mat.users == 0:
-                    bpy.data.materials.remove(mat)
                     mat.user_clear()
+                    bpy.data.materials.remove(mat)
 
         tag_redraw()
         return {'FINISHED'}
