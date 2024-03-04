@@ -7,8 +7,9 @@ node_idnames = {
     'GeometryNodeMaterialSelection'
 }
 
-from .op_tmp_asset import C_TMP_ASSET_TAG
+from .op_tmp_asset import C_TMP_ASSET_TAG, update_tmp_asset
 from .op_edit_material_asset import tag_redraw, SaveUpdate
+from .op_category import _uuid
 
 
 class MATHP_OT_clear_unused_material(bpy.types.Operator):
@@ -17,23 +18,28 @@ class MATHP_OT_clear_unused_material(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        for mat in bpy.data.materials:
-            if mat.asset_data is None: continue
-
-            if C_TMP_ASSET_TAG in mat.asset_data.tags:
-                mat.asset_clear()
-
         with SaveUpdate():
             for mat in bpy.data.materials:
+                if C_TMP_ASSET_TAG in mat.asset_data.tags:
+                    mat.asset_clear()
                 if mat.users == 0:
-                    mat.user_clear()
                     bpy.data.materials.remove(mat)
+                    print('Remove', mat.name)
+                else:
+                    mat.asset_mark()
+                    mat.asset_generate_preview()
+                    mat.asset_data.tags.new(C_TMP_ASSET_TAG)
+                    if mat.asset_data.catalog_id != _uuid:
+                        mat.asset_data.catalog_id = _uuid
 
         tag_redraw()
+
         return {'FINISHED'}
+
 
 def register():
     bpy.utils.register_class(MATHP_OT_clear_unused_material)
+
 
 def unregister():
     bpy.utils.unregister_class(MATHP_OT_clear_unused_material)

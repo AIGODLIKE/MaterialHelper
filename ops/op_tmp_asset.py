@@ -329,10 +329,8 @@ from bpy.app.handlers import persistent
 
 @persistent
 def update_tmp_asset(scene, depsgraph):
+    if bpy.context.window_manager.mathp_global_update is True: return
     if scene.mathp_update_mat is False: return
-
-    from .op_edit_material_asset import G_UPDATE
-    if G_UPDATE is True: return
 
     global G_MATERIAL_COUNT
     old_value = G_MATERIAL_COUNT
@@ -344,6 +342,7 @@ def update_tmp_asset(scene, depsgraph):
             bpy.ops.mathp.set_category()
         except Exception as e:
             print(e)
+
 
 @persistent
 def update_active_object_material(scene, depsgraph):

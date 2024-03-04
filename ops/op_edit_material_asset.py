@@ -7,6 +7,7 @@ from pathlib import Path
 from bpy.types import Operator
 from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty, BoolProperty)
 from bpy.types import GizmoGroup
+from contextlib import contextmanager
 
 from ..prefs.get_pref import get_pref
 
@@ -16,20 +17,11 @@ G_UPDATE = False  # 更新保护
 
 G_LAST_EDIT_MAT = None
 
-
-class SaveUpdate():
-    """使用with来保护执行内容免受depsgraph handle的删除"""
-
-    def __init__(self):
-        global G_UPDATE
-        G_UPDATE = True
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        global G_UPDATE
-        G_UPDATE = False
+@contextmanager
+def SaveUpdate():
+    bpy.context.window_manager.mathp_global_update = True
+    yield
+    bpy.context.window_manager.mathp_global_update = False
 
 
 def tag_redraw():
@@ -414,6 +406,7 @@ def update_shader_ball(self, context):
 
 
 def register():
+    bpy.types.WindowManager.mathp_global_update = BoolProperty(name='Update', default=False)
     bpy.types.Material.mathp_preview_render_type = EnumProperty(name='Shader Ball',
                                                                 items=[
                                                                     ('FLAT', 'Flat', '', 'MATPLANE', 0),
