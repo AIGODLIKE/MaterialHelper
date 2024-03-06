@@ -26,5 +26,7 @@ data = {
   "Clear Unused Material": "清理未用材质",
   "If checked, the active object's materials will be automatically selected": "如果勾选，激活物体材质将被自动选中",
   "If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared": "如果勾选，材质将自动添加为临时资产\n否则，临时资产将被清除",
-  "Material Helper": "材质助手"
+  "Material Helper": "材质助手",
+  "Replace Material": "替换材质",
+  "Replace Selected Material to...": "替换选中材质为...",
 }

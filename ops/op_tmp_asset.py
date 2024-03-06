@@ -302,6 +302,8 @@ class MATHP_MT_asset_browser_menu(Menu):
         layout.operator('mathp.add_material', icon='ADD')
         layout.operator('mathp.duplicate_asset')
         layout.operator('mathp.rename_asset')
+        layout.operator_context = 'INVOKE_DEFAULT'
+        layout.operator('mathp.replace_mat')
         layout.operator('mathp.delete_asset')
         layout.separator()
 
@@ -321,6 +323,8 @@ def draw_context_menu(self, context):
     layout = self.layout
     layout.operator('mathp.duplicate_asset')
     layout.operator('mathp.delete_asset')
+    layout.operator_context = 'INVOKE_DEFAULT'
+    layout.operator('mathp.replace_mat')
     layout.separator()
 
 

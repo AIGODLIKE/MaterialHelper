@@ -24,7 +24,6 @@ class MATHP_OT_clear_unused_material(bpy.types.Operator):
                     mat.asset_clear()
                 if mat.users == 0:
                     bpy.data.materials.remove(mat)
-                    print('Remove', mat.name)
                 else:
                     mat.asset_mark()
                     mat.asset_generate_preview()
