@@ -377,13 +377,15 @@ def update_active_object_material(scene, depsgraph):
 
     for mat_slot in bpy.context.object.material_slots:
         G_ACTIVE_MATS_LIST.append(mat_slot.material)
-
-    asset_area.spaces[0].deselect_all()
-    # 激活材质
-    if bpy.context.object.select_get():
-        for mat in G_ACTIVE_MATS_LIST:
-            asset_area.spaces[0].activate_asset_by_id(mat)
-            asset_area.regions.update()
+    try:
+        asset_area.spaces[0].deselect_all()
+        # 激活材质
+        if bpy.context.object.select_get():
+            for mat in G_ACTIVE_MATS_LIST:
+                asset_area.spaces[0].activate_asset_by_id(mat)
+                asset_area.regions.update()
+    except Exception as e:
+        print(e)
 
 
 def update_user_control(self, context):
