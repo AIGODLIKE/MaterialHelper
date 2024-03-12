@@ -292,7 +292,7 @@ class MATHP_MT_asset_browser_menu(Menu):
         layout.operator_context = 'INVOKE_DEFAULT'
 
         layout.prop(context.scene, 'mathp_update_mat')
-        layout.prop(context.scene, 'mathp_update_active_obj_mats')
+        layout.prop(context.window_manager, 'mathp_update_active_obj_mats')
 
         layout.separator()
         layout.operator('mathp.clear_unused_material', icon='X')
@@ -350,9 +350,10 @@ def update_tmp_asset(scene, depsgraph):
 
 @persistent
 def update_active_object_material(scene, depsgraph):
+    wm = bpy.context.window_manager
     if scene.mathp_update_mat is False:
         return
-    elif scene.mathp_update_active_obj_mats is False:
+    elif wm.mathp_update_active_obj_mats is False:
         return
     elif not hasattr(bpy.context, 'object'):
         return
@@ -378,12 +379,12 @@ def update_active_object_material(scene, depsgraph):
     for mat_slot in bpy.context.object.material_slots:
         G_ACTIVE_MATS_LIST.append(mat_slot.material)
     try:
-        asset_area.spaces[0].deselect_all()
+        # asset_area.spaces[0].deselect_all() # window上有bug
         # 激活材质
         if bpy.context.object.select_get():
             for mat in G_ACTIVE_MATS_LIST:
-                asset_area.spaces[0].activate_asset_by_id(mat)
-                asset_area.regions.update()
+                asset_area.spaces[0].activate_asset_by_id(mat, deferred=True)
+
     except Exception as e:
         print(e)
 
@@ -432,13 +433,13 @@ def register():
                                                     default=True,
                                                     description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
                                                     update=update_user_control)
-    bpy.types.Scene.mathp_update_active_obj_mats = BoolProperty(name='Select Active Object Materials',
-                                                                description="If checked, the active object's materials will be automatically selected",
-                                                                default=True)
+    bpy.types.WindowManager.mathp_update_active_obj_mats = BoolProperty(name='Select Active Object Materials',
+                                                                        description="If checked, the active object's materials will be automatically selected",
+                                                                        default=False)
     bpy.app.handlers.save_post.append(init_category)
     # handle
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
-    bpy.app.handlers.depsgraph_update_post.append(update_active_object_material)
+    bpy.app.handlers.depsgraph_update_pre.append(update_active_object_material)
     # ui
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
     bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
@@ -454,7 +455,7 @@ def unregister():
     # handle
     bpy.app.handlers.save_post.remove(init_category)
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
-    bpy.app.handlers.depsgraph_update_post.remove(update_active_object_material)
+    bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)
     del bpy.types.Scene.mathp_update_mat
     # ui
     bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)
