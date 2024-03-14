@@ -4,6 +4,7 @@ import os
 from bpy.types import Operator, Menu
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from pathlib import Path
+from bpy_extras import asset_utils
 
 from .op_edit_material_asset import get_local_selected_assets, tag_redraw
 
@@ -378,12 +379,19 @@ def update_active_object_material(scene, depsgraph):
 
     for mat_slot in bpy.context.object.material_slots:
         G_ACTIVE_MATS_LIST.append(mat_slot.material)
+
+    G_ACTIVE_MATS_LIST.reverse()
+
     try:
-        # asset_area.spaces[0].deselect_all() # window上有bug
+        asset_area.spaces[0].deselect_all()  # window上有bug
         # 激活材质
+        space_data = asset_area.spaces[0]
+        assert asset_utils.SpaceAssetInfo.is_asset_browser(space_data)
+
         if bpy.context.object.select_get():
             for mat in G_ACTIVE_MATS_LIST:
-                asset_area.spaces[0].activate_asset_by_id(mat, deferred=True)
+                space_data.activate_asset_by_id(mat, deferred=False)
+
 
     except Exception as e:
         print(e)
@@ -423,6 +431,15 @@ def init_category(noob):
         print(e)
 
 
+def register_later(lock, t):
+    # to prevent bug
+    import time
+    while not hasattr(bpy.context, 'scene'):
+        time.sleep(5)
+    wm = bpy.context.window_manager
+    wm.mathp_update_active_obj_mats = True
+
+
 def register():
     register_icon()
 
@@ -444,6 +461,12 @@ def register():
     bpy.utils.register_class(MATHP_MT_asset_browser_menu)
     bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
     bpy.types.ASSETBROWSER_MT_context_menu.prepend(draw_context_menu)
+
+    import threading
+    lock = threading.Lock()
+    lock_holder = threading.Thread(target=register_later, args=(lock, 5), name='Init_Scene2')
+    lock_holder.daemon = True
+    lock_holder.start()
 
 
 def unregister():
