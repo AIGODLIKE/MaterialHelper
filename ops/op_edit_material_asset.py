@@ -17,6 +17,7 @@ G_UPDATE = False  # 更新保护
 
 G_LAST_EDIT_MAT = None
 
+
 @contextmanager
 def SaveUpdate():
     bpy.context.window_manager.mathp_global_update = True
@@ -105,8 +106,11 @@ def split_shader_3d_area():
                             if region.type != 'WINDOW': continue
 
                             override2 = {'area': area, 'region': region}  # override context
-                            with bpy.context.temp_override(**override2):
-                                bpy.ops.view3d.localview()
+                            try:
+                                with bpy.context.temp_override(**override2):
+                                    bpy.ops.view3d.view_selected(use_all_regions=False)
+                            except:
+                                pass
                             break
 
         with bpy.context.temp_override(**override):
@@ -227,9 +231,11 @@ class MATHP_OT_edit_material_asset(Operator):
     bl_idname = 'mathp.edit_material_asset'
     bl_label = 'Edit Material Asset'
 
+    material: StringProperty(name='Material Name', options={'SKIP_SAVE'})
+
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'selected_assets') and context.selected_assets
+        return (hasattr(context, 'selected_assets') and context.selected_assets) or context.asset
 
     def _return(self, msg, type='INFO'):
         """
@@ -259,12 +265,15 @@ class MATHP_OT_edit_material_asset(Operator):
         return data
 
     def execute(self, context):
-        match_obj = get_local_selected_assets(context)
-        selected_mat = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
+        if self.material:
+            selected_mat = [bpy.data.materials[self.material], ]
+        else:
+            match_obj = get_local_selected_assets(context)
+            selected_mat = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
-        if not selected_mat:
-            return self._return(msg='请选择一个本地材质资产', type='WARNING')
-        # print(selected_mat)
+            if not selected_mat:
+                return self._return(msg='请选择一个本地材质资产', type='WARNING')
+            # print(selected_mat)
 
         with SaveUpdate():
             # 创建集合
@@ -372,17 +381,17 @@ def del_tmp_obj(scene, depsgraph):
                 # 清除屏幕
                 s.user_clear()
                 # 清除局部视图
-                for area in s.areas:
-                    if area.type != 'VIEW_3D': continue
-
-                    if area.spaces[0].local_view is not None:
-                        for region in area.regions:
-                            if region.type != 'WINDOW': continue
-
-                            override = {'area': area, 'region': region}  # override context
-                            with bpy.context.temp_override(**override):
-                                bpy.ops.view3d.localview()
-                            break
+                # for area in s.areas:
+                #     if area.type != 'VIEW_3D': continue
+                #
+                #     if area.spaces[0].local_view is not None:
+                #         for region in area.regions:
+                #             if region.type != 'WINDOW': continue
+                #
+                #             with bpy.context.temp_override(area = area,window = bpy.context.window,region = region):
+                #                 bpy.ops.view3d.localview()
+                #
+                #             break
 
 
 def update_shader_ball(self, context):
