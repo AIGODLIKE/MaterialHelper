@@ -208,7 +208,7 @@ class MATHP_OT_add_material(Operator):
     def poll(cls, context):
         return hasattr(context, 'selected_assets')
 
-    def invoke(self, context, event):
+    def execute(self, context):
         # 清空动态注册op
         for cls in self.dep_class:
             bpy.utils.unregister_class(cls)
@@ -281,7 +281,7 @@ class MATHP_OT_add_material(Operator):
 
         # 弹出
         context.window_manager.popup_menu(draw_custom_menu, title='Material', icon='ADD')
-        return {"RUNNING_MODAL"}
+        return {"FINISHED"}
 
 
 class MATHP_MT_asset_browser_menu(Menu):
