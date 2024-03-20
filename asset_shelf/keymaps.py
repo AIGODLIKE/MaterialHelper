@@ -17,7 +17,7 @@ def register() -> None:
 
     # Asset Shelf
     km = wm.keyconfigs.addon.keymaps.new(name="Asset Shelf")
-    # Click to apply pose.
+
     kmi = km.keymap_items.new("mathp.mat_double_click", "LEFTMOUSE", "DOUBLE_CLICK")
     addon_keymaps.append((km, kmi))
     # Drag to drop
@@ -30,6 +30,8 @@ def register() -> None:
     kmi = km.keymap_items.new("mathp.asset_rename", "F2", "PRESS", ctrl=False, shift=False)
     addon_keymaps.append((km, kmi))
 
+    kmi = km.keymap_items.new("mathp.asset_copy", "D", "PRESS", ctrl=False, shift=True)
+    addon_keymaps.append((km, kmi))
 
 
 def unregister() -> None:

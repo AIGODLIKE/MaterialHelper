@@ -45,6 +45,7 @@ class MATHP_OT_asset_double_click(AssetUser, Operator):
     bl_description = "Double click to %s"
 
     def execute(self, context):
+        bpy.ops.asset.library_refresh()
         mat = context.asset.local_id
         bpy.ops.mathp.edit_material_asset("INVOKE_DEFAULT", material=mat.name)
         return {'FINISHED'}
@@ -80,6 +81,19 @@ class MATHP_OT_asset_rename(AssetUser, Operator):
 
     def execute(self, context):
         return context.window_manager.invoke_popup(self)
+
+
+class MATHP_OT_asset_copy(AssetUser, Operator):
+    bl_idname = "mathp.asset_copy"
+    bl_label = "Copy"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        mat = context.asset.local_id
+        new_mat = mat.copy()
+        new_mat.asset_mark()
+
+        return {'FINISHED'}
 
 
 def ui_scale():
@@ -219,6 +233,7 @@ def register():
     bpy.utils.register_class(ADJT_OT_asset_drag_drop)
     bpy.utils.register_class(MATHP_OT_asset_delete)
     bpy.utils.register_class(MATHP_OT_asset_rename)
+    bpy.utils.register_class(MATHP_OT_asset_copy)
 
 
 def unregister():
@@ -226,3 +241,4 @@ def unregister():
     bpy.utils.unregister_class(ADJT_OT_asset_drag_drop)
     bpy.utils.unregister_class(MATHP_OT_asset_delete)
     bpy.utils.unregister_class(MATHP_OT_asset_rename)
+    bpy.utils.unregister_class(MATHP_OT_asset_copy)
