@@ -40,6 +40,23 @@ class MATHP_AST_asset_library(bpy.types.AssetShelf):
 
         layout.operator_context = 'INVOKE_REGION_WIN'
 
+        layout.operator(MATHP_OT_refresh_preview.bl_idname)
+
+
+class MATHP_OT_refresh_preview(bpy.types.Operator):
+    bl_idname = 'mathp.refresh_preview'
+    bl_label = 'Refresh'
+
+    def execute(self, context):
+        import bpy
+        a = context.area
+        regions = [r for r in a.regions if r.type == 'ASSET_SHELF']
+        if regions:
+            with bpy.context.temp_override(area=a, region=regions[0]):
+                bpy.ops.asset.library_refresh()
+
+        return {'FINISHED'}
+
 
 ### Messagebus subscription to monitor asset library changes.
 _msgbus_owner = object()
@@ -47,7 +64,9 @@ _msgbus_owner = object()
 
 def register():
     bpy.utils.register_class(MATHP_AST_asset_library)
+    bpy.utils.register_class(MATHP_OT_refresh_preview)
 
 
 def unregister():
     bpy.utils.unregister_class(MATHP_AST_asset_library)
+    bpy.utils.unregister_class(MATHP_OT_refresh_preview)

@@ -33,6 +33,9 @@ def register() -> None:
     kmi = km.keymap_items.new("mathp.asset_copy", "D", "PRESS", ctrl=False, shift=True)
     addon_keymaps.append((km, kmi))
 
+    kmi = km.keymap_items.new("mathp.refresh_preview", "R", "PRESS", ctrl=False, alt=True)
+    addon_keymaps.append((km, kmi))
+
 
 def unregister() -> None:
     # Clear shortcuts from the keymap.

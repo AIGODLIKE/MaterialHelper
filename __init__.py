@@ -22,7 +22,7 @@ def register():
     prefs.register()
     ui.register()
     localdb.register()
-    asset_shelf.register()
+    # asset_shelf.register()
 
 
 def unregister():
@@ -30,7 +30,7 @@ def unregister():
     prefs.unregister()
     ui.unregister()
     localdb.unregister()
-    asset_shelf.unregister()
+    # asset_shelf.unregister()
 
 
 if __name__ == "__main__":
