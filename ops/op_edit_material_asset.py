@@ -20,6 +20,7 @@ G_LAST_EDIT_MAT = None
 
 @contextmanager
 def SaveUpdate():
+    if bpy.context.window_manager.mathp_global_update is True: return
     bpy.context.window_manager.mathp_global_update = True
     yield
     bpy.context.window_manager.mathp_global_update = False
@@ -100,21 +101,16 @@ def split_shader_3d_area():
                 # 清除局部视图
                 for area in s.areas:
                     if area.type != 'VIEW_3D': continue
+                    for region in area.regions:
+                        if region.type != 'WINDOW': continue
 
-                    if area.spaces[0].local_view is not None:
-                        for region in area.regions:
-                            if region.type != 'WINDOW': continue
-
-                            override2 = {'area': area, 'region': region}  # override context
-                            try:
-                                with bpy.context.temp_override(**override2):
-                                    bpy.ops.view3d.view_selected(use_all_regions=False)
-                            except:
-                                pass
-                            break
-
-        with bpy.context.temp_override(**override):
-            bpy.ops.view3d.localview('INVOKE_DEFAULT')
+                        override2 = {'area': area, 'region': region}  # override context
+                        try:
+                            with bpy.context.temp_override(**override2):
+                                bpy.ops.view3d.view_selected(use_all_regions=False)
+                        except:
+                            pass
+                        break
 
     # header
     space.show_region_header = False
@@ -363,6 +359,7 @@ def del_tmp_obj(scene, depsgraph):
     :return:
     """
     with SaveUpdate():
+        if len(bpy.context.window_manager.windows) != 1: return
         coll = bpy.data.collections.get('tmp_mathp')
 
         if coll:
@@ -431,11 +428,11 @@ def register():
         bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)
     # bpy.utils.register_class(MATHP_UI_update_mat_pv)
-    bpy.app.handlers.save_pre.append(del_tmp_obj)
+    bpy.app.handlers.depsgraph_update_pre.append(del_tmp_obj)
 
 
 def unregister():
-    bpy.app.handlers.save_pre.remove(del_tmp_obj)
+    bpy.app.handlers.depsgraph_update_pre.remove(del_tmp_obj)
     bpy.utils.unregister_class(MATHP_OT_edit_material_asset)
     bpy.utils.unregister_class(MATHP_OT_update_mat_pv)
     # bpy.utils.unregister_class(MATHP_UI_update_mat_pv)
