@@ -1,29 +1,31 @@
 import bpy
 import bmesh
 import mathutils
-
+from typing import Union
 from pathlib import Path
 
 from bpy.types import Operator
 from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty, BoolProperty)
 from bpy.types import GizmoGroup
-from contextlib import contextmanager
 
 from ..prefs.get_pref import get_pref
 
-G_WINDOW_COUNT = None  # 使用handle检测窗口数量
-G_NEW_WINDOW = False  # 用于减少handle消耗
-G_UPDATE = False  # 更新保护
 
-G_LAST_EDIT_MAT = None
+class State():
+    window_count: int = 1
+    new_window: Union[bpy.types.Window, None] = None
+    last_edit_mat: Union[bpy.types.Material, None] = None
 
 
-@contextmanager
-def SaveUpdate():
-    if bpy.context.window_manager.mathp_global_update is True: return
-    bpy.context.window_manager.mathp_global_update = True
-    yield
-    bpy.context.window_manager.mathp_global_update = False
+class SaveUpdate():
+    def __enter__(self):
+        if bpy.context.window_manager.mathp_global_update is True:
+            self.__exit__(is_updating=True)
+        bpy.context.window_manager.mathp_global_update = True
+
+    def __exit__(self, is_updating: bool):
+        if is_updating: return
+        bpy.context.window_manager.mathp_global_update = False
 
 
 def tag_redraw():
@@ -119,17 +121,18 @@ def split_shader_3d_area():
     return area_shader, area_3d
 
 
+def update_window_count():
+    State.window_count = len(bpy.context.window_manager.windows)
+    State.new_window = bpy.context.window_manager.windows[-1]
+
+
 def window_style_1():
     """大窗口,左属性面板右节点面板
 
     :return:
     """
-    global G_WINDOW_COUNT, G_NEW_WINDOW
     bpy.ops.wm.window_new()  # 使用新窗口
-
-    G_WINDOW_COUNT = len(bpy.context.window_manager.windows)
-    G_NEW_WINDOW = True
-
+    update_window_count()
     split_shader_3d_area()
 
 
@@ -141,6 +144,7 @@ def window_style_2(flip_header=True):
     # 创建新窗口
     # bpy.ops.render.view_show('INVOKE_AREA')
     bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
+    update_window_count()
 
     if get_pref().use_shader_ball_pv:
         area_3d, area_shader = split_shader_3d_area()
@@ -219,8 +223,7 @@ def set_shader_ball_mat(mat, coll):
     tmp_obj.select_set(True)
     tmp_obj.active_material = mat
 
-    global G_LAST_EDIT_MAT
-    G_LAST_EDIT_MAT = mat.name
+    State.last_edit_mat = mat.name
 
 
 class MATHP_OT_edit_material_asset(Operator):
@@ -271,25 +274,24 @@ class MATHP_OT_edit_material_asset(Operator):
                 return self._return(msg='请选择一个本地材质资产', type='WARNING')
             # print(selected_mat)
 
-        with SaveUpdate():
-            # 创建集合
-            tmp_coll = bpy.data.collections[
-                'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
-                'tmp_mathp')
-            if 'tmp_mathp' not in context.scene.collection.children:
-                context.scene.collection.children.link(tmp_coll)
+        # 创建集合
+        tmp_coll = bpy.data.collections[
+            'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
+            'tmp_mathp')
+        if 'tmp_mathp' not in context.scene.collection.children:
+            context.scene.collection.children.link(tmp_coll)
 
-            # 设置材质球/材质
+        # 设置材质球/材质
 
-            set_shader_ball_mat(selected_mat[0], tmp_coll)
-            selected_mat[0].asset_generate_preview()
+        set_shader_ball_mat(selected_mat[0], tmp_coll)
+        selected_mat[0].asset_generate_preview()
 
-            # 设置鼠标位置，以便弹窗出现在正中央
-            w = context.window
-            w_center_x, w_center_y = w.width / 2, w.height / 2
-            w.cursor_warp(int(w_center_x), int(w_center_y))
-            # 弹窗
-            pop_up_window(style=get_pref().window_style)
+        # 设置鼠标位置，以便弹窗出现在正中央
+        w = context.window
+        w_center_x, w_center_y = w.width / 2, w.height / 2
+        w.cursor_warp(int(w_center_x), int(w_center_y))
+        # 弹窗
+        pop_up_window(style=get_pref().window_style)
 
         return {'FINISHED'}
 
@@ -358,37 +360,28 @@ def del_tmp_obj(scene, depsgraph):
     :param depsgraph:
     :return:
     """
-    with SaveUpdate():
-        if len(bpy.context.window_manager.windows) != 1: return
-        coll = bpy.data.collections.get('tmp_mathp')
+    try:
+        _ = bpy.context.window_manager.windows[State.window_count - 1]
+        return
+    except IndexError:
+        update_window_count()
+    if mat := bpy.data.materials.get(State.last_edit_mat):
+        mat.asset_generate_preview()
+    coll = bpy.data.collections.get('tmp_mathp')
+    if coll:
+        # 清理临时物体
+        for obj in bpy.data.collections['tmp_mathp'].objects:
+            me = obj.data
+            bpy.data.objects.remove(obj)
+            bpy.data.meshes.remove(me)
 
-        if coll:
-            # 清理临时物体
-            for obj in bpy.data.collections['tmp_mathp'].objects:
-                me = obj.data
-                bpy.data.objects.remove(obj)
-                bpy.data.meshes.remove(me)
+        bpy.data.collections.remove(coll)
 
-            bpy.data.collections.remove(coll)
-
-        if 'tmp_mathp' in bpy.data.screens:
-            # 清理多余screen
-            for s in bpy.data.screens:
-                if not s.name.startswith('tmp_mathp'): continue
-                # 清除屏幕
-                s.user_clear()
-                # 清除局部视图
-                # for area in s.areas:
-                #     if area.type != 'VIEW_3D': continue
-                #
-                #     if area.spaces[0].local_view is not None:
-                #         for region in area.regions:
-                #             if region.type != 'WINDOW': continue
-                #
-                #             with bpy.context.temp_override(area = area,window = bpy.context.window,region = region):
-                #                 bpy.ops.view3d.localview()
-                #
-                #             break
+    if 'tmp_mathp' in bpy.data.screens:
+        # 清理多余screen
+        for s in bpy.data.screens:
+            if not s.name.startswith('tmp_mathp'): continue
+            s.user_clear()
 
 
 def update_shader_ball(self, context):

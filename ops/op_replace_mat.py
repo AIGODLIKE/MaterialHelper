@@ -2,7 +2,6 @@ import bpy
 
 from bpy.props import StringProperty, EnumProperty
 from .op_tmp_asset import get_local_selected_assets
-from .op_edit_material_asset import SaveUpdate
 
 
 class MATHP_OT_replace_mat(bpy.types.Operator):
@@ -41,9 +40,7 @@ class MATHP_OT_replace_mat(bpy.types.Operator):
         if not selected_mat:
             return self._return(msg='请选择一个本地材质资产', type='WARNING')
         # print(selected_mat)
-
-        with SaveUpdate():
-            selected_mat[0].user_remap(bpy.data.materials[self.enum_mats])
+        selected_mat[0].user_remap(bpy.data.materials[self.enum_mats])
 
         return {'FINISHED'}
 

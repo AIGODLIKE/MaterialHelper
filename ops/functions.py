@@ -2,11 +2,19 @@ import os
 
 import bpy
 from pathlib import Path
-from .op_tmp_asset import selectedAsset, C_TMP_ASSET_TAG
 from .op_edit_material_asset import get_local_selected_assets, tag_redraw
+
+C_TMP_ASSET_TAG = 'tmp_asset_mathp'
 
 _uuid = '11451419-1981-0aaa-aaaa-aaaaaaaaaaaa'
 
+
+class selectedAsset:
+    bl_options = {'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context, 'selected_assets') and context.selected_assets
 
 def is_cat_find_in_file(path, uuid=_uuid):
     # with open(path, 'r', encoding='utf-8') as f:
@@ -129,16 +137,16 @@ class MATHP_OT_set_category(bpy.types.Operator):
                     mat.asset_data.catalog_id = _uuid
         try:
             bpy.ops.asset.library_refresh()
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
         tag_redraw()
 
         return {'FINISHED'}
 
 
 def register():
-    bpy.utils.register_class(MATHP_OT_set_category)
+    pass
 
 
 def unregister():
-    bpy.utils.unregister_class(MATHP_OT_set_category)
+    pass

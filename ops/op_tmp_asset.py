@@ -7,20 +7,11 @@ from pathlib import Path
 from bpy_extras import asset_utils
 
 from .op_edit_material_asset import get_local_selected_assets, tag_redraw
-
+from .functions import ensure_curent_file_asset_cats, C_TMP_ASSET_TAG, selectedAsset, _uuid
 from bpy.utils import previews
 
-C_TMP_ASSET_TAG = 'tmp_asset_mathp'
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
 G_ACTIVE_MATS_LIST = []  # 选中材质列表
-
-
-class selectedAsset:
-    bl_options = {'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context, 'selected_assets') and context.selected_assets
 
 
 class MATHP_OT_set_tmp_asset(Operator):
@@ -31,12 +22,27 @@ class MATHP_OT_set_tmp_asset(Operator):
     def execute(self, context):
         for mat in bpy.data.materials:
             if mat.asset_data: continue
-
+            if mat.is_grease_pencil: continue
             mat.asset_mark()
             mat.asset_generate_preview()
             mat.asset_data.tags.new(C_TMP_ASSET_TAG)
 
         tag_redraw()
+
+        if bpy.data.filepath == '':
+            return {'CANCELLED'}
+
+        ensure_curent_file_asset_cats()
+
+        for mat in bpy.data.materials:
+            if mat.asset_data is None: continue
+            if C_TMP_ASSET_TAG in mat.asset_data.tags:
+                if mat.asset_data.catalog_id != _uuid:
+                    mat.asset_data.catalog_id = _uuid
+        try:
+            bpy.ops.asset.library_refresh()
+        except Exception as e:
+            print(e)
 
         return {'FINISHED'}
 
@@ -292,9 +298,6 @@ class MATHP_MT_asset_browser_menu(Menu):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
 
-        layout.prop(context.scene, 'mathp_update_mat')
-        layout.prop(context.window_manager, 'mathp_update_active_obj_mats')
-
         layout.separator()
         layout.operator('mathp.clear_unused_material', icon='X')
 
@@ -313,7 +316,14 @@ class MATHP_MT_asset_browser_menu(Menu):
 
 def draw_asset_browser(self, context):
     layout = self.layout
-    layout.menu('MATHP_MT_asset_browser_menu')
+    row = layout.row(align=True)
+    row.menu('MATHP_MT_asset_browser_menu')
+    row.separator()
+    row.prop(context.scene, 'mathp_update_mat', toggle=True, icon='FILE_REFRESH')
+    row.prop(context.window_manager, 'mathp_update_active_obj_mats', toggle=True, icon='UV_SYNC_SELECT')
+    row.separator()
+    row.operator('mathp.set_tmp_asset', text='Manual Refresh', icon='FILE_REFRESH')
+    row.operator('mathp.edit_material_asset', icon='NODETREE')
 
 
 def draw_context_menu(self, context):
@@ -334,7 +344,6 @@ from bpy.app.handlers import persistent
 
 @persistent
 def update_tmp_asset(scene, depsgraph):
-    if bpy.context.window_manager.mathp_global_update is True: return
     if scene.mathp_update_mat is False: return
 
     global G_MATERIAL_COUNT
@@ -343,10 +352,6 @@ def update_tmp_asset(scene, depsgraph):
     if len(bpy.data.materials) != old_value:
         G_MATERIAL_COUNT = len(bpy.data.materials)
         bpy.ops.mathp.set_tmp_asset()
-        try:
-            bpy.ops.mathp.set_category()
-        except Exception as e:
-            print(e)
 
 
 @persistent
@@ -423,14 +428,6 @@ classes = (
 )
 
 
-@persistent
-def init_category(noob):
-    try:
-        bpy.ops.mathp.set_category()
-    except Exception as e:
-        print(e)
-
-
 def register_later(lock, t):
     # to prevent bug
     import time
@@ -450,10 +447,9 @@ def register():
                                                     default=True,
                                                     description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
                                                     update=update_user_control)
-    bpy.types.WindowManager.mathp_update_active_obj_mats = BoolProperty(name='Select Active Object Materials',
+    bpy.types.WindowManager.mathp_update_active_obj_mats = BoolProperty(name='Object / Material Select Sync',
                                                                         description="If checked, the active object's materials will be automatically selected",
                                                                         default=False)
-    bpy.app.handlers.save_post.append(init_category)
     # handle
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_pre.append(update_active_object_material)
@@ -476,7 +472,6 @@ def unregister():
     remove_all_tmp_tags()
     unregister_icon()
     # handle
-    bpy.app.handlers.save_post.remove(init_category)
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)
     del bpy.types.Scene.mathp_update_mat
