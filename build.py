@@ -40,7 +40,7 @@ def zip_dir():
     dist = parent_path.joinpath('dist')
     if not dist.exists():
         dist.mkdir(parents=True)
-    zip_file = dist.joinpath('dist', f'{parent_path.name}.zip')
+    zip_file = dist.joinpath(f'{parent_path.name}.zip')
     if zip_file.exists():
         os.remove(zip_file)
     # utf-8 encoding
