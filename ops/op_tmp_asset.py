@@ -221,6 +221,26 @@ def unregister_icon():
     G_MAT_ICON_ID.clear()
 
 
+class MATHP_OT_select_material_obj(selectedAsset, Operator):
+    bl_idname = 'mathp.select_material_obj'
+    bl_label = 'Select Material Object'
+    bl_options = {'UNDO'}
+
+    def execute(self, context):
+        match_obj = get_local_selected_assets(context)
+        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.mesh.primitive_plane_add()
+        temp_obj = context.object
+        for i, mat in enumerate(selected_mats):
+            bpy.ops.object.material_slot_add()
+            context.object.material_slots[i].material = mat
+        bpy.ops.object.select_linked(type='MATERIAL')
+        bpy.data.objects.remove(temp_obj)
+        return {'FINISHED'}
+
+
 class MATHP_OT_add_material(Operator):
     """Add Material"""
     bl_idname = 'mathp.add_material'
@@ -342,6 +362,7 @@ def draw_asset_browser(self, context):
     row.prop(context.window_manager, 'mathp_update_active_obj_mats', toggle=True, icon='UV_SYNC_SELECT')
     row.separator()
     row.operator(MATHP_OT_refresh_asset_pv.bl_idname, icon='FILE_REFRESH')
+    row.operator(MATHP_OT_select_material_obj.bl_idname, icon='RESTRICT_SELECT_OFF')
     row.operator('mathp.edit_material_asset', icon='NODETREE')
     row.operator('mathp.replace_mat', icon='CON_TRANSLIKE')
     row.operator('mathp.clear_unused_material', icon='NODE_MATERIAL')
@@ -447,6 +468,7 @@ classes = (
     MATHP_OT_rename_asset,
     MATHP_OT_add_material,
     MATHP_OT_refresh_asset_pv,
+    MATHP_OT_select_material_obj,
 )
 
 
