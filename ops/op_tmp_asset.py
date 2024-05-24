@@ -343,6 +343,8 @@ def draw_asset_browser(self, context):
     row.separator()
     row.operator(MATHP_OT_refresh_asset_pv.bl_idname, icon='FILE_REFRESH')
     row.operator('mathp.edit_material_asset', icon='NODETREE')
+    row.operator('mathp.replace_mat', icon='CON_TRANSLIKE')
+    row.operator('mathp.clear_unused_material', icon='NODE_MATERIAL')
 
 
 def draw_context_menu(self, context):

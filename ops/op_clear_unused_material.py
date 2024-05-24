@@ -9,7 +9,7 @@ node_idnames = {
 
 from .op_tmp_asset import update_tmp_asset
 from .op_edit_material_asset import tag_redraw, SaveUpdate
-from .functions import _uuid,C_TMP_ASSET_TAG
+from .functions import _uuid, C_TMP_ASSET_TAG
 
 
 class MATHP_OT_clear_unused_material(bpy.types.Operator):
@@ -19,6 +19,7 @@ class MATHP_OT_clear_unused_material(bpy.types.Operator):
 
     def execute(self, context):
         for mat in bpy.data.materials:
+            if not mat.asset_data: continue
             if C_TMP_ASSET_TAG in mat.asset_data.tags:
                 mat.asset_clear()
             if mat.users == 0:
