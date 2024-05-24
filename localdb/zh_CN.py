@@ -12,7 +12,7 @@ data = {
     "UI Panel Direction": "侧面板方向",
     "Big Window": "大窗口",
     "Small Window": "小窗口",
-    "Realtime Preview": "实时预览",
+    "Realtime Preview(If enable and open more than 15 window will crash blender)": "实时预览(如果启用并打开超过15个窗口将会崩溃)",
     "Rename Active Item": "重命名活动项",
     "Duplicate Active Item": "复制活动项",
     "Delete Selected Materials": "删除选中材质",
@@ -31,4 +31,5 @@ data = {
     "Replace Selected Material to...": "替换选中材质为...",
     "Manual Refresh": "手动刷新",
     'Refresh Preview': '刷新预览',
+    'Select Material Object': '选择材质物体',
 }

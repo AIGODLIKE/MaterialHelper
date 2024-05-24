@@ -22,7 +22,7 @@ class MATHP_Preference(bpy.types.AddonPreferences):
     show_UI: BoolProperty(name='Show UI Panel')
     UI_direction: EnumProperty(name='UI Panel Direction', items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')],
                                default='RIGHT')
-    use_shader_ball_pv: BoolProperty(name='Realtime Preview', default=True)
+    use_shader_ball_pv: BoolProperty(name='Realtime Preview(If enable and open more than 15 window will crash blender)', default=False)
 
     # big_window
 
