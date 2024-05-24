@@ -130,6 +130,25 @@ class MATHP_OT_duplicate_asset(selectedAsset, Operator):
         return {'FINISHED'}
 
 
+class MATHP_OT_refresh_asset_pv(selectedAsset, Operator):
+    bl_idname = 'mathp.refresh_asset_pv'
+    bl_label = 'Refresh Preview'
+
+    @classmethod
+    def poll(cls, context):
+        if hasattr(context, 'active_file'):
+            return context.active_file and get_local_selected_assets(context)
+
+    def execute(self, context):
+        match_obj = get_local_selected_assets(context)
+        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
+
+        for mat in selected_mats:
+            mat.asset_generate_preview()
+
+        return {'FINISHED'}
+
+
 class MATHP_OT_rename_asset(selectedAsset, Operator):
     """Rename Active Item"""
     bl_idname = 'mathp.rename_asset'
@@ -322,7 +341,7 @@ def draw_asset_browser(self, context):
     row.prop(context.scene, 'mathp_update_mat', toggle=True, icon='FILE_REFRESH')
     row.prop(context.window_manager, 'mathp_update_active_obj_mats', toggle=True, icon='UV_SYNC_SELECT')
     row.separator()
-    row.operator('mathp.set_tmp_asset', text='Manual Refresh', icon='FILE_REFRESH')
+    row.operator(MATHP_OT_refresh_asset_pv.bl_idname, icon='FILE_REFRESH')
     row.operator('mathp.edit_material_asset', icon='NODETREE')
 
 
@@ -425,6 +444,7 @@ classes = (
     MATHP_OT_duplicate_asset,
     MATHP_OT_rename_asset,
     MATHP_OT_add_material,
+    MATHP_OT_refresh_asset_pv,
 )
 
 

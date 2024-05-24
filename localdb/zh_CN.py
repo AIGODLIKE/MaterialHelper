@@ -30,4 +30,5 @@ data = {
     "Replace Material": "替换材质",
     "Replace Selected Material to...": "替换选中材质为...",
     "Manual Refresh": "手动刷新",
+    'Refresh Preview': '刷新预览',
 }

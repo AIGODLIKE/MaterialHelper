@@ -7,6 +7,7 @@ from pathlib import Path
 from bpy.types import Operator
 from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty, BoolProperty)
 from bpy.types import GizmoGroup
+from contextlib import contextmanager
 
 from ..prefs.get_pref import get_pref
 
@@ -17,15 +18,15 @@ class State():
     last_edit_mat: Union[bpy.types.Material, None] = None
 
 
-class SaveUpdate():
-    def __enter__(self):
-        if bpy.context.window_manager.mathp_global_update is True:
-            self.__exit__(is_updating=True)
-        bpy.context.window_manager.mathp_global_update = True
+def allowSaveUpdate():
+    return bpy.context.window_manager.mathp_global_update is False
 
-    def __exit__(self, is_updating: bool):
-        if is_updating: return
-        bpy.context.window_manager.mathp_global_update = False
+
+@contextmanager
+def SaveUpdate():
+    bpy.context.window_manager.mathp_global_update = True
+    yield
+    bpy.context.window_manager.mathp_global_update = False
 
 
 def tag_redraw():
@@ -131,6 +132,7 @@ def window_style_1():
 
     :return:
     """
+    update_window_count()
     bpy.ops.wm.window_new()  # 使用新窗口
     update_window_count()
     split_shader_3d_area()
@@ -143,6 +145,7 @@ def window_style_2(flip_header=True):
     """
     # 创建新窗口
     # bpy.ops.render.view_show('INVOKE_AREA')
+    update_window_count()
     bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
     update_window_count()
 
@@ -196,34 +199,35 @@ def set_shader_ball_mat(mat, coll):
     :return:
     """
     # 获取设置
-    mat_pv_type = get_pref().shader_ball
-    if mat_pv_type == 'NONE':
-        mat_pv_type = mat.mathp_preview_render_type
+    with SaveUpdate():
+        mat_pv_type = get_pref().shader_ball
+        if mat_pv_type == 'NONE':
+            mat_pv_type = mat.mathp_preview_render_type
 
-    shader_ball_lib = Path(__file__).parent.parent.joinpath('shader_ball_lib')
-    blend_file = shader_ball_lib.joinpath('shader_ball.blend')
+        shader_ball_lib = Path(__file__).parent.parent.joinpath('shader_ball_lib')
+        blend_file = shader_ball_lib.joinpath('shader_ball.blend')
 
-    with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
-        data_to.objects = [mat_pv_type]
+        with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
+            data_to.objects = [mat_pv_type]
 
-    tmp_obj = data_to.objects[0]
+        tmp_obj = data_to.objects[0]
 
-    # 移动到比较远的地方
-    tmp_obj.location = (10000, 10000, 10000)
+        # 移动到比较远的地方
+        tmp_obj.location = (10000, 10000, 10000)
 
-    coll.objects.link(tmp_obj)
+        coll.objects.link(tmp_obj)
 
-    # 设置激活项和材质
-    bpy.context.view_layer.objects.active = tmp_obj
+        # 设置激活项和材质
+        bpy.context.view_layer.objects.active = tmp_obj
 
-    bpy.ops.object.select_all(action='DESELECT')
-    bpy.context.object.select_set(True)
-    bpy.ops.object.shade_smooth()
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.context.object.select_set(True)
+        bpy.ops.object.shade_smooth()
 
-    tmp_obj.select_set(True)
-    tmp_obj.active_material = mat
+        tmp_obj.select_set(True)
+        tmp_obj.active_material = mat
 
-    State.last_edit_mat = mat.name
+        State.last_edit_mat = mat.name
 
 
 class MATHP_OT_edit_material_asset(Operator):
@@ -364,24 +368,29 @@ def del_tmp_obj(scene, depsgraph):
         _ = bpy.context.window_manager.windows[State.window_count - 1]
         return
     except IndexError:
+        pass
+    finally:
         update_window_count()
-    if mat := bpy.data.materials.get(State.last_edit_mat):
-        mat.asset_generate_preview()
-    coll = bpy.data.collections.get('tmp_mathp')
-    if coll:
-        # 清理临时物体
-        for obj in bpy.data.collections['tmp_mathp'].objects:
-            me = obj.data
-            bpy.data.objects.remove(obj)
-            bpy.data.meshes.remove(me)
 
-        bpy.data.collections.remove(coll)
+    if allowSaveUpdate():
+        if mat := bpy.data.materials.get(State.last_edit_mat):
+            mat.asset_generate_preview()
 
-    if 'tmp_mathp' in bpy.data.screens:
-        # 清理多余screen
-        for s in bpy.data.screens:
-            if not s.name.startswith('tmp_mathp'): continue
-            s.user_clear()
+        coll = bpy.data.collections.get('tmp_mathp')
+        if coll:
+            # 清理临时物体
+            for obj in bpy.data.collections['tmp_mathp'].objects:
+                me = obj.data
+                bpy.data.objects.remove(obj)
+                bpy.data.meshes.remove(me)
+
+            bpy.data.collections.remove(coll)
+
+        if 'tmp_mathp' in bpy.data.screens:
+            # 清理多余screen
+            for s in bpy.data.screens:
+                if not s.name.startswith('tmp_mathp'): continue
+                s.user_clear()
 
 
 def update_shader_ball(self, context):
