@@ -38,7 +38,7 @@ def copy_files():
 def zip_dir():
     tg_dir = copy_files()
 
-    zip_file = parent_path.joinpath(f'{parent_path.name}.zip')
+    zip_file = parent_path.joinpath('dist',f'{parent_path.name}.zip')
     if zip_file.exists():
         os.remove(zip_file)
     # utf-8 encoding
@@ -50,7 +50,6 @@ def zip_dir():
     shutil.rmtree(tg_dir)
     print('Remove temp dir')
     # move zip file to dist
-    shutil.move(zip_file, parent_path.joinpath('dist',zip_file.name))
 
 if __name__ == '__main__':
     copy_files()
