@@ -1,52 +1,57 @@
+import os
 from pathlib import Path
+import zipfile
+import shutil
+
+parent_path = Path(__file__).parent
 
 
-def build_addon_zip_file(zip_dir: Path, dest_zip_path: Path) -> tuple[bool, str]:
-    """
-    :param zip_dir:
-    :param dest_zip_path:
-    :return:
-        bool: success
-        str: dest_zip_path/err_msg
-    """
-    import shutil, os
-    import zipfile
+def get_tg_dir() -> Path:
+    tg_dir = parent_path.joinpath(parent_path.name)
+    if tg_dir.exists():
+        shutil.rmtree(tg_dir)
+    tg_dir.mkdir()
 
-    def prepare_files():
-        temp_dir = dest_zip_path.parent.joinpath('BME_TMP_ZIP')
-        sub_dir = temp_dir.joinpath(dest_zip_path.stem)
-        if sub_dir.exists():
-            shutil.rmtree(sub_dir)
-        sub_dir.mkdir(parents=True)
+    return tg_dir
 
-        for file in zip_dir.glob('*'):
-            if file.is_dir():
-                if file.name.startswith('__') or file.name.startswith('.') or file == 'dist': continue
-                shutil.copytree(file, sub_dir.joinpath(file.name))
 
-            elif file.is_file():
-                if file.name == __file__: continue
+def copy_files():
+    tg_dir = get_tg_dir()
+    sub_dir = tg_dir.joinpath(parent_path.name)
+    sub_dir.mkdir()
 
-                shutil.copy(file, sub_dir.joinpath(file.name))
+    for file in parent_path.glob('*'):
+        if file.is_dir():
+            if file.name == parent_path.name: continue
+            if file.name.startswith('__') or file.name.startswith('.') or file.name =='dist': continue
 
-        return temp_dir
+            shutil.copytree(file, sub_dir.joinpath(file.name))
 
-    try:
-        temp_dir = prepare_files()
-        with zipfile.ZipFile(dest_zip_path, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as zip:
-            for root, dirs, files in os.walk(temp_dir):
-                for file in files:
-                    zip.write(os.path.join(root, file),
-                              arcname=os.path.join(root, file).replace(str(temp_dir), ''))
-        shutil.rmtree(temp_dir)
+        elif file.is_file():
+            if file.name == __file__: continue
 
-        return True, f'{dest_zip_path}'
-    except Exception as e:
-        return False, str(e)
+            shutil.copy(file, sub_dir.joinpath(file.name))
 
+    return tg_dir
+
+
+def zip_dir():
+    tg_dir = copy_files()
+
+    zip_file = parent_path.joinpath(f'{parent_path.name}.zip')
+    if zip_file.exists():
+        os.remove(zip_file)
+    # utf-8 encoding
+    with zipfile.ZipFile(zip_file, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as zip:
+        for root, dirs, files in os.walk(tg_dir):
+            for file in files:
+                zip.write(os.path.join(root, file), arcname=os.path.join(root, file).replace(str(tg_dir), ''))
+    print(f'Zip file: {zip_file}')
+    shutil.rmtree(tg_dir)
+    print('Remove temp dir')
+    # move zip file to dist
+    shutil.move(zip_file, parent_path.joinpath('dist',zip_file.name))
 
 if __name__ == '__main__':
-    dest_zip_path = Path(__file__).parent.joinpath('dist', 'MaterialHelper.zip')
-    zip_dir = Path(__file__).parent
-    res, msg = build_addon_zip_file(zip_dir, dest_zip_path)
-    print(res, msg)
+    copy_files()
+    zip_dir()
