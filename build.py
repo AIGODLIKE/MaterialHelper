@@ -23,7 +23,7 @@ def copy_files():
     for file in parent_path.glob('*'):
         if file.is_dir():
             if file.name == parent_path.name: continue
-            if file.name.startswith('__') or file.name.startswith('.') or file.name =='dist': continue
+            if file.name.startswith('__') or file.name.startswith('.') or file.name == 'dist': continue
 
             shutil.copytree(file, sub_dir.joinpath(file.name))
 
@@ -37,8 +37,10 @@ def copy_files():
 
 def zip_dir():
     tg_dir = copy_files()
-
-    zip_file = parent_path.joinpath('dist',f'{parent_path.name}.zip')
+    dist = parent_path.joinpath('dist')
+    if not dist.exists():
+        dist.mkdir(parents=True)
+    zip_file = dist.joinpath('dist', f'{parent_path.name}.zip')
     if zip_file.exists():
         os.remove(zip_file)
     # utf-8 encoding
@@ -50,6 +52,7 @@ def zip_dir():
     shutil.rmtree(tg_dir)
     print('Remove temp dir')
     # move zip file to dist
+
 
 if __name__ == '__main__':
     copy_files()
