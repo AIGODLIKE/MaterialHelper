@@ -25,9 +25,9 @@ jobs:
       with:
         python-version: 3.11
 
-    - run: python build.py
+    - run: python build.py --no-zip
     # Optionally verify that it works (provided that it does not need user interaction)
     - uses: actions/upload-artifact@v2
       with:
-        name: MaterialHelper_build
+        name: MaterialHelper
         path: dist/*

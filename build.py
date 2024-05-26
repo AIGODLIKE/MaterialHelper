@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 import zipfile
 import shutil
@@ -35,8 +36,7 @@ def copy_files():
     return tg_dir
 
 
-def zip_dir():
-    tg_dir = copy_files()
+def zip_dir(tg_dir):
     dist = parent_path.joinpath('dist')
     if not dist.exists():
         dist.mkdir(parents=True)
@@ -55,5 +55,8 @@ def zip_dir():
 
 
 if __name__ == '__main__':
-    copy_files()
-    zip_dir()
+    tg_dir = copy_files()
+    if len(sys.argv) > 1 and sys.argv[1] == "--no-zip":
+        pass
+    else:
+        zip_dir(tg_dir)
