@@ -57,6 +57,9 @@ def zip_dir(tg_dir):
 if __name__ == '__main__':
     tg_dir = copy_files()
     if len(sys.argv) > 1 and sys.argv[1] == "--no-zip":
-        pass
+        dist = parent_path.joinpath('dist')
+        if not dist.exists():
+            dist.mkdir(parents=True)
+        shutil.move(tg_dir, dist)
     else:
         zip_dir(tg_dir)
