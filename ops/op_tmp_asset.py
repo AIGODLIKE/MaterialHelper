@@ -7,7 +7,7 @@ from pathlib import Path
 from bpy_extras import asset_utils
 
 from .op_edit_material_asset import get_local_selected_assets, tag_redraw
-from .functions import ensure_curent_file_asset_cats, C_TMP_ASSET_TAG, selectedAsset, _uuid
+from .functions import ensure_current_file_asset_cats, C_TMP_ASSET_TAG, selectedAsset, _uuid
 from bpy.utils import previews
 
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
@@ -32,7 +32,7 @@ class MATHP_OT_set_tmp_asset(Operator):
         if bpy.data.filepath == '':
             return {'CANCELLED'}
 
-        ensure_curent_file_asset_cats()
+        ensure_current_file_asset_cats()
 
         for mat in bpy.data.materials:
             if mat.asset_data is None: continue
