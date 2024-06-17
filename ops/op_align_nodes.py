@@ -2,25 +2,26 @@ import bpy
 from numpy import mean
 from math import sqrt, hypot
 from bpy.props import StringProperty
+from typing import Optional
 from ..prefs.get_pref import get_pref
 
 import blf
 
 
 # 节点偏移距离
-def dis_x():
+def dis_x() -> int:
     return get_pref().node_dis_x
 
 
-def dis_y():
+def dis_y() -> int:
     return get_pref().node_dis_y
 
 
-def connected_socket(self):
+def connected_socket(self) -> list[bpy.types.NodeSocket]:
     """获取接口所链接的另一非reroute接口
 
     :param self: bpy.types.NodeSocket
-    :return: list[bpy.types.NodeSocket] / None
+    :return: list[bpy.types.NodeSocket]
     """
     _connected_sockets = []
 
@@ -38,10 +39,10 @@ def connected_socket(self):
             for link in socket.links:
                 _connected_sockets.append(link.from_socket)
 
-    return _connected_sockets if len(_connected_sockets) != 0 else None
+    return _connected_sockets
 
 
-def get_dependence(node, selected_nodes=None):
+def get_dependence(node, selected_nodes=None) -> list[bpy.types.Node]:
     """获取节点子依赖项
 
     :param node:  bpy.types.Node
@@ -60,7 +61,7 @@ def get_dependence(node, selected_nodes=None):
     return dependence_nodes
 
 
-def get_dependent(node, selected_nodes=None):
+def get_dependent(node: bpy.types.Node, selected_nodes: Optional[list[bpy.types.Node]] = None) -> list[bpy.types.Node]:
     """获取节点父依赖项
 
     :param node:  bpy.types.Node
@@ -80,7 +81,7 @@ def get_dependent(node, selected_nodes=None):
     return dependent_nodes
 
 
-def get_all_dependence(node, selected_nodes=None):
+def get_all_dependence(node: bpy.types.Node, selected_nodes: Optional[list[bpy.types.Node]] = None):
     """获取节点所有依赖项
 
     :param node:  bpy.types.Node
@@ -101,7 +102,7 @@ def get_all_dependence(node, selected_nodes=None):
     return all_dependence_nodes
 
 
-def get_all_dependent(node, selected_nodes=None):
+def get_all_dependent(node: bpy.types.Node, selected_nodes: Optional[list[bpy.types.Node]] = None):
     """获取节点所有父级依赖项
 
     :param node:  bpy.types.Node
@@ -122,7 +123,7 @@ def get_all_dependent(node, selected_nodes=None):
     return all_dependent_nodes
 
 
-def dpifac():
+def dpifac() -> float:
     """获取用户屏幕缩放，用于矫正节点宽度/长度和摆放位置
 
     :return: Float
@@ -131,7 +132,7 @@ def dpifac():
     return prefs.dpi * prefs.pixel_size / 72
 
 
-def get_dimensions(node):
+def get_dimensions(node) -> tuple[float, float]:
     """获取节点尺寸
 
     :param node: bpy.types.Node
@@ -140,7 +141,7 @@ def get_dimensions(node):
     return node.dimensions.x / dpifac(), node.dimensions.y / dpifac()
 
 
-def get_center_point(node, loc):
+def get_center_point(node, loc) -> tuple[float, float]:
     """获取节点中心点，用于评估尺寸和摆放位置
 
     :param node: bpy.types.Node
@@ -154,7 +155,7 @@ def get_center_point(node, loc):
     return mid_x, mid_y
 
 
-def get_offset_from_anim(fac):
+def get_offset_from_anim(fac) -> float:
     """从动画值获取偏移比例
 
     :param fac: 动画完成比，0~1
@@ -461,14 +462,14 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
 # 以下三个函数来自node wrangler
 # 用于替换原来操作逻辑：选中项对齐激活项 -> 选中项对齐鼠标所在位置项
 
-def abs_node_location(node):
+def abs_node_location(node) -> tuple[float, float]:
     if node.parent is None:
         return node.location
 
     return node.location + abs_node_location(node.parent)
 
 
-def store_mouse_cursor(context, event):
+def store_mouse_cursor(context, event) -> None:
     space = context.space_data
     tree = space.edit_tree
 
@@ -479,7 +480,7 @@ def store_mouse_cursor(context, event):
         space.cursor_location = tree.view_center
 
 
-def node_at_pos(nodes, context, event):
+def node_at_pos(nodes, context, event) -> bpy.types.Node:
     nodes_under_mouse = []
     target_node = None
 
@@ -512,7 +513,7 @@ def node_at_pos(nodes, context, event):
     nearest_node = sorted(node_points_with_dist, key=lambda k: k[1])[0][0]
 
     for node in nodes:
-        if node.type != 'FRAME' and skipnode == False:
+        if node.type != 'FRAME' and skipnode is False:
             locx, locy = abs_node_location(node)
             dimx = node.dimensions.x / dpifac()
             dimy = node.dimensions.y / dpifac()

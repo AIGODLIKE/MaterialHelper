@@ -27,7 +27,7 @@ def cat_uuid_in_file(path: Path, uuid: str = _uuid) -> Union[int, bool]:
     return False
 
 
-def append_asset_cats_txt(path: Path):
+def append_asset_cats_txt(path: Path) -> None:
     try:
         with open(path, 'a', encoding='utf-8') as f:
             f.write(f"{_uuid}:Material Helper:Material Helper\n")

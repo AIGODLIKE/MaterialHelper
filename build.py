@@ -16,7 +16,7 @@ def get_tg_dir() -> Path:
     return tg_dir
 
 
-def copy_files():
+def copy_files() -> Path:
     tg_dir = get_tg_dir()
     sub_dir = tg_dir.joinpath(parent_path.name)
     sub_dir.mkdir()
@@ -36,7 +36,7 @@ def copy_files():
     return tg_dir
 
 
-def zip_dir(tg_dir):
+def zip_dir(tg_dir) -> None:
     dist = parent_path.joinpath('dist')
     if not dist.exists():
         dist.mkdir(parents=True)
