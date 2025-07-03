@@ -1,18 +1,25 @@
-from . import op_edit_material_asset, op_tmp_asset, op_align_nodes, op_clear_unused_material, \
+from . import (
+    op_edit_material_asset,
+    op_tmp_asset,
+    op_align_nodes,
+    op_clear_unused_material,
     op_replace_mat
+)
+
+module_list = [
+    op_edit_material_asset,
+    op_clear_unused_material,
+    op_replace_mat,
+    op_tmp_asset,
+    op_align_nodes,
+]
 
 
 def register():
-    op_edit_material_asset.register()
-    op_clear_unused_material.register()
-    op_replace_mat.register()
-    op_tmp_asset.register()
-    op_align_nodes.register()
+    for mod in module_list:
+        mod.register()
 
 
 def unregister():
-    op_edit_material_asset.unregister()
-    op_clear_unused_material.unregister()
-    op_replace_mat.unregister()
-    op_tmp_asset.unregister()
-    op_align_nodes.unregister()
+    for mod in module_list:
+        mod.unregister()
