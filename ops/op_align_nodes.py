@@ -3,7 +3,7 @@ from numpy import mean
 from math import sqrt, hypot
 from bpy.props import StringProperty
 from typing import Optional
-from ..prefs.get_pref import get_pref
+from ..utils import get_pref
 
 import blf
 

@@ -1,7 +1,6 @@
 import bpy
 
 node_idnames = {
-
     'GeometryNodeReplaceMaterial',
     'GeometryNodeSetMaterial',
     'GeometryNodeMaterialSelection'

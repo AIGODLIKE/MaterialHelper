@@ -1,54 +1,56 @@
 import bpy
 import rna_keymap_ui
-from .. import __ADDON_NAME__
-from bpy.props import EnumProperty, StringProperty, IntProperty, BoolProperty, PointerProperty
-from bpy.types import PropertyGroup
+
+from .. import __package__
 
 
-class MATHP_Preference(bpy.types.AddonPreferences):
-    bl_idname = __ADDON_NAME__
+class MaterialHelperPreference(bpy.types.AddonPreferences):
+    bl_idname = __package__
 
-    ui: EnumProperty(name='UI', items=[
+    ui: bpy.props.EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 1),
     ], default='SETTINGS')
 
-    window_style: EnumProperty(name='Material Window', items=[
+    window_style: bpy.props.EnumProperty(name='Material Window', items=[
         ('1', 'Big Window', ''),
         ('2', 'Small Window', ''),
     ], default='1')
 
     # small_window
-    show_UI: BoolProperty(name='Show UI Panel')
-    UI_direction: EnumProperty(name='UI Panel Direction', items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')],
-                               default='RIGHT')
-    use_shader_ball_pv: BoolProperty(name='Realtime Preview(If enable and open more than 15 window will crash blender)', default=False)
+    show_UI: bpy.props.BoolProperty(name='Show UI Panel')
+    UI_direction: bpy.props.EnumProperty(name='UI Panel Direction',
+                                         items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')],
+                                         default='RIGHT')
+    use_shader_ball_pv: bpy.props.BoolProperty(
+        name='Realtime Preview(If enable and open more than 15 window will crash blender)',
+        default=False)
 
     # big_window
 
     # general window setting
-    shader_ball: EnumProperty(name='Shader Ball',
-                              items=[
-                                  ('NONE', 'Follow Material', ''),
-                                  ('FLAT', 'Flat', ''),
-                                  ('SPHERE', 'Sphere', ''),
-                                  ('CUBE', 'Cube', ''),
-                                  ('HAIR', 'Hair', ''),
-                                  ('SHADERBALL', 'Shader Ball', ''),
-                                  ('CLOTH', 'Cloth', ''),
-                                  ('FLUID', 'Fluid', ''),
-                              ],
-                              default='NONE')
-    shading_type: EnumProperty(name='Shading',
-                               items=[
-                                   ('SOLID', 'Solid', ''),
-                                   ('MATERIAL', 'Material', '', 'SHADING_SOLID', 1),
-                                   ('RENDERED', 'Rendered', '', 'SHADING_RENDERED', 2),
-                               ], default='MATERIAL')
+    shader_ball: bpy.props.EnumProperty(name='Shader Ball',
+                                        items=[
+                                            ('NONE', 'Follow Material', ''),
+                                            ('FLAT', 'Flat', ''),
+                                            ('SPHERE', 'Sphere', ''),
+                                            ('CUBE', 'Cube', ''),
+                                            ('HAIR', 'Hair', ''),
+                                            ('SHADERBALL', 'Shader Ball', ''),
+                                            ('CLOTH', 'Cloth', ''),
+                                            ('FLUID', 'Fluid', ''),
+                                        ],
+                                        default='NONE')
+    shading_type: bpy.props.EnumProperty(name='Shading',
+                                         items=[
+                                             ('SOLID', 'Solid', ''),
+                                             ('MATERIAL', 'Material', '', 'SHADING_SOLID', 1),
+                                             ('RENDERED', 'Rendered', '', 'SHADING_RENDERED', 2),
+                                         ], default='MATERIAL')
 
     # align
-    node_dis_x: IntProperty(name='Node Distance X', default=100, min=0, soft_max=200)
-    node_dis_y: IntProperty(name='Node Distance Y', default=50, min=0, soft_max=100)
+    node_dis_x: bpy.props.IntProperty(name='Node Distance X', default=100, min=0, soft_max=200)
+    node_dis_y: bpy.props.IntProperty(name='Node Distance Y', default=50, min=0, soft_max=100)
 
     def draw(self, context):
         layout = self.layout
@@ -131,8 +133,8 @@ class MATHP_Preference(bpy.types.AddonPreferences):
 
 
 def register():
-    bpy.utils.register_class(MATHP_Preference)
+    bpy.utils.register_class(MaterialHelperPreference)
 
 
 def unregister():
-    bpy.utils.unregister_class(MATHP_Preference)
+    bpy.utils.unregister_class(MaterialHelperPreference)

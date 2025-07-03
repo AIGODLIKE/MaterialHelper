@@ -32,4 +32,5 @@ data = {
     "Manual Refresh": "手动刷新",
     'Refresh Preview': '刷新预览',
     'Select Material Object': '选择材质物体',
+    "Make the local asset manager your place to create powerful materials": "将本地资产管理器作为你创造强大材质的地方吧"
 }

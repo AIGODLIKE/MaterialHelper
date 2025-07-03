@@ -9,7 +9,7 @@ from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty,
 from bpy.types import GizmoGroup
 from contextlib import contextmanager
 
-from ..prefs.get_pref import get_pref
+from ..utils import get_pref
 
 
 class State():

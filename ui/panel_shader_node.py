@@ -1,5 +1,4 @@
 import bpy
-from ..prefs.get_pref import get_pref
 
 
 class MATHP_PT_NodePanel(bpy.types.Panel):
