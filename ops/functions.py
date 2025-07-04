@@ -3,7 +3,7 @@ from typing import Union
 
 import bpy
 
-C_TMP_ASSET_TAG = 'tmp_asset_mathp'
+MATERIAL_HELPER_ASSET_TAG = 'tmp_asset_mathp'
 
 _uuid = '11451419-1981-0aaa-aaaa-aaaaaaaaaaaa'
 

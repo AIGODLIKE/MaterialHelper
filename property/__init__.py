@@ -1,4 +1,5 @@
 import bpy
+from ..ops.tmp_asset import update_user_control
 
 
 def update_shader_ball(self, context):
@@ -42,6 +43,15 @@ def register():
                                                                           ], default='SPHERE',
                                                                           update=update_shader_ball)
 
+    # 用户总控制开关
+    bpy.types.Scene.mathp_update_mat = bpy.props.BoolProperty(name='Auto Update',
+                                                              default=True,
+                                                              description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
+                                                              update=update_user_control)
+    bpy.types.WindowManager.mathp_update_active_obj_mats = bpy.props.BoolProperty(name='Object / Material Select Sync',
+                                                                                  description="If checked, the active object's materials will be automatically selected",
+                                                                                  default=False)
+
 
 def unregister():
     del bpy.types.WindowManager.mathp_node_move
@@ -49,3 +59,6 @@ def unregister():
 
     del bpy.types.WindowManager.mathp_global_update
     del bpy.types.Material.mathp_preview_render_type
+
+    del bpy.types.Scene.mathp_update_mat
+    del bpy.types.WindowManager.mathp_update_active_obj_mats

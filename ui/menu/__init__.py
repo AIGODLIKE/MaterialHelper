@@ -1,10 +1,10 @@
 import bpy
-from .asset_browser import MATHP_MT_asset_browser_menu
+from .asset_browser import AssetBrowserMenu
 
 
 def register():
-    bpy.utils.register_class(MATHP_MT_asset_browser_menu)
+    bpy.utils.register_class(AssetBrowserMenu)
 
 
 def unregister():
-    bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)
+    bpy.utils.unregister_class(AssetBrowserMenu)

@@ -5,7 +5,7 @@ import bpy
 from bpy.utils import previews
 from bpy_extras import asset_utils
 
-from .functions import ensure_current_file_asset_cats, C_TMP_ASSET_TAG, SelectedAsset, _uuid
+from .functions import ensure_current_file_asset_cats, MATERIAL_HELPER_ASSET_TAG, SelectedAsset, _uuid
 from .edit_material_asset import get_local_selected_assets, tag_redraw
 
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
@@ -23,7 +23,7 @@ class MATHP_OT_set_tmp_asset(bpy.types.Operator):
             if mat.is_grease_pencil: continue
             mat.asset_mark()
             mat.asset_generate_preview()
-            mat.asset_data.tags.new(C_TMP_ASSET_TAG)
+            mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
 
         tag_redraw()
 
@@ -34,7 +34,7 @@ class MATHP_OT_set_tmp_asset(bpy.types.Operator):
 
         for mat in bpy.data.materials:
             if mat.asset_data is None: continue
-            if C_TMP_ASSET_TAG in mat.asset_data.tags:
+            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
                 if mat.asset_data.catalog_id != _uuid:
                     mat.asset_data.catalog_id = _uuid
         try:
@@ -54,7 +54,7 @@ class MATHP_OT_clear_tmp_asset(bpy.types.Operator):
         for mat in bpy.data.materials:
             if mat.asset_data is None: continue
 
-            if C_TMP_ASSET_TAG in mat.asset_data.tags:
+            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
                 mat.asset_clear()
 
         tag_redraw()
@@ -75,8 +75,8 @@ class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
         for mat in selected_mats:
-            if C_TMP_ASSET_TAG in mat.asset_data.tags:
-                tag = mat.asset_data.tags[C_TMP_ASSET_TAG]
+            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
+                tag = mat.asset_data.tags[MATERIAL_HELPER_ASSET_TAG]
                 mat.asset_data.tags.remove(tag)
                 self.report({'INFO'}, '{} is set as True Asset'.format(mat.name))
 
@@ -403,7 +403,7 @@ def remove_all_tmp_tags():
     for mat in bpy.data.materials:
         if mat.asset_data is None: continue
         for tag in mat.asset_data.tags:
-            if tag.name == C_TMP_ASSET_TAG:
+            if tag.name == MATERIAL_HELPER_ASSET_TAG:
                 mat.asset_data.tags.remove(tag)
 
 
@@ -420,13 +420,13 @@ classes = (
 )
 
 
-def register_later(lock, t):
-    # to prevent bug
-    import time
-    while not hasattr(bpy.context, 'scene'):
-        time.sleep(5)
-    wm = bpy.context.window_manager
-    wm.mathp_update_active_obj_mats = True
+# def register_later(lock, t):
+#     # to prevent bug
+#     import time
+#     while not hasattr(bpy.context, 'scene'):
+#         time.sleep(5)
+#     wm = bpy.context.window_manager
+#     wm.mathp_update_active_obj_mats = True
 
 
 def register():
@@ -434,24 +434,16 @@ def register():
 
     for cls in classes:
         bpy.utils.register_class(cls)
-    # 用户总控制开关
-    bpy.types.Scene.mathp_update_mat = bpy.props.BoolProperty(name='Auto Update',
-                                                    default=True,
-                                                    description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
-                                                    update=update_user_control)
-    bpy.types.WindowManager.mathp_update_active_obj_mats = bpy.props.BoolProperty(name='Object / Material Select Sync',
-                                                                        description="If checked, the active object's materials will be automatically selected",
-                                                                        default=False)
     # handle
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_pre.append(update_active_object_material)
     # ui
 
-    import threading
-    lock = threading.Lock()
-    lock_holder = threading.Thread(target=register_later, args=(lock, 5), name='Init_Scene2')
-    lock_holder.daemon = True
-    lock_holder.start()
+    # import threading
+    # lock = threading.Lock()
+    # lock_holder = threading.Thread(target=register_later, args=(lock, 5), name='Init_Scene2')
+    # lock_holder.daemon = True
+    # lock_holder.start()
 
 
 def unregister():
@@ -463,4 +455,3 @@ def unregister():
     # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)
-    del bpy.types.Scene.mathp_update_mat

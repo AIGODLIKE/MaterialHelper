@@ -1,9 +1,11 @@
-from . import localdb
+from . import translate, icons
 
 
 def register():
-    localdb.register()
+    translate.register()
+    icons.register()
 
 
 def unregister():
-    localdb.unregister()
+    translate.unregister()
+    icons.unregister()
