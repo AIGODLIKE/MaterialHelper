@@ -1,9 +1,11 @@
-from . import panel_shader_node
+from . import panel, menu
 
 
 def register():
-    panel_shader_node.register()
+    panel.register()
+    menu.register()
 
 
 def unregister():
-    panel_shader_node.unregister()
+    panel.unregister()
+    menu.unregister()
