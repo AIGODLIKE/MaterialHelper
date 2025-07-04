@@ -1,15 +1,14 @@
-import os
-from typing import Union
-import bpy
 from pathlib import Path
-from .op_edit_material_asset import get_local_selected_assets, tag_redraw
+from typing import Union
+
+import bpy
 
 C_TMP_ASSET_TAG = 'tmp_asset_mathp'
 
 _uuid = '11451419-1981-0aaa-aaaa-aaaaaaaaaaaa'
 
 
-class selectedAsset:
+class SelectedAsset:
     bl_options = {'UNDO'}
 
     @classmethod

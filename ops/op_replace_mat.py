@@ -1,6 +1,5 @@
 import bpy
 
-from bpy.props import StringProperty, EnumProperty
 from .op_tmp_asset import get_local_selected_assets
 
 
@@ -24,7 +23,7 @@ class MATHP_OT_replace_mat(bpy.types.Operator):
             enum_mats.append((m.name, m.name, '', m.preview.icon_id, i))
         return enum_mats
 
-    enum_mats: EnumProperty(
+    enum_mats: bpy.props.EnumProperty(
         name="Material",
         items=get_mats,
     )

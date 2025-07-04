@@ -1,11 +1,11 @@
-import bpy
-from numpy import mean
 from math import sqrt, hypot
-from bpy.props import StringProperty
 from typing import Optional
-from ..utils import get_pref
 
 import blf
+import bpy
+from numpy import mean
+
+from ..utils import get_pref
 
 
 # 节点偏移距离

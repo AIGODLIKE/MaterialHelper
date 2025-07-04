@@ -1,18 +1,13 @@
-import bpy
-import bmesh
-import mathutils
-from typing import Union
-from pathlib import Path
-
-from bpy.types import Operator
-from bpy.props import (IntProperty, FloatProperty, StringProperty, EnumProperty, BoolProperty)
-from bpy.types import GizmoGroup
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Union
+
+import bpy
 
 from ..utils import get_pref
 
 
-class State():
+class State:
     window_count: int = 1
     new_window: Union[bpy.types.Window, None] = None
     last_edit_mat: Union[bpy.types.Material, None] = None
@@ -230,11 +225,11 @@ def set_shader_ball_mat(mat, coll):
         State.last_edit_mat = mat.name
 
 
-class MATHP_OT_edit_material_asset(Operator):
+class MATHP_OT_edit_material_asset(bpy.types.Operator):
     bl_idname = 'mathp.edit_material_asset'
     bl_label = 'Edit Material Asset'
 
-    material: StringProperty(name='Material Name', options={'SKIP_SAVE'})
+    material: bpy.props.StringProperty(name='Material Name', options={'SKIP_SAVE'})
 
     @classmethod
     def poll(cls, context):
@@ -300,12 +295,12 @@ class MATHP_OT_edit_material_asset(Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_update_mat_pv(Operator):
+class MATHP_OT_update_mat_pv(bpy.types.Operator):
     """Update Material Asset Preview"""
     bl_idname = 'mathp.update_mat_pv'
     bl_label = 'Update Material Preview'
 
-    mat_name: StringProperty(name='Material Name')
+    mat_name: bpy.props.StringProperty(name='Material Name')
 
     def execute(self, context):
         # 更新材质预览
@@ -316,7 +311,7 @@ class MATHP_OT_update_mat_pv(Operator):
         return {'FINISHED'}
 
 
-class MATHP_UI_update_mat_pv(GizmoGroup):
+class MATHP_UI_update_mat_pv(bpy.types.GizmoGroup):
     """use_tooltip"""
     bl_idname = "MATHP_UI_update_mat_pv"
     bl_label = "Update Material Preview"
@@ -414,18 +409,20 @@ def update_shader_ball(self, context):
 
 
 def register():
-    bpy.types.WindowManager.mathp_global_update = BoolProperty(name='Update', default=False)
-    bpy.types.Material.mathp_preview_render_type = EnumProperty(name='Shader Ball',
-                                                                items=[
-                                                                    ('FLAT', 'Flat', '', 'MATPLANE', 0),
-                                                                    ('SPHERE', 'Sphere', '', 'MATSPHERE', 1),
-                                                                    ('CUBE', 'Cube', '', 'MATCUBE', 2),
-                                                                    ('HAIR', 'Hair', '', 'CURVES', 3),
-                                                                    ('SHADERBALL', 'Shader Ball', '', 'MATSHADERBALL',
-                                                                     4),
-                                                                    ('CLOTH', 'Cloth', '', 'MATCLOTH', 5),
-                                                                    ('FLUID', 'Fluid', '', 'MATFLUID', 6),
-                                                                ], default='SPHERE', update=update_shader_ball)
+    bpy.types.WindowManager.mathp_global_update = bpy.props.BoolProperty(name='Update', default=False)
+    bpy.types.Material.mathp_preview_render_type = bpy.props.EnumProperty(name='Shader Ball',
+                                                                          items=[
+                                                                              ('FLAT', 'Flat', '', 'MATPLANE', 0),
+                                                                              ('SPHERE', 'Sphere', '', 'MATSPHERE', 1),
+                                                                              ('CUBE', 'Cube', '', 'MATCUBE', 2),
+                                                                              ('HAIR', 'Hair', '', 'CURVES', 3),
+                                                                              ('SHADERBALL', 'Shader Ball', '',
+                                                                               'MATSHADERBALL',
+                                                                               4),
+                                                                              ('CLOTH', 'Cloth', '', 'MATCLOTH', 5),
+                                                                              ('FLUID', 'Fluid', '', 'MATFLUID', 6),
+                                                                          ], default='SPHERE',
+                                                                          update=update_shader_ball)
     if not MATHP_OT_edit_material_asset.is_registered:
         bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)

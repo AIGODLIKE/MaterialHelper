@@ -1,20 +1,18 @@
-import bpy
 import os
-
-from bpy.types import Operator, Menu
-from bpy.props import StringProperty, BoolProperty, EnumProperty
 from pathlib import Path
+
+import bpy
+from bpy.utils import previews
 from bpy_extras import asset_utils
 
+from .functions import ensure_current_file_asset_cats, C_TMP_ASSET_TAG, SelectedAsset, _uuid
 from .op_edit_material_asset import get_local_selected_assets, tag_redraw
-from .functions import ensure_current_file_asset_cats, C_TMP_ASSET_TAG, selectedAsset, _uuid
-from bpy.utils import previews
 
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
 G_ACTIVE_MATS_LIST = []  # 选中材质列表
 
 
-class MATHP_OT_set_tmp_asset(Operator):
+class MATHP_OT_set_tmp_asset(bpy.types.Operator):
     bl_idname = "mathp.set_tmp_asset"
     bl_label = "Set Temp Asset"
     bl_options = {'INTERNAL'}
@@ -47,7 +45,7 @@ class MATHP_OT_set_tmp_asset(Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_clear_tmp_asset(Operator):
+class MATHP_OT_clear_tmp_asset(bpy.types.Operator):
     bl_idname = 'mathp.clear_tmp_asset'
     bl_label = 'Clear Temp Asset'
     bl_options = {'INTERNAL'}
@@ -64,7 +62,7 @@ class MATHP_OT_clear_tmp_asset(Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_set_true_asset(selectedAsset, Operator):
+class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
     """Apply Selected as True Assets"""
     bl_idname = 'mathp.set_true_asset'
     bl_label = 'Apply'
@@ -87,7 +85,7 @@ class MATHP_OT_set_true_asset(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_delete_asset(selectedAsset, Operator):
+class MATHP_OT_delete_asset(SelectedAsset, bpy.types.Operator):
     """Delete Selected Materials"""
     bl_idname = 'mathp.delete_asset'
     bl_label = 'Delete'
@@ -108,7 +106,7 @@ class MATHP_OT_delete_asset(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_duplicate_asset(selectedAsset, Operator):
+class MATHP_OT_duplicate_asset(SelectedAsset, bpy.types.Operator):
     """Duplicate Active Item"""
     bl_idname = 'mathp.duplicate_asset'
     bl_label = 'Duplicate'
@@ -130,7 +128,7 @@ class MATHP_OT_duplicate_asset(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_refresh_asset_pv(selectedAsset, Operator):
+class MATHP_OT_refresh_asset_pv(SelectedAsset, bpy.types.Operator):
     bl_idname = 'mathp.refresh_asset_pv'
     bl_label = 'Refresh Preview'
 
@@ -149,7 +147,7 @@ class MATHP_OT_refresh_asset_pv(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_rename_asset(selectedAsset, Operator):
+class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
     """Rename Active Item"""
     bl_idname = 'mathp.rename_asset'
     bl_label = 'Rename'
@@ -193,8 +191,6 @@ G_MAT_ICON_ID = {}  # name:id
 
 
 def register_icon():
-    # global G_PV_COLL, G_MAT_ICON_ID
-
     icon_dir = Path(__file__).parent.parent.joinpath('mat_lib')
     mats_icon = []
 
@@ -221,7 +217,7 @@ def unregister_icon():
     G_MAT_ICON_ID.clear()
 
 
-class MATHP_OT_select_material_obj(selectedAsset, Operator):
+class MATHP_OT_select_material_obj(SelectedAsset, bpy.types.Operator):
     bl_idname = 'mathp.select_material_obj'
     bl_label = 'Select Material Object'
     bl_options = {'UNDO'}
@@ -230,7 +226,7 @@ class MATHP_OT_select_material_obj(selectedAsset, Operator):
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
         tmp_mesh = bpy.data.meshes.new('Temp')
-        tmp_obj = bpy.data.objects.new('Temp',tmp_mesh)
+        tmp_obj = bpy.data.objects.new('Temp', tmp_mesh)
         context.collection.objects.link(tmp_obj)
         bpy.context.view_layer.objects.active = tmp_obj
 
@@ -245,7 +241,7 @@ class MATHP_OT_select_material_obj(selectedAsset, Operator):
         return {'FINISHED'}
 
 
-class MATHP_OT_add_material(Operator):
+class MATHP_OT_add_material(bpy.types.Operator):
     """Add Material"""
     bl_idname = 'mathp.add_material'
     bl_label = 'Add Material'
@@ -333,7 +329,7 @@ class MATHP_OT_add_material(Operator):
         return {"FINISHED"}
 
 
-class MATHP_MT_asset_browser_menu(Menu):
+class MATHP_MT_asset_browser_menu(bpy.types.Menu):
     bl_label = 'Material Helper'
     bl_idname = 'MATHP_MT_asset_browser_menu'
 
@@ -491,11 +487,11 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     # 用户总控制开关
-    bpy.types.Scene.mathp_update_mat = BoolProperty(name='Auto Update',
+    bpy.types.Scene.mathp_update_mat = bpy.props.BoolProperty(name='Auto Update',
                                                     default=True,
                                                     description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
                                                     update=update_user_control)
-    bpy.types.WindowManager.mathp_update_active_obj_mats = BoolProperty(name='Object / Material Select Sync',
+    bpy.types.WindowManager.mathp_update_active_obj_mats = bpy.props.BoolProperty(name='Object / Material Select Sync',
                                                                         description="If checked, the active object's materials will be automatically selected",
                                                                         default=False)
     # handle
