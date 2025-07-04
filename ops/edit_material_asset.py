@@ -231,10 +231,6 @@ class MATHP_OT_edit_material_asset(bpy.types.Operator):
 
     material: bpy.props.StringProperty(name='Material Name', options={'SKIP_SAVE'})
 
-    @classmethod
-    def poll(cls, context):
-        return (hasattr(context, 'selected_assets') and context.selected_assets) or context.asset
-
     def _return(self, msg, type='INFO'):
         """
         :param msg: 报告给用户的信息
@@ -311,43 +307,6 @@ class MATHP_OT_update_mat_pv(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MATHP_UI_update_mat_pv(bpy.types.GizmoGroup):
-    """use_tooltip"""
-    bl_idname = "MATHP_UI_update_mat_pv"
-    bl_label = "Update Material Preview"
-    bl_space_type = 'NODE_EDITOR'
-    bl_region_type = 'WINDOW'
-    bl_options = {'PERSISTENT', 'SCALE'}
-
-    @classmethod
-    def poll(cls, context):
-        if context.area.type == 'NODE_EDITOR' and context.area.ui_type == 'ShaderNodeTree':
-            return hasattr(context, 'material') and context.material.asset_data is not None
-
-    def draw_prepare(self, context):
-        region = context.region
-
-        self.foo_gizmo.matrix_basis[0][3] = region.width - 40
-        self.foo_gizmo.matrix_basis[1][3] = 40
-        self.foo_gizmo.scale_basis = (80 * 0.35) / 2
-
-    def setup(self, context):
-        gz = self.gizmos.new("GIZMO_GT_button_2d")
-        gz.icon = 'FILE_REFRESH'
-        gz.draw_options = {'BACKDROP', 'OUTLINE'}
-        gz.use_tooltip = True
-        gz.alpha = 0
-        gz.color_highlight = 0.8, 0.8, 0.8
-        gz.alpha_highlight = 0.2
-
-        gz.scale_basis = (80 * 0.35) / 2  # Same as buttons defined in C
-
-        props = gz.target_set_operator("mathp.update_mat_pv")
-        props.mat_name = context.material.name
-
-        self.foo_gizmo = gz
-
-
 from bpy.app.handlers import persistent
 
 
@@ -412,7 +371,6 @@ def update_shader_ball(self, context):
 def register():
     bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)
-    # bpy.utils.register_class(MATHP_UI_update_mat_pv)
     bpy.app.handlers.depsgraph_update_pre.append(del_tmp_obj)
 
 
@@ -420,4 +378,3 @@ def unregister():
     bpy.app.handlers.depsgraph_update_pre.remove(del_tmp_obj)
     bpy.utils.unregister_class(MATHP_OT_edit_material_asset)
     bpy.utils.unregister_class(MATHP_OT_update_mat_pv)
-    # bpy.utils.unregister_class(MATHP_UI_update_mat_pv)

@@ -142,6 +142,7 @@ def get_property(prop, exclude=(), reversal=False) -> dict:
 
                 data[identifier] = pro
         except Exception as e:
+            print(prop, pr)
             print(e.args)
             import traceback
             traceback.print_exc()
@@ -165,3 +166,9 @@ def get_property_enum_items(cls, prop_name) -> list:
     for item in cls.properties[prop_name].enum_items:
         res.append((item.identifier, item.name, item.description))
     return res
+
+
+if __name__ == "__main__":
+    print("AA")
+    aa = get_property(bpy.data.materials[0], exclude=("original", "inputs"))
+    print("a = ", aa.__repr__())
