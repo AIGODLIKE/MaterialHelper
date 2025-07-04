@@ -5,8 +5,9 @@ import bpy
 from bpy.utils import previews
 from bpy_extras import asset_utils
 
-from .functions import ensure_current_file_asset_cats, MATERIAL_HELPER_ASSET_TAG, SelectedAsset, _uuid
 from .edit_material_asset import get_local_selected_assets, tag_redraw
+from .functions import ensure_current_file_asset_cats, SelectedAsset
+from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG
 
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
 G_ACTIVE_MATS_LIST = []  # 选中材质列表
@@ -15,7 +16,7 @@ G_ACTIVE_MATS_LIST = []  # 选中材质列表
 class MATHP_OT_set_tmp_asset(bpy.types.Operator):
     bl_idname = "mathp.set_tmp_asset"
     bl_label = "Set Temp Asset"
-    bl_options = {'INTERNAL'}
+    bl_options = {"INTERNAL"}
 
     def execute(self, context):
         for mat in bpy.data.materials:
@@ -27,28 +28,28 @@ class MATHP_OT_set_tmp_asset(bpy.types.Operator):
 
         tag_redraw()
 
-        if bpy.data.filepath == '':
-            return {'CANCELLED'}
+        if bpy.data.filepath == "":
+            return {"CANCELLED"}
 
         ensure_current_file_asset_cats()
 
         for mat in bpy.data.materials:
             if mat.asset_data is None: continue
             if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
-                if mat.asset_data.catalog_id != _uuid:
-                    mat.asset_data.catalog_id = _uuid
+                if mat.asset_data.catalog_id != MATERIAL_HELPER_ASSET_UUID:
+                    mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
         try:
             bpy.ops.asset.library_refresh()
         except Exception as e:
             print(e)
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MATHP_OT_clear_tmp_asset(bpy.types.Operator):
-    bl_idname = 'mathp.clear_tmp_asset'
-    bl_label = 'Clear Temp Asset'
-    bl_options = {'INTERNAL'}
+    bl_idname = "mathp.clear_tmp_asset"
+    bl_label = "Clear Temp Asset"
+    bl_options = {"INTERNAL"}
 
     def execute(self, context):
         for mat in bpy.data.materials:
@@ -59,13 +60,13 @@ class MATHP_OT_clear_tmp_asset(bpy.types.Operator):
 
         tag_redraw()
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
     """Apply Selected as True Assets"""
-    bl_idname = 'mathp.set_true_asset'
-    bl_label = 'Apply'
+    bl_idname = "mathp.set_true_asset"
+    bl_label = "Apply"
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(self, event)
@@ -78,18 +79,18 @@ class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
             if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
                 tag = mat.asset_data.tags[MATERIAL_HELPER_ASSET_TAG]
                 mat.asset_data.tags.remove(tag)
-                self.report({'INFO'}, '{} is set as True Asset'.format(mat.name))
+                self.report({"INFO"}, bpy.app.translations.pgettext_iface("{} is set as True Asset").format(mat.name))
 
         tag_redraw()
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MATHP_OT_delete_asset(SelectedAsset, bpy.types.Operator):
     """Delete Selected Materials"""
-    bl_idname = 'mathp.delete_asset'
-    bl_label = 'Delete'
-    bl_options = {'UNDO'}
+    bl_idname = "mathp.delete_asset"
+    bl_label = "Delete"
+    bl_options = {"UNDO"}
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(self, event)
@@ -103,14 +104,14 @@ class MATHP_OT_delete_asset(SelectedAsset, bpy.types.Operator):
 
         bpy.ops.asset.library_refresh()
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MATHP_OT_duplicate_asset(SelectedAsset, bpy.types.Operator):
     """Duplicate Active Item"""
-    bl_idname = 'mathp.duplicate_asset'
-    bl_label = 'Duplicate'
-    bl_options = {'UNDO'}
+    bl_idname = "mathp.duplicate_asset"
+    bl_label = "Duplicate"
+    bl_options = {"UNDO"}
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(self, event)
@@ -125,16 +126,16 @@ class MATHP_OT_duplicate_asset(SelectedAsset, bpy.types.Operator):
         for mat in selected_mats:
             context.space_data.activate_asset_by_id(mat)
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MATHP_OT_refresh_asset_pv(SelectedAsset, bpy.types.Operator):
-    bl_idname = 'mathp.refresh_asset_pv'
-    bl_label = 'Refresh Preview'
+    bl_idname = "mathp.refresh_asset_pv"
+    bl_label = "Refresh Preview"
 
     @classmethod
     def poll(cls, context):
-        if hasattr(context, 'active_file'):
+        if hasattr(context, "active_file"):
             return context.active_file and get_local_selected_assets(context)
 
     def execute(self, context):
@@ -144,18 +145,18 @@ class MATHP_OT_refresh_asset_pv(SelectedAsset, bpy.types.Operator):
         for mat in selected_mats:
             mat.asset_generate_preview()
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
     """Rename Active Item"""
-    bl_idname = 'mathp.rename_asset'
-    bl_label = 'Rename'
-    bl_options = {'UNDO'}
+    bl_idname = "mathp.rename_asset"
+    bl_label = "Rename"
+    bl_options = {"UNDO"}
 
     @classmethod
     def poll(cls, context):
-        if hasattr(context, 'active_file'):
+        if hasattr(context, "active_file"):
             return context.active_file and get_local_selected_assets(context)
 
     def invoke(self, context, event):
@@ -166,23 +167,23 @@ class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
 
         layout = self.layout
         layout.separator()
-        layout.label(text='Name')
+        layout.label(text="Name")
         if isinstance(active, bpy.types.Material):
-            icon = 'MATERIAL'
+            icon = "MATERIAL"
         elif isinstance(active, bpy.types.Object):
-            icon = 'OBJECT_DATA'
+            icon = "OBJECT_DATA"
         elif isinstance(active, bpy.types.Collection):
-            icon = 'GROUP'
+            icon = "GROUP"
         elif isinstance(active, bpy.types.World):
-            icon = 'WORLD'
+            icon = "WORLD"
         else:
             icon = "ASSET_MANAGER"
 
-        layout.prop(active, 'name', text='', icon=icon)
+        layout.prop(active, "name", text="", icon=icon)
         layout.separator()
 
     def execute(self, context):
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 # icon注册
@@ -191,20 +192,20 @@ G_MAT_ICON_ID = {}  # name:id
 
 
 def register_icon():
-    icon_dir = Path(__file__).parent.parent.joinpath('mat_lib')
+    icon_dir = Path(__file__).parent.parent.joinpath("mat_lib")
     mats_icon = []
 
     for file in os.listdir(str(icon_dir)):
-        if file.endswith('.png'):
+        if file.endswith(".png"):
             mats_icon.append(icon_dir.joinpath(file))
     # 注册
     pcoll = previews.new()
 
     for icon_path in mats_icon:
-        pcoll.load(icon_path.name[:-4], str(icon_path), 'IMAGE')
+        pcoll.load(icon_path.name[:-4], str(icon_path), "IMAGE")
         G_MAT_ICON_ID[icon_path.name[:-4]] = pcoll.get(icon_path.name[:-4]).icon_id
 
-    G_PV_COLL['mathp_icon'] = pcoll
+    G_PV_COLL["mathp_icon"] = pcoll
 
 
 def unregister_icon():
@@ -218,40 +219,40 @@ def unregister_icon():
 
 
 class MATHP_OT_select_material_obj(SelectedAsset, bpy.types.Operator):
-    bl_idname = 'mathp.select_material_obj'
-    bl_label = 'Select Material Object'
-    bl_options = {'UNDO'}
+    bl_idname = "mathp.select_material_obj"
+    bl_label = "Select Material Object"
+    bl_options = {"UNDO"}
 
     def execute(self, context):
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
-        tmp_mesh = bpy.data.meshes.new('Temp')
-        tmp_obj = bpy.data.objects.new('Temp', tmp_mesh)
+        tmp_mesh = bpy.data.meshes.new("Temp")
+        tmp_obj = bpy.data.objects.new("Temp", tmp_mesh)
         context.collection.objects.link(tmp_obj)
         bpy.context.view_layer.objects.active = tmp_obj
 
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode="OBJECT")
+        bpy.ops.object.select_all(action="DESELECT")
         temp_obj = context.object
         for i, mat in enumerate(selected_mats):
             bpy.ops.object.material_slot_add()
             tmp_obj.material_slots[i].material = mat
-        bpy.ops.object.select_linked(type='MATERIAL')
+        bpy.ops.object.select_linked(type="MATERIAL")
         bpy.data.objects.remove(temp_obj)
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MATHP_OT_add_material(bpy.types.Operator):
     """Add Material"""
-    bl_idname = 'mathp.add_material'
-    bl_label = 'Add Material'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_idname = "mathp.add_material"
+    bl_label = "Add Material"
+    bl_options = {"REGISTER", "UNDO"}
 
     dep_class = []  # 动态ops
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'selected_assets')
+        return hasattr(context, "selected_assets")
 
     def execute(self, context):
         # 清空动态注册op
@@ -260,14 +261,14 @@ class MATHP_OT_add_material(bpy.types.Operator):
         self.dep_class.clear()
 
         # 获取材质库已有材质名
-        icon_dir = Path(__file__).parent.parent.joinpath('mat_lib')
-        blend_file = icon_dir.joinpath('mat.blend')
+        icon_dir = Path(__file__).parent.parent.joinpath("mat_lib")
+        blend_file = icon_dir.joinpath("mat.blend")
         with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
             mats = data_from.materials
 
         # 根据材质库材质动态注册
         def dy_modal(_self, _context, _event):
-            if _event.type == 'TIMER':
+            if _event.type == "TIMER":
                 if _self.count < 10:
                     _self.count += 1
                 else:
@@ -277,9 +278,9 @@ class MATHP_OT_add_material(bpy.types.Operator):
                     if _self._timer:
                         _context.window_manager.event_timer_remove(_self._timer)
                         _self._timer = None
-                        return {'FINISHED'}
+                        return {"FINISHED"}
 
-            return {'PASS_THROUGH'}
+            return {"PASS_THROUGH"}
 
         def dy_invoke(_self, _context, _event):
             with bpy.data.libraries.load(_self.blend_file, link=False) as (data_from, data_to):
@@ -296,17 +297,17 @@ class MATHP_OT_add_material(bpy.types.Operator):
             mat_name = mat
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
-                          {"bl_idname": f'wm.mathp_add_material_{i}',
+                          {"bl_idname": f"wm.mathp_add_material_{i}",
                            "bl_label": mat_name,
-                           "bl_description": 'Add',
+                           "bl_description": "Add",
                            # "execute": dy_execute,
-                           'invoke': dy_invoke,
-                           'modal': dy_modal,
+                           "invoke": dy_invoke,
+                           "modal": dy_modal,
                            # 自定义参数传入
-                           'blend_file': str(blend_file),
-                           'material': mat_name,
-                           '_timer': None,
-                           'count': 0
+                           "blend_file": str(blend_file),
+                           "material": mat_name,
+                           "_timer": None,
+                           "count": 0
                            },
                           )
             self.dep_class.append(op_cls)
@@ -320,12 +321,12 @@ class MATHP_OT_add_material(bpy.types.Operator):
         def draw_custom_menu(self, context):
             global G_MAT_ICON_ID
             layout = self.layout
-            layout.operator_context = 'INVOKE_DEFAULT'
+            layout.operator_context = "INVOKE_DEFAULT"
             for i, cls in enumerate(op.dep_class):
                 o = layout.operator(cls.bl_idname, icon_value=G_MAT_ICON_ID[cls.bl_label])
 
         # 弹出
-        context.window_manager.popup_menu(draw_custom_menu, title='Material', icon='ADD')
+        context.window_manager.popup_menu(draw_custom_menu, title="Material", icon="ADD")
         return {"FINISHED"}
 
 
@@ -351,18 +352,18 @@ def update_active_object_material(scene, depsgraph):
         return
     elif wm.mathp_update_active_obj_mats is False:
         return
-    elif not hasattr(bpy.context, 'object'):
+    elif not hasattr(bpy.context, "object"):
         return
     elif bpy.context.object is None:
         return
-    elif bpy.context.object.type not in {'MESH', 'CURVE', 'FONT', 'META', 'VOLUME', 'GPENCIL', 'SURFACE'}:
+    elif bpy.context.object.type not in {"MESH", "CURVE", "FONT", "META", "VOLUME", "GPENCIL", "SURFACE"}:
         return
     elif len(bpy.context.object.material_slots) == 0:
         return
     # 获取面板
     asset_area = None
     for area in bpy.context.window.screen.areas:
-        if area.type == 'FILE_BROWSER' and area.ui_type == 'ASSETS':
+        if area.type == "FILE_BROWSER" and area.ui_type == "ASSETS":
             asset_area = area
             break
 
@@ -423,7 +424,7 @@ classes = (
 # def register_later(lock, t):
 #     # to prevent bug
 #     import time
-#     while not hasattr(bpy.context, 'scene'):
+#     while not hasattr(bpy.context, "scene"):
 #         time.sleep(5)
 #     wm = bpy.context.window_manager
 #     wm.mathp_update_active_obj_mats = True
@@ -441,7 +442,7 @@ def register():
 
     # import threading
     # lock = threading.Lock()
-    # lock_holder = threading.Thread(target=register_later, args=(lock, 5), name='Init_Scene2')
+    # lock_holder = threading.Thread(target=register_later, args=(lock, 5), name="Init_Scene2")
     # lock_holder.daemon = True
     # lock_holder.start()
 

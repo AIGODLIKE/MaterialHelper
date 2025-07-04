@@ -3,9 +3,7 @@ from typing import Union
 
 import bpy
 
-MATERIAL_HELPER_ASSET_TAG = 'tmp_asset_mathp'
-
-_uuid = '11451419-1981-0aaa-aaaa-aaaaaaaaaaaa'
+from ..utils import MATERIAL_HELPER_ASSET_UUID
 
 
 class SelectedAsset:
@@ -16,12 +14,13 @@ class SelectedAsset:
         return hasattr(context, 'selected_assets') and context.selected_assets
 
 
-def cat_uuid_in_file(path: Path, uuid: str = _uuid) -> Union[int, bool]:
+def cat_uuid_in_file(path: Path, uuid: str = MATERIAL_HELPER_ASSET_UUID) -> Union[int, bool]:
     with open(path, 'r', encoding='utf-8') as f:
         for i, line in enumerate(f.readlines()):
             if ":" not in line: continue
             uuid = line.split(":")[0]
-            if uuid != _uuid: continue
+            if uuid != MATERIAL_HELPER_ASSET_UUID:
+                continue
             return i
     return False
 
@@ -29,7 +28,7 @@ def cat_uuid_in_file(path: Path, uuid: str = _uuid) -> Union[int, bool]:
 def append_asset_cats_txt(path: Path) -> None:
     try:
         with open(path, 'a', encoding='utf-8') as f:
-            f.write(f"{_uuid}:Material Helper:Material Helper\n")
+            f.write(f"{MATERIAL_HELPER_ASSET_UUID}:Material Helper:Material Helper\n")
     except PermissionError:
         print('Material Helper: Permission Denied')
     except FileNotFoundError:
@@ -38,10 +37,10 @@ def append_asset_cats_txt(path: Path) -> None:
         print('Unexpected Error:', e)
 
 
-def ensure_current_file_asset_cats() -> None:
+def ensure_current_file_asset_cats():
     if bpy.data.filepath == '':
         print("Material Helper: File Not Save! Set category failed")
-        return None
+        return
 
     cat_path = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt')
     cat_path_mod = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt~')
@@ -64,5 +63,5 @@ def ensure_current_file_asset_cats() -> None:
 
 VERSION 1
 
-{_uuid}:Material Helper:Material Helper
+{MATERIAL_HELPER_ASSET_UUID}:Material Helper:Material Helper
 """)

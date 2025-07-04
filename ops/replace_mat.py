@@ -42,11 +42,3 @@ class MATHP_OT_replace_mat(bpy.types.Operator):
         selected_mat[0].user_remap(bpy.data.materials[self.enum_mats])
 
         return {'FINISHED'}
-
-
-def register():
-    bpy.utils.register_class(MATHP_OT_replace_mat)
-
-
-def unregister():
-    bpy.utils.unregister_class(MATHP_OT_replace_mat)

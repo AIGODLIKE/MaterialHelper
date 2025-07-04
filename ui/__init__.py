@@ -1,13 +1,14 @@
 import bpy
 
-from . import panel, menu
+from . import panel
+from .menu.asset_browser import AssetBrowserMenu
 from ..ops.tmp_asset import MATHP_OT_refresh_asset_pv, MATHP_OT_select_material_obj
 
 
 def draw_asset_browser(self, context):
     layout = self.layout
     row = layout.row(align=True)
-    row.menu('MATHP_MT_asset_browser_menu')
+    row.menu(AssetBrowserMenu.bl_idname)
     row.separator()
     row.prop(context.scene, 'mathp_update_mat', toggle=True, icon='FILE_REFRESH')
     row.prop(context.window_manager, 'mathp_update_active_obj_mats', toggle=True, icon='UV_SYNC_SELECT')
@@ -20,28 +21,31 @@ def draw_asset_browser(self, context):
 
 
 def draw_context_menu(self, context):
-    if not hasattr(context, 'selected_assets'): return
-    if len(context.selected_assets) == 0: return
-    if not isinstance(context.selected_assets[0].local_id, bpy.types.Material): return
+    if not hasattr(context, 'selected_assets'):
+        return
+    if len(context.selected_assets) == 0:
+        return
+    if not isinstance(context.selected_assets[0].local_id, bpy.types.Material):
+        return
 
     layout = self.layout
     layout.operator('mathp.duplicate_asset')
     layout.operator('mathp.delete_asset')
-    layout.operator_context = 'INVOKE_DEFAULT'
     layout.operator('mathp.replace_mat')
     layout.separator()
 
 
 def register():
     panel.register()
-    menu.register()
+    bpy.utils.register_class(AssetBrowserMenu)
 
     bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
     bpy.types.ASSETBROWSER_MT_context_menu.prepend(draw_context_menu)
 
+
 def unregister():
     panel.unregister()
-    menu.unregister()
+    bpy.utils.unregister_class(AssetBrowserMenu)
 
     bpy.types.ASSETBROWSER_MT_editor_menus.remove(draw_asset_browser)
     bpy.types.ASSETBROWSER_MT_context_menu.remove(draw_context_menu)

@@ -529,14 +529,3 @@ def node_at_pos(nodes, context, event) -> bpy.types.Node:
     else:
         target_node = nearest_node
     return target_node
-
-
-def register():
-    bpy.utils.register_class(MATHP_OT_move_dependence)
-    bpy.utils.register_class(MATHP_OT_align_dependence)
-
-
-
-def unregister():
-    bpy.utils.unregister_class(MATHP_OT_move_dependence)
-    bpy.utils.unregister_class(MATHP_OT_align_dependence)

@@ -1,25 +1,37 @@
+import bpy
+
 from . import (
     edit_material_asset,
     tmp_asset,
-    align_nodes,
     clear_unused_material,
     replace_mat
 )
+from .align_nodes import MATHP_OT_move_dependence, MATHP_OT_align_dependence
+from .clear_unused_material import ClearUnusedMaterial
+from .replace_mat import MATHP_OT_replace_mat
 
 module_list = [
     edit_material_asset,
-    clear_unused_material,
-    replace_mat,
     tmp_asset,
-    align_nodes,
 ]
+
+class_list = [
+    ClearUnusedMaterial,
+    MATHP_OT_move_dependence,
+    MATHP_OT_align_dependence,
+    MATHP_OT_replace_mat,
+]
+
+register_class, unregister_class = bpy.utils.register_classes_factory(class_list)
 
 
 def register():
+    register_class()
     for mod in module_list:
         mod.register()
 
 
 def unregister():
+    unregister_class()
     for mod in module_list:
         mod.unregister()

@@ -25,7 +25,7 @@ def SaveUpdate():
 
 
 def tag_redraw():
-    '''所有区域重绘制更新'''
+    """所有区域重绘制更新"""
     for window in bpy.context.window_manager.windows:
         for area in window.screen.areas:
             for region in area.regions:
@@ -384,7 +384,8 @@ def del_tmp_obj(scene, depsgraph):
         if 'tmp_mathp' in bpy.data.screens:
             # 清理多余screen
             for s in bpy.data.screens:
-                if not s.name.startswith('tmp_mathp'): continue
+                if not s.name.startswith('tmp_mathp'):
+                    continue
                 s.user_clear()
 
 
