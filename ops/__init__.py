@@ -1,17 +1,17 @@
 from . import (
-    op_edit_material_asset,
-    op_tmp_asset,
-    op_align_nodes,
-    op_clear_unused_material,
-    op_replace_mat
+    edit_material_asset,
+    tmp_asset,
+    align_nodes,
+    clear_unused_material,
+    replace_mat
 )
 
 module_list = [
-    op_edit_material_asset,
-    op_clear_unused_material,
-    op_replace_mat,
-    op_tmp_asset,
-    op_align_nodes,
+    edit_material_asset,
+    clear_unused_material,
+    replace_mat,
+    tmp_asset,
+    align_nodes,
 ]
 
 

@@ -6,7 +6,7 @@ from bpy.utils import previews
 from bpy_extras import asset_utils
 
 from .functions import ensure_current_file_asset_cats, C_TMP_ASSET_TAG, SelectedAsset, _uuid
-from .op_edit_material_asset import get_local_selected_assets, tag_redraw
+from .edit_material_asset import get_local_selected_assets, tag_redraw
 
 G_MATERIAL_COUNT = 0  # 材质数量，用于更新临时资产
 G_ACTIVE_MATS_LIST = []  # 选中材质列表
@@ -329,58 +329,6 @@ class MATHP_OT_add_material(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class MATHP_MT_asset_browser_menu(bpy.types.Menu):
-    bl_label = 'Material Helper'
-    bl_idname = 'MATHP_MT_asset_browser_menu'
-
-    def draw(self, context):
-        layout = self.layout
-        layout.operator_context = 'INVOKE_DEFAULT'
-
-        layout.separator()
-        layout.operator('mathp.clear_unused_material', icon='X')
-
-        layout.separator()
-
-        layout.operator('mathp.add_material', icon='ADD')
-        layout.operator('mathp.duplicate_asset')
-        layout.operator('mathp.rename_asset')
-        layout.operator_context = 'INVOKE_DEFAULT'
-        layout.operator('mathp.replace_mat')
-        layout.operator('mathp.delete_asset')
-        layout.separator()
-
-        layout.operator('mathp.set_true_asset', icon='ASSET_MANAGER')
-
-
-def draw_asset_browser(self, context):
-    layout = self.layout
-    row = layout.row(align=True)
-    row.menu('MATHP_MT_asset_browser_menu')
-    row.separator()
-    row.prop(context.scene, 'mathp_update_mat', toggle=True, icon='FILE_REFRESH')
-    row.prop(context.window_manager, 'mathp_update_active_obj_mats', toggle=True, icon='UV_SYNC_SELECT')
-    row.separator()
-    row.operator(MATHP_OT_refresh_asset_pv.bl_idname, icon='FILE_REFRESH')
-    row.operator(MATHP_OT_select_material_obj.bl_idname, icon='RESTRICT_SELECT_OFF')
-    row.operator('mathp.edit_material_asset', icon='NODETREE')
-    row.operator('mathp.replace_mat', icon='CON_TRANSLIKE')
-    row.operator('mathp.clear_unused_material', icon='NODE_MATERIAL')
-
-
-def draw_context_menu(self, context):
-    if not hasattr(context, 'selected_assets'): return
-    if len(context.selected_assets) == 0: return
-    if not isinstance(context.selected_assets[0].local_id, bpy.types.Material): return
-
-    layout = self.layout
-    layout.operator('mathp.duplicate_asset')
-    layout.operator('mathp.delete_asset')
-    layout.operator_context = 'INVOKE_DEFAULT'
-    layout.operator('mathp.replace_mat')
-    layout.separator()
-
-
 from bpy.app.handlers import persistent
 
 
@@ -498,9 +446,6 @@ def register():
     bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_pre.append(update_active_object_material)
     # ui
-    bpy.utils.register_class(MATHP_MT_asset_browser_menu)
-    bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
-    bpy.types.ASSETBROWSER_MT_context_menu.prepend(draw_context_menu)
 
     import threading
     lock = threading.Lock()
@@ -519,7 +464,3 @@ def unregister():
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)
     del bpy.types.Scene.mathp_update_mat
-    # ui
-    bpy.utils.unregister_class(MATHP_MT_asset_browser_menu)
-    bpy.types.ASSETBROWSER_MT_editor_menus.remove(draw_asset_browser)
-    bpy.types.ASSETBROWSER_MT_context_menu.remove(draw_context_menu)

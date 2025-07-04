@@ -1,13 +1,6 @@
 import bpy
 
-node_idnames = {
-    'GeometryNodeReplaceMaterial',
-    'GeometryNodeSetMaterial',
-    'GeometryNodeMaterialSelection'
-}
-
-from .op_tmp_asset import update_tmp_asset
-from .op_edit_material_asset import tag_redraw, SaveUpdate
+from .edit_material_asset import tag_redraw
 from .functions import _uuid, C_TMP_ASSET_TAG
 
 

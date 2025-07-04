@@ -1,11 +1,11 @@
 import bpy
 import rna_keymap_ui
 
-from .. import __package__
+from .. import __package__ as base_package
 
 
 class MaterialHelperPreference(bpy.types.AddonPreferences):
-    bl_idname = __package__
+    bl_idname = base_package
 
     ui: bpy.props.EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
@@ -108,7 +108,7 @@ class MaterialHelperPreference(bpy.types.AddonPreferences):
         old_km_name = ""
         get_kmi_l = []
 
-        from .data_keymap import addon_keymaps
+        from ..keymaps import addon_keymaps
 
         for km_add, kmi_add in addon_keymaps:
             for km_con in kc.keymaps:

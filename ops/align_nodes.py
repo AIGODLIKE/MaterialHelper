@@ -535,14 +535,8 @@ def register():
     bpy.utils.register_class(MATHP_OT_move_dependence)
     bpy.utils.register_class(MATHP_OT_align_dependence)
 
-    # 防止多个操作符同时运行
-    bpy.types.WindowManager.mathp_node_move = bpy.props.BoolProperty(default=False)
-    bpy.types.WindowManager.mathp_node_anim = bpy.props.BoolProperty(default=False)
 
 
 def unregister():
     bpy.utils.unregister_class(MATHP_OT_move_dependence)
     bpy.utils.unregister_class(MATHP_OT_align_dependence)
-
-    del bpy.types.WindowManager.mathp_node_move
-    del bpy.types.WindowManager.mathp_node_anim

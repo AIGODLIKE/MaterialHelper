@@ -409,22 +409,7 @@ def update_shader_ball(self, context):
 
 
 def register():
-    bpy.types.WindowManager.mathp_global_update = bpy.props.BoolProperty(name='Update', default=False)
-    bpy.types.Material.mathp_preview_render_type = bpy.props.EnumProperty(name='Shader Ball',
-                                                                          items=[
-                                                                              ('FLAT', 'Flat', '', 'MATPLANE', 0),
-                                                                              ('SPHERE', 'Sphere', '', 'MATSPHERE', 1),
-                                                                              ('CUBE', 'Cube', '', 'MATCUBE', 2),
-                                                                              ('HAIR', 'Hair', '', 'CURVES', 3),
-                                                                              ('SHADERBALL', 'Shader Ball', '',
-                                                                               'MATSHADERBALL',
-                                                                               4),
-                                                                              ('CLOTH', 'Cloth', '', 'MATCLOTH', 5),
-                                                                              ('FLUID', 'Fluid', '', 'MATFLUID', 6),
-                                                                          ], default='SPHERE',
-                                                                          update=update_shader_ball)
-    if not MATHP_OT_edit_material_asset.is_registered:
-        bpy.utils.register_class(MATHP_OT_edit_material_asset)
+    bpy.utils.register_class(MATHP_OT_edit_material_asset)
     bpy.utils.register_class(MATHP_OT_update_mat_pv)
     # bpy.utils.register_class(MATHP_UI_update_mat_pv)
     bpy.app.handlers.depsgraph_update_pre.append(del_tmp_obj)
@@ -435,5 +420,3 @@ def unregister():
     bpy.utils.unregister_class(MATHP_OT_edit_material_asset)
     bpy.utils.unregister_class(MATHP_OT_update_mat_pv)
     # bpy.utils.unregister_class(MATHP_UI_update_mat_pv)
-
-    del bpy.types.Material.mathp_preview_render_type

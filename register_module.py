@@ -1,6 +1,7 @@
-from . import ops, preferences, keymaps, ui, src
+from . import ops, preferences, keymaps, ui, src, property
 
 module_list = [
+    property,
     src,
     ops,
     keymaps,

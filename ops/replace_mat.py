@@ -1,6 +1,6 @@
 import bpy
 
-from .op_tmp_asset import get_local_selected_assets
+from .tmp_asset import get_local_selected_assets
 
 
 class MATHP_OT_replace_mat(bpy.types.Operator):
