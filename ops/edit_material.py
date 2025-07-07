@@ -1,10 +1,11 @@
 import bpy
+
 from ..utils import get_pref
+
 
 class EditMaterial(bpy.types.Operator):
     bl_idname = 'mathp.edit_material_asset'
     bl_label = 'Edit Material Asset'
-
 
     @classmethod
     def poll(cls, context):

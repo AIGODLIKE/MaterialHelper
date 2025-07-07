@@ -231,6 +231,10 @@ class MATHP_OT_edit_material_asset(bpy.types.Operator):
 
     material: bpy.props.StringProperty(name='Material Name', options={'SKIP_SAVE'})
 
+    @classmethod
+    def poll(cls, context):
+        return (hasattr(context, 'selected_assets') and context.selected_assets) or context.asset
+
     def _return(self, msg, type='INFO'):
         """
         :param msg: 报告给用户的信息
@@ -327,7 +331,7 @@ def del_tmp_obj(scene, depsgraph):
         update_window_count()
 
     if allowSaveUpdate():
-        if mat := bpy.data.materials.get(State.last_edit_mat):
+        if mat := bpy.data.materials.get(State.last_edit_mat, default=False):
             mat.asset_generate_preview()
 
         coll = bpy.data.collections.get('tmp_mathp')
