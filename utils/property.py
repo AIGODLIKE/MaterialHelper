@@ -1,4 +1,5 @@
 # version = 1.0.0
+import json
 
 exclude_items = {"rna_type", "bl_idname", "srna"}  # 排除项
 
@@ -194,6 +195,7 @@ def get_property_enum_items(cls, prop_name) -> list:
 def get_material_nodes(material: bpy.types.Material) -> dict:
     node_exclude = (
         "outputs",
+        "color_tag",
         "type",
         "name",
         "node_tree",
@@ -227,46 +229,57 @@ def get_material_nodes(material: bpy.types.Material) -> dict:
         "draw_buttons",
         "draw_buttons_ext",
         "description",
+        "dimensions",
+        # "data_type",
         "is_output",
     )
 
     def get_inputs_info(inputs):
         res = {}
-        for index, inp in enumerate(inputs):
+        for ind, inp in enumerate(inputs):
             value = get_property(inp, exclude=("default_value",), reversal=True, only_set=True)
             if value:
-                res[index] = value
-                print("vv  ", index, value)
+                res[ind] = value
         return res
 
-    exclude_node_inputs = ("links",
-                           "node",
-                           "display_shape",
-                           "dimensions",
-                           "link_limit",
-                           "is_multi_input",
-                           "is_unavailable",
-                           "pin_gizmo",
-                           "color_tag",
-                           "show_texture"
-                           "is_linked",
-                           "identifier",
-                           "distribution",
-                           "bl_subtype_label",
-                           "is_output",
-                           )
+    # exclude_node_inputs = ("links",
+    #                        "node",
+    #                        "display_shape",
+    #                        "dimensions",
+    #                        "link_limit",
+    #                        "is_multi_input",
+    #                        "is_unavailable",
+    #                        "pin_gizmo",
+    #                        "color_tag",
+    #                        "show_texture"
+    #                        "is_linked",
+    #                        "identifier",
+    #                        "distribution",
+    #                        "bl_subtype_label",
+    #                        "is_output",
+    #                        )
 
-    nodes = {index: {
-        # **get_property(node, exclude=node_exclude, only_set=True),
-        "inputs": get_inputs_info(node.inputs)
-    }
-        for index, node in enumerate(material.node_tree.nodes)}
-    # print("nodes = ", json.dumps(nodes, indent=2))
+    nodes = {}
+    for index, node in enumerate(material.node_tree.nodes):
+        item = {
+            **get_property(node, exclude=node_exclude, only_set=True)
+        }
+        if inputs_info := get_inputs_info(node.inputs):
+            item["inputs"] = inputs_info
+        item["bl_idname"] = node.bl_idname
+        if item:
+            nodes[index] = item
+    return nodes
+
+
+def get_material_links(material: bpy.types.Material):
+    ...
 
 
 def export_material(material: bpy.types.Material):
-    get_material_nodes(material)
-    return get_property(material, exclude=(
+    nodes_info = get_material_nodes(material)
+    links_info = get_material_links(material)
+    material_info = get_property(material, exclude=(
         "pass_index",
         "name",
         "displacement_method",
@@ -299,6 +312,13 @@ def export_material(material: bpy.types.Material):
         "use_intersection_priority_override",
         "intersection_priority",
     ), reversal=True, only_set=True)
+    return {
+        **material_info,
+        "node_tree": {
+            "nodes": nodes_info,
+            "links":links_info,
+        }
+    }
 
 
 def import_material(material):
@@ -306,10 +326,12 @@ def import_material(material):
 
 
 if __name__ == "__main__":
-    print("AA")
-    aa = export_material(bpy.context.object.data.materials[0])
+    import os
 
-    print()
-    print("a = ", aa.__repr__())
-    print()
+    print("AA")
+    for mat in bpy.data.materials:
+        aa = export_material(bpy.context.object.data.materials[0])
+        out_file = os.path.join(r"C:\Development\Blender Addon\MaterialHelper\src\material", f"{mat.name.upper()}.json")
+        with open(out_file, "w+") as wf:
+            wf.writelines(json.dumps(aa, indent=2))
     print()
