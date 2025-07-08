@@ -431,7 +431,7 @@ classes = (
 
 
 def register():
-    register_icon()
+    # register_icon()
 
     for cls in classes:
         bpy.utils.register_class(cls)
@@ -452,7 +452,7 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     remove_all_tmp_tags()
-    unregister_icon()
+    # unregister_icon()
     # handle
     bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
     bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)

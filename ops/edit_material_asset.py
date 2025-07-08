@@ -322,6 +322,7 @@ def del_tmp_obj(scene, depsgraph):
     :param depsgraph:
     :return:
     """
+    return
     try:
         _ = bpy.context.window_manager.windows[State.window_count - 1]
         return

@@ -1,4 +1,5 @@
 # version = 1.0.0
+
 exclude_items = {"rna_type", "bl_idname", "srna"}  # 排除项
 
 from collections.abc import Iterable
@@ -148,21 +149,20 @@ def get_property(prop, exclude=(), reversal=False, only_set=False) -> dict:
 
                 # 将浮点数设置位数
                 if isinstance(pro, Iterable) and type(pro) != str:
-                    pro = [round(i, 2) if type(i) == float else i for i in pro]
+                    pro = [round(i, 2) if type(i) == float else i for i in pro][:]
                 if isinstance(pro, float):
                     pro = round(pro, 2)
 
                 if only_set:  # and typ not in ("POINTER", "COLLECTION") #去掉默认值,只有被修改了的值列出
                     default_value = getattr(pr, "default", None)
                     if is_array:
-                        default_value = getattr(pr, "default_array", None)[:]
-
-                    # print(identifier, default_value, pro, "\t", default_value == pro, type(pro))
+                        default_value = list(getattr(pr, "default_array", None))
 
                     if default_value == pro:
                         continue
                 if type(pro) in (set, dict, list, tuple) and len(pro) == 0:  # 去掉空的数据
                     continue
+                # print(identifier, default_value, pro, "\t", default_value == pro, type(pro))
                 data[identifier] = pro
         except Exception as e:
             print(prop, pr)
@@ -233,9 +233,10 @@ def get_material_nodes(material: bpy.types.Material) -> dict:
     def get_inputs_info(inputs):
         res = {}
         for index, inp in enumerate(inputs):
-            value = get_property(inp, exclude=("default_value"), reversal=True, only_set=True)
+            value = get_property(inp, exclude=("default_value",), reversal=True, only_set=True)
             if value:
                 res[index] = value
+                print("vv  ", index, value)
         return res
 
     exclude_node_inputs = ("links",
@@ -260,7 +261,7 @@ def get_material_nodes(material: bpy.types.Material) -> dict:
         "inputs": get_inputs_info(node.inputs)
     }
         for index, node in enumerate(material.node_tree.nodes)}
-    print("nodes = ", nodes.__repr__())
+    # print("nodes = ", json.dumps(nodes, indent=2))
 
 
 def export_material(material: bpy.types.Material):
