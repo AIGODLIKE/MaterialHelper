@@ -1,5 +1,5 @@
 {
-  "name": "Carpaint",
+  "name": "Metal",
   "diffuse_color": [
     0.8,
     0.8,
@@ -25,145 +25,8 @@
       },
       "1": {
         "location": [
-          271.88,
-          300.0
-        ],
-        "width": 140.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "inputs": {
-          "0": {
-            "default_value": 0.5
-          }
-        },
-        "bl_idname": "ShaderNodeMixShader"
-      },
-      "2": {
-        "location": [
-          -271.88,
-          251.91
-        ],
-        "width": 140.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "inputs": {
-          "0": {
-            "default_value": [
-              0.5,
-              0.5,
-              0.5,
-              1.0
-            ]
-          }
-        },
-        "bl_idname": "ShaderNodeRGBToBW"
-      },
-      "3": {
-        "location": [
-          -281.88,
-          136.42
-        ],
-        "width": 150.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "distribution": "GGX",
-        "inputs": {
-          "0": {
-            "default_value": [
-              0.41,
-              0.71,
-              1.0,
-              1.0
-            ]
-          },
-          "1": {
-            "default_value": 0.35
-          }
-        },
-        "bl_idname": "ShaderNodeBsdfAnisotropic"
-      },
-      "4": {
-        "location": [
-          -281.88,
-          -53.87
-        ],
-        "width": 150.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "distribution": "GGX",
-        "inputs": {
-          "0": {
-            "default_value": [
-              0.03,
-              0.03,
-              0.8,
-              1.0
-            ]
-          },
-          "1": {
-            "default_value": 0.3
-          }
-        },
-        "bl_idname": "ShaderNodeBsdfAnisotropic"
-      },
-      "5": {
-        "location": [
-          -43.52,
-          141.44
-        ],
-        "width": 140.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "inputs": {
-          "0": {
-            "default_value": 0.5
-          }
-        },
-        "bl_idname": "ShaderNodeMixShader"
-      },
-      "6": {
-        "location": [
-          -38.19,
-          298.68
-        ],
-        "width": 140.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "inputs": {
-          "0": {
-            "default_value": 0.8
-          }
-        },
-        "bl_idname": "ShaderNodeLayerWeight"
-      },
-      "7": {
-        "location": [
-          -48.12,
-          -20.47
+          124.84,
+          263.03
         ],
         "width": 240.0,
         "height": 100.0,
@@ -176,11 +39,17 @@
         "inputs": {
           "0": {
             "default_value": [
-              0.0,
-              0.14,
-              0.67,
+              0.8,
+              0.8,
+              0.8,
               1.0
             ]
+          },
+          "1": {
+            "default_value": 1.0
+          },
+          "2": {
+            "default_value": 0.15
           },
           "3": {
             "default_value": 1.45
@@ -253,93 +122,14 @@
           }
         },
         "bl_idname": "ShaderNodeBsdfPrincipled"
-      },
-      "8": {
-        "location": [
-          -491.88,
-          251.91
-        ],
-        "width": 140.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "show_texture": true,
-        "texture_mapping": [
-          "scale",
-          "max",
-          "mapping_x",
-          "mapping_y",
-          "mapping_z"
-        ],
-        "color_mapping": [
-          "color_ramp",
-          "brightness",
-          "contrast",
-          "saturation",
-          "blend_color"
-        ],
-        "voronoi_dimensions": "3D",
-        "inputs": {
-          "2": {
-            "default_value": 1000.0
-          },
-          "4": {
-            "default_value": 0.5
-          },
-          "5": {
-            "default_value": 2.0
-          },
-          "6": {
-            "default_value": 1.0
-          },
-          "7": {
-            "default_value": 0.5
-          },
-          "8": {
-            "default_value": 1.0
-          }
-        },
-        "bl_idname": "ShaderNodeTexVoronoi"
-      },
-      "9": {
-        "location": [
-          -991.88,
-          198.91
-        ],
-        "width": 140.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "bl_idname": "ShaderNodeTexCoord"
-      },
-      "10": {
-        "location": [
-          -781.88,
-          215.91
-        ],
-        "width": 240.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "inputs": {
-          "3": {
-            "default_value": [
-              1.0,
-              1.0,
-              1.0
-            ]
-          }
-        },
-        "bl_idname": "ShaderNodeMapping"
+      }
+    },
+    "links": {
+      "0": {
+        "from_socket_index": 0,
+        "from_node_index": 1,
+        "to_socket_index": 0,
+        "to_node_index": 0
       }
     }
   }

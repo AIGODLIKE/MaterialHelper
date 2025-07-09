@@ -1,5 +1,5 @@
 {
-  "name": "Plastic",
+  "name": "Material",
   "diffuse_color": [
     0.8,
     0.8,
@@ -11,22 +11,8 @@
     "nodes": {
       "0": {
         "location": [
-          491.88,
+          10.0,
           300.0
-        ],
-        "width": 140.0,
-        "height": 100.0,
-        "color": [
-          0.61,
-          0.61,
-          0.61
-        ],
-        "bl_idname": "ShaderNodeOutputMaterial"
-      },
-      "1": {
-        "location": [
-          172.36,
-          293.1
         ],
         "width": 240.0,
         "height": 100.0,
@@ -35,7 +21,9 @@
           0.61,
           0.61
         ],
-        "subsurface_method": "RANDOM_WALK_SKIN",
+        "select": true,
+        "distribution": "MULTI_GGX",
+        "subsurface_method": "RANDOM_WALK",
         "inputs": {
           "0": {
             "default_value": [
@@ -46,10 +34,10 @@
             ]
           },
           "2": {
-            "default_value": 0.15
+            "default_value": 0.5
           },
           "3": {
-            "default_value": 1.45
+            "default_value": 1.5
           },
           "4": {
             "default_value": 1.0
@@ -105,28 +93,40 @@
           },
           "27": {
             "default_value": [
-              0.0,
-              0.0,
-              0.0,
+              1.0,
+              1.0,
+              1.0,
               1.0
             ]
-          },
-          "28": {
-            "default_value": 1.0
           },
           "30": {
             "default_value": 1.33
           }
         },
         "bl_idname": "ShaderNodeBsdfPrincipled"
+      },
+      "1": {
+        "location": [
+          300.0,
+          300.0
+        ],
+        "width": 140.0,
+        "height": 100.0,
+        "color": [
+          0.61,
+          0.61,
+          0.61
+        ],
+        "select": true,
+        "bl_idname": "ShaderNodeOutputMaterial"
       }
     },
     "links": {
       "0": {
         "from_socket_index": 0,
-        "from_node_index": 1,
+        "from_node_index": 0,
         "to_socket_index": 0,
-        "to_node_index": 0
+        "to_node_index": 1
       }
     }
   }

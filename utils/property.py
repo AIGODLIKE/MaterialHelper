@@ -273,7 +273,26 @@ def get_material_nodes(material: bpy.types.Material) -> dict:
 
 
 def get_material_links(material: bpy.types.Material):
-    ...
+    links = {}
+    nodes = material.node_tree.nodes[:]
+    for index, line in enumerate(material.node_tree.links):
+        from_node = line.from_node
+        to_node = line.to_node
+
+        from_socket_index = from_node.outputs[:].index(line.from_socket)
+        from_node_index = nodes.index(from_node)
+
+        to_socket_index = to_node.inputs[:].index(line.to_socket)
+        to_node_index = nodes.index(to_node)
+
+        links[index] = {
+            "from_socket_index": from_socket_index,
+            "from_node_index": from_node_index,
+            "to_socket_index": to_socket_index,
+            "to_node_index": to_node_index,
+        }
+    # print("links", links, material.name, len(material.node_tree.links))
+    return links
 
 
 def export_material(material: bpy.types.Material):
@@ -316,7 +335,7 @@ def export_material(material: bpy.types.Material):
         **material_info,
         "node_tree": {
             "nodes": nodes_info,
-            "links":links_info,
+            "links": links_info,
         }
     }
 
@@ -328,9 +347,9 @@ def import_material(material):
 if __name__ == "__main__":
     import os
 
-    print("AA")
     for mat in bpy.data.materials:
-        aa = export_material(bpy.context.object.data.materials[0])
+        print("Material ->", mat.name)
+        aa = export_material(mat)
         out_file = os.path.join(r"C:\Development\Blender Addon\MaterialHelper\src\material", f"{mat.name.upper()}.json")
         with open(out_file, "w+") as wf:
             wf.writelines(json.dumps(aa, indent=2))
