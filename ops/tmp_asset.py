@@ -436,8 +436,8 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     # handle
-    bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
-    bpy.app.handlers.depsgraph_update_pre.append(update_active_object_material)
+    # bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
+    # bpy.app.handlers.depsgraph_update_pre.append(update_active_object_material)
     # ui
 
     # import threading
@@ -454,5 +454,5 @@ def unregister():
     remove_all_tmp_tags()
     # unregister_icon()
     # handle
-    bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
-    bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)
+    # bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
+    # bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)

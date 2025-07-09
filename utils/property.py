@@ -21,6 +21,16 @@ def __set_collection_data__(prop, data):
         set_property(pro, data[i])
 
 
+def __set_color_ramp__(prop, data):
+    """
+    bpy.types.ColorRamp
+    TODO
+    """
+    ...
+    # for i in prop.values():
+    #     prop.remove(i)
+
+
 def __set_prop__(prop, path, value):
     """设置单个属性"""
     pr = getattr(prop, path, None)
@@ -31,7 +41,11 @@ def __set_prop__(prop, path, value):
             if typ == "POINTER":
                 set_property(pr, value)
             elif typ == "COLLECTION":
-                __set_collection_data__(pr, value)
+                if type(prop) == bpy.types.ColorRamp:
+                    # print(prop, type(prop), pr, value, typ, path)
+                    __set_color_ramp__(pr, value)
+                else:
+                    __set_collection_data__(pr, value)
             elif typ == "ENUM" and pro.is_enum_flag:
                 # 可多选枚举
                 setattr(prop, path, set(value))
@@ -130,7 +144,7 @@ def get_property(prop, exclude=(), reversal=False, only_set=False) -> dict:
                 if typ == "POINTER":
                     pro = get_property(pro, exclude, reversal, only_set)
                 elif typ == "COLLECTION":
-                    pro = __collection_data__(pro, exclude, reversal)
+                    pro = __collection_data__(pro, exclude, reversal, only_set)
                 elif typ == "ENUM" and pr.is_enum_flag:
                     # 可多选枚举
                     pro = list(pro)
@@ -149,7 +163,7 @@ def get_property(prop, exclude=(), reversal=False, only_set=False) -> dict:
                     pro = res
 
                 # 将浮点数设置位数
-                if isinstance(pro, Iterable) and type(pro) != str:
+                if isinstance(pro, Iterable) and type(pro) not in (str, dict):
                     pro = [round(i, 2) if type(i) == float else i for i in pro][:]
                 if isinstance(pro, float):
                     pro = round(pro, 2)
@@ -260,38 +274,39 @@ def get_material_nodes(material: bpy.types.Material) -> dict:
     #                        )
 
     nodes = {}
-    for index, node in enumerate(material.node_tree.nodes):
-        item = {
-            **get_property(node, exclude=node_exclude, only_set=True)
-        }
-        if inputs_info := get_inputs_info(node.inputs):
-            item["inputs"] = inputs_info
-        item["bl_idname"] = node.bl_idname
-        if item:
-            nodes[index] = item
+    if material.node_tree:
+        for index, node in enumerate(material.node_tree.nodes):
+            item = {
+                **get_property(node, exclude=node_exclude, only_set=True)
+            }
+            if inputs_info := get_inputs_info(node.inputs):
+                item["inputs"] = inputs_info
+            item["bl_idname"] = node.bl_idname
+            if item:
+                nodes[index] = item
     return nodes
 
 
 def get_material_links(material: bpy.types.Material):
     links = {}
-    nodes = material.node_tree.nodes[:]
-    for index, line in enumerate(material.node_tree.links):
-        from_node = line.from_node
-        to_node = line.to_node
+    if material.node_tree:
+        nodes = material.node_tree.nodes[:]
+        for index, line in enumerate(material.node_tree.links):
+            from_node = line.from_node
+            to_node = line.to_node
 
-        from_socket_index = from_node.outputs[:].index(line.from_socket)
-        from_node_index = nodes.index(from_node)
+            from_socket_index = from_node.outputs[:].index(line.from_socket)
+            from_node_index = nodes.index(from_node)
 
-        to_socket_index = to_node.inputs[:].index(line.to_socket)
-        to_node_index = nodes.index(to_node)
+            to_socket_index = to_node.inputs[:].index(line.to_socket)
+            to_node_index = nodes.index(to_node)
 
-        links[index] = {
-            "from_socket_index": from_socket_index,
-            "from_node_index": from_node_index,
-            "to_socket_index": to_socket_index,
-            "to_node_index": to_node_index,
-        }
-    # print("links", links, material.name, len(material.node_tree.links))
+            links[index] = {
+                "from_socket_index": from_socket_index,
+                "from_node_index": from_node_index,
+                "to_socket_index": to_socket_index,
+                "to_node_index": to_node_index,
+            }
     return links
 
 
@@ -315,6 +330,7 @@ def export_material(material: bpy.types.Material):
         "thickness_mode",
         "use_thickness_from_shadow",
         "volume_intersection_method",
+        "use_nodes",
 
         "cycles",
         "emission_sampling",
@@ -340,13 +356,43 @@ def export_material(material: bpy.types.Material):
     }
 
 
-def import_material(material):
-    ...
+def import_material(json_file):
+    with open(json_file, "r") as file:
+        data = json.load(file)
+        name = data.pop("name")
+        node_tree = data.pop("node_tree")
+        nodes = node_tree.pop("nodes")
+        material = bpy.data.materials.new(name)
+        set_property(material, data)
+        if material.node_tree:
+            material.node_tree.nodes.clear()
+            for key, value in nodes.items():
+                bl_idname = value.pop("bl_idname")
+                node = material.node_tree.nodes.new(bl_idname)
+                if "inputs" in value:
+                    inputs_data = value.pop("inputs")
+                    for ii, iv in inputs_data.items():
+                        set_property(node.inputs[int(ii)], iv)
+
+                set_property(node, value)
+
+            if "links" in node_tree:
+                links = node_tree.pop("links")
+                nodes = material.node_tree.nodes
+                for iv in links.values():
+                    from_socket_index = iv["from_socket_index"]
+                    from_node_index = iv["from_node_index"]
+
+                    to_socket_index = iv["to_socket_index"]
+                    to_node_index = iv["to_node_index"]
+
+                    from_socket = nodes[from_node_index].outputs[from_socket_index]
+                    to_socket = nodes[to_node_index].inputs[to_socket_index]
+                    material.node_tree.links.new(from_socket, to_socket)
 
 
-if __name__ == "__main__":
+def test_export():
     import os
-
     for mat in bpy.data.materials:
         print("Material ->", mat.name)
         aa = export_material(mat)
@@ -354,3 +400,13 @@ if __name__ == "__main__":
         with open(out_file, "w+") as wf:
             wf.writelines(json.dumps(aa, indent=2))
     print()
+
+
+def test_import():
+    import_material(r"C:\Development\Blender Addon\MaterialHelper\src\material\CARPAINT.json")
+    print()
+
+
+if __name__ == "__main__":
+    test_import()
+    # test_export()
