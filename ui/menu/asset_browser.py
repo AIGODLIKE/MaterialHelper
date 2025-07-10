@@ -1,5 +1,7 @@
 import bpy
 
+from ...ops.clear_unused_material import ClearUnusedMaterial
+
 
 class AssetBrowserMenu(bpy.types.Menu):
     bl_label = "Material Helper"
@@ -10,7 +12,7 @@ class AssetBrowserMenu(bpy.types.Menu):
 
         layout.separator()
 
-        layout.operator("mathp.clear_unused_material", icon="X")
+        layout.operator(ClearUnusedMaterial.bl_idname, icon="X")
 
         layout.separator()
 

@@ -3,8 +3,10 @@ import rna_keymap_ui
 
 from .. import __package__ as base_package
 
+from .material import Material
 
-class MaterialHelperPreference(bpy.types.AddonPreferences):
+
+class MaterialHelperPreference(bpy.types.AddonPreferences, Material):
     bl_idname = base_package
 
     ui: bpy.props.EnumProperty(name='UI', items=[

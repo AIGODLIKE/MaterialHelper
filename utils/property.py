@@ -59,7 +59,6 @@ def __set_prop__(prop, path, value):
 
 
 def set_property(prop, data: dict):
-    """version"""
     for k, item in data.items():
         pr = getattr(prop, k, None)
         if pr is not None or k in prop.bl_rna.properties:
@@ -310,7 +309,7 @@ def get_material_links(material: bpy.types.Material):
     return links
 
 
-def export_material(material: bpy.types.Material):
+def export_material(material: bpy.types.Material) -> dict:
     nodes_info = get_material_nodes(material)
     links_info = get_material_links(material)
     material_info = get_property(material, exclude=(
@@ -356,7 +355,7 @@ def export_material(material: bpy.types.Material):
     }
 
 
-def import_material(json_file):
+def import_material(json_file) -> "bpy.types.Material":
     with open(json_file, "r") as file:
         data = json.load(file)
         name = data.pop("name")
@@ -389,6 +388,7 @@ def import_material(json_file):
                     from_socket = nodes[from_node_index].outputs[from_socket_index]
                     to_socket = nodes[to_node_index].inputs[to_socket_index]
                     material.node_tree.links.new(from_socket, to_socket)
+        return material
 
 
 def test_export():
@@ -408,5 +408,5 @@ def test_import():
 
 
 if __name__ == "__main__":
-    test_import()
-    # test_export()
+    # test_import()
+    test_export()

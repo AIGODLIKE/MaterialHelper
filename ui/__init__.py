@@ -3,15 +3,18 @@ import bpy
 from . import panel
 from .menu.asset_browser import AssetBrowserMenu
 from ..ops.tmp_asset import MATHP_OT_refresh_asset_pv, MATHP_OT_select_material_obj
+from ..utils import get_pref
 
 
 def draw_asset_browser(self, context):
+    pref = get_pref()
+
     layout = self.layout
     row = layout.row(align=True)
     row.menu(AssetBrowserMenu.bl_idname)
     row.separator()
-    row.prop(context.scene, 'mathp_update_mat', toggle=True, icon='FILE_REFRESH')
-    row.prop(context.window_manager, 'mathp_update_active_obj_mats', toggle=True, icon='UV_SYNC_SELECT')
+    row.prop(pref, 'auto_update', toggle=True, icon='FILE_REFRESH')
+    row.prop(pref, 'update_active_obj_materials', toggle=True, icon='UV_SYNC_SELECT')
     row.separator()
     row.operator(MATHP_OT_refresh_asset_pv.bl_idname, icon='FILE_REFRESH')
     row.operator(MATHP_OT_select_material_obj.bl_idname, icon='RESTRICT_SELECT_OFF')

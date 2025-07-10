@@ -43,14 +43,6 @@ def register():
                                                                           ], default='SPHERE',
                                                                           update=update_shader_ball)
 
-    # 用户总控制开关
-    bpy.types.Scene.mathp_update_mat = bpy.props.BoolProperty(name='Auto Update',
-                                                              default=True,
-                                                              description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
-                                                              update=update_user_control)
-    bpy.types.WindowManager.mathp_update_active_obj_mats = bpy.props.BoolProperty(name='Object / Material Select Sync',
-                                                                                  description="If checked, the active object's materials will be automatically selected",
-                                                                                  default=False)
 
 
 def unregister():
