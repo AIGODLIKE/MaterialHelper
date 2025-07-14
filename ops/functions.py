@@ -7,11 +7,6 @@ from ..utils import MATERIAL_HELPER_ASSET_UUID
 
 
 class SelectedAsset:
-    bl_options = {'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context, 'selected_assets') and context.selected_assets
 
 
 def cat_uuid_in_file(path: Path, uuid: str = MATERIAL_HELPER_ASSET_UUID) -> Union[int, bool]:

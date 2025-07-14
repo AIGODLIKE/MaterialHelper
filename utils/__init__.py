@@ -32,3 +32,15 @@ TypeError: bpy_struct: item.attr = val: enum "a" not found in ('DEFAULT', 'en_US
 def get_icon(icon: str) -> int:
     from ..src.icons import previews_icons
     return previews_icons.get(icon.lower()).icon_id
+
+def get_local_selected_assets(context):
+    """获取选择的本地资产
+    :param context: bpy.context
+    :return: 选择项里的本地资产(任何资产类型) bpy.types.Object/Material/World
+    """
+    cur_lib_name = context.area.spaces.active.params.asset_library_reference
+
+    match_obj = [asset_file.local_id for asset_file in context.selected_assets if
+                 cur_lib_name in {"LOCAL", "ALL"}]
+
+    return match_obj
