@@ -1,11 +1,13 @@
+import bpy
 
 
-class MATHP_OT_select_material_obj(SelectedAsset, bpy.types.Operator):
+class MATHP_OT_select_material_obj(bpy.types.Operator):
     bl_idname = "mathp.select_material_obj"
     bl_label = "Select Material Object"
     bl_options = {"UNDO"}
 
     def execute(self, context):
+        from ..utils import get_local_selected_assets
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
         tmp_mesh = bpy.data.meshes.new("Temp")
@@ -22,4 +24,3 @@ class MATHP_OT_select_material_obj(SelectedAsset, bpy.types.Operator):
         bpy.ops.object.select_linked(type="MATERIAL")
         bpy.data.objects.remove(temp_obj)
         return {"FINISHED"}
-

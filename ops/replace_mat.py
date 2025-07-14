@@ -1,7 +1,6 @@
 import bpy
 
 
-
 class MATHP_OT_replace_mat(bpy.types.Operator):
     bl_label = "Replace Selected Material to..."
     bl_idname = "mathp.replace_mat"
@@ -32,13 +31,12 @@ class MATHP_OT_replace_mat(bpy.types.Operator):
         return {'FINISHED'}
 
     def execute(self, context):
-        from .tmp_asset import get_local_selected_assets
+        from ..utils import get_local_selected_assets
         match_obj = get_local_selected_assets(context)
         selected_mat = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
         if not selected_mat:
-            return self._return(msg='请选择一个本地材质资产', type='WARNING')
-        # print(selected_mat)
+            self.report({"WARNING"}, '请选择一个本地材质资产')
+            return {"CANCELLED"}
         selected_mat[0].user_remap(bpy.data.materials[self.enum_mats])
-
         return {'FINISHED'}
