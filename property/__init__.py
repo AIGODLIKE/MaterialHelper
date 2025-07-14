@@ -1,5 +1,4 @@
 import bpy
-from ..ops.tmp_asset import update_user_control
 
 
 def update_shader_ball(self, context):
@@ -44,13 +43,9 @@ def register():
                                                                           update=update_shader_ball)
 
 
-
 def unregister():
     del bpy.types.WindowManager.mathp_node_move
     del bpy.types.WindowManager.mathp_node_anim
 
     del bpy.types.WindowManager.mathp_global_update
     del bpy.types.Material.mathp_preview_render_type
-
-    del bpy.types.Scene.mathp_update_mat
-    del bpy.types.WindowManager.mathp_update_active_obj_mats

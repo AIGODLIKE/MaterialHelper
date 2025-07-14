@@ -1,9 +1,8 @@
 import bpy
 import rna_keymap_ui
 
-from .. import __package__ as base_package
-
 from .material import Material
+from .. import __package__ as base_package
 
 
 class MaterialHelperPreference(bpy.types.AddonPreferences, Material):
@@ -13,20 +12,6 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material):
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 1),
     ], default='SETTINGS')
-
-    window_style: bpy.props.EnumProperty(name='Material Window', items=[
-        ('1', 'Big Window', ''),
-        ('2', 'Small Window', ''),
-    ], default='1')
-
-    # small_window
-    show_UI: bpy.props.BoolProperty(name='Show UI Panel')
-    UI_direction: bpy.props.EnumProperty(name='UI Panel Direction',
-                                         items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')],
-                                         default='RIGHT')
-    use_shader_ball_pv: bpy.props.BoolProperty(
-        name='Realtime Preview(If enable and open more than 15 window will crash blender)',
-        default=False)
 
     # big_window
 
@@ -50,10 +35,6 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material):
                                              ('RENDERED', 'Rendered', '', 'SHADING_RENDERED', 2),
                                          ], default='MATERIAL')
 
-    # align
-    node_dis_x: bpy.props.IntProperty(name='Node Distance X', default=100, min=0, soft_max=200)
-    node_dis_y: bpy.props.IntProperty(name='Node Distance Y', default=50, min=0, soft_max=100)
-
     def draw(self, context):
         layout = self.layout
 
@@ -72,33 +53,12 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material):
         box = col.box()
         box.label(text='Edit Material Asset', icon='MATERIAL')
         row = box.row(align=True)
-        row.prop(self, 'window_style', expand=True)
+        row.prop(self, 'show_text', expand=True)
 
-        if self.window_style == '1':
-            subcol = box.column()
-            subcol.prop(self, 'shader_ball')
-            subrow = subcol.row(align=True)
-            subrow.prop(self, 'shading_type', expand=True)
-
-        elif self.window_style == '2':
-            subcol = box.column()
-            subcol.prop(self, 'show_UI')
-            subcol.prop(self, 'UI_direction')
-
-            subcol = box.column()
-            subcol.prop(self, 'use_shader_ball_pv')
-            if self.use_shader_ball_pv:
-                subcol = box.column()
-                subcol.prop(self, 'shader_ball')
-                subrow = subcol.row(align=True)
-                subrow.prop(self, 'shading_type', expand=True)
+        self.draw_window(box)
 
         col.separator()
-
-        box = col.box()
-        box.label(text='Align Dependence', icon='NODETREE')
-        box.prop(self, 'node_dis_x', slider=True)
-        box.prop(self, 'node_dis_y', slider=True)
+        self.draw_align(col)
 
     def draw_keymap(self, context, layout):
         col = layout.box().column()

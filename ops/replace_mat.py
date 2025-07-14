@@ -1,6 +1,5 @@
 import bpy
 
-from .tmp_asset import get_local_selected_assets
 
 
 class MATHP_OT_replace_mat(bpy.types.Operator):
@@ -33,6 +32,7 @@ class MATHP_OT_replace_mat(bpy.types.Operator):
         return {'FINISHED'}
 
     def execute(self, context):
+        from .tmp_asset import get_local_selected_assets
         match_obj = get_local_selected_assets(context)
         selected_mat = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 

@@ -106,7 +106,6 @@ class MATHP_OT_delete_asset(SelectedAsset, bpy.types.Operator):
 
         return {"FINISHED"}
 
-
 class MATHP_OT_duplicate_asset(SelectedAsset, bpy.types.Operator):
     """Duplicate Active Item"""
     bl_idname = "mathp.duplicate_asset"
@@ -127,26 +126,6 @@ class MATHP_OT_duplicate_asset(SelectedAsset, bpy.types.Operator):
             context.space_data.activate_asset_by_id(mat)
 
         return {"FINISHED"}
-
-
-class MATHP_OT_refresh_asset_pv(SelectedAsset, bpy.types.Operator):
-    bl_idname = "mathp.refresh_asset_pv"
-    bl_label = "Refresh Preview"
-
-    @classmethod
-    def poll(cls, context):
-        if hasattr(context, "active_file"):
-            return context.active_file and get_local_selected_assets(context)
-
-    def execute(self, context):
-        match_obj = get_local_selected_assets(context)
-        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
-
-        for mat in selected_mats:
-            mat.asset_generate_preview()
-
-        return {"FINISHED"}
-
 
 class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
     """Rename Active Item"""
@@ -216,31 +195,6 @@ def unregister_icon():
     G_PV_COLL.clear()
 
     G_MAT_ICON_ID.clear()
-
-
-class MATHP_OT_select_material_obj(SelectedAsset, bpy.types.Operator):
-    bl_idname = "mathp.select_material_obj"
-    bl_label = "Select Material Object"
-    bl_options = {"UNDO"}
-
-    def execute(self, context):
-        match_obj = get_local_selected_assets(context)
-        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
-        tmp_mesh = bpy.data.meshes.new("Temp")
-        tmp_obj = bpy.data.objects.new("Temp", tmp_mesh)
-        context.collection.objects.link(tmp_obj)
-        bpy.context.view_layer.objects.active = tmp_obj
-
-        bpy.ops.object.mode_set(mode="OBJECT")
-        bpy.ops.object.select_all(action="DESELECT")
-        temp_obj = context.object
-        for i, mat in enumerate(selected_mats):
-            bpy.ops.object.material_slot_add()
-            tmp_obj.material_slots[i].material = mat
-        bpy.ops.object.select_linked(type="MATERIAL")
-        bpy.data.objects.remove(temp_obj)
-        return {"FINISHED"}
-
 
 
 from bpy.app.handlers import persistent
@@ -349,8 +303,6 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     # handle
-    # bpy.app.handlers.depsgraph_update_post.append(update_tmp_asset)
-    # bpy.app.handlers.depsgraph_update_pre.append(update_active_object_material)
     # ui
 
     # import threading
@@ -367,5 +319,3 @@ def unregister():
     remove_all_tmp_tags()
     # unregister_icon()
     # handle
-    # bpy.app.handlers.depsgraph_update_post.remove(update_tmp_asset)
-    # bpy.app.handlers.depsgraph_update_pre.remove(update_active_object_material)

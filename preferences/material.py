@@ -15,3 +15,5 @@ class Material:
         name='Object / Material Select Sync',
         description="If checked, the active object's materials will be automatically selected",
         default=False)
+
+    show_text: bpy.props.BoolProperty(name="Show Text", default=False)

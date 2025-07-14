@@ -1,23 +1,21 @@
 import bpy
 
-from ...ops.clear_unused_material import ClearUnusedMaterial
+from ...ops.add_material import MATHP_OT_add_material
 
 
-class AssetBrowserMenu(bpy.types.Menu):
-    bl_label = "Material Helper"
-    bl_idname = "MATERIAL_HELPER_MT_asset_browser_menu"
+class AddMaterialMenu(bpy.types.Menu):
+    bl_label = "Add Material"
+    bl_idname = "MATERIAL_HELPER_MT_add_material_menu"
 
     def draw(self, context):
-        from .add_material import AddMaterialMenu
         layout = self.layout
 
         layout.separator()
 
-        layout.operator(ClearUnusedMaterial.bl_idname, icon="X")
+        layout.operator(MATHP_OT_add_material.bl_idname, icon="X")
 
         layout.separator()
 
-        layout.menu(AddMaterialMenu.bl_idname)
         layout.operator("mathp.add_material", icon="ADD")
         layout.operator("mathp.duplicate_asset")
         layout.operator("mathp.rename_asset")

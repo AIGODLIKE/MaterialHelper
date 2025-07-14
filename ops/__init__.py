@@ -2,17 +2,18 @@ import bpy
 
 from . import (
     edit_material_asset,
-    tmp_asset,
+    # tmp_asset,
     clear_unused_material,
     replace_mat
 )
+from .add_material import MATHP_OT_add_material
 from .align_nodes import MATHP_OT_move_dependence, MATHP_OT_align_dependence
 from .clear_unused_material import ClearUnusedMaterial
 from .replace_mat import MATHP_OT_replace_mat
 
 module_list = [
     edit_material_asset,
-    tmp_asset,
+    # tmp_asset,
 ]
 
 class_list = [
@@ -20,6 +21,7 @@ class_list = [
     MATHP_OT_move_dependence,
     MATHP_OT_align_dependence,
     MATHP_OT_replace_mat,
+    MATHP_OT_add_material,
 ]
 
 register_class, unregister_class = bpy.utils.register_classes_factory(class_list)
