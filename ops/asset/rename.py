@@ -1,5 +1,5 @@
-
-class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
+import bpy
+class MATHP_OT_rename_asset(bpy.types.Operator):
     """Rename Active Item"""
     bl_idname = "mathp.rename_asset"
     bl_label = "Rename"
@@ -7,6 +7,7 @@ class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        from ...utils import get_local_selected_assets
         if hasattr(context, "active_file"):
             return context.active_file and get_local_selected_assets(context)
 
@@ -14,6 +15,7 @@ class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
         return context.window_manager.invoke_popup(self)
 
     def draw(self, context):
+        from ...utils import get_local_selected_assets
         active = get_local_selected_assets(context)[0]
 
         layout = self.layout

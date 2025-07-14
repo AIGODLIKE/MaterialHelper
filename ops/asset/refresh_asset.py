@@ -1,20 +1,27 @@
+import bpy
 
 
-class MATHP_OT_refresh_asset_pv(SelectedAsset, bpy.types.Operator):
-    bl_idname = "mathp.refresh_asset_pv"
+class MATHP_OT_refresh_asset_preview(bpy.types.Operator):
+    bl_idname = "mathp.refresh_asset_preview"
     bl_label = "Refresh Preview"
 
     @classmethod
     def poll(cls, context):
+        from ...utils import get_local_selected_assets
         if hasattr(context, "active_file"):
             return context.active_file and get_local_selected_assets(context)
+        return False
 
     def execute(self, context):
+        from ...utils import get_local_selected_assets
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
+
+        mat = bpy.data.materials.get(self.mat_name)
+        if mat:
+            mat.asset_generate_preview()
 
         for mat in selected_mats:
             mat.asset_generate_preview()
 
         return {"FINISHED"}
-
