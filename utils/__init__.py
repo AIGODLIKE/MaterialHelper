@@ -27,3 +27,8 @@ TypeError: bpy_struct: item.attr = val: enum "a" not found in ('DEFAULT', 'en_US
         matches = re.findall(r'\(([^()]*)\)', e.args[-1])
         return ast.literal_eval(f"({matches[-1]})")
     return None
+
+
+def get_icon(icon: str) -> int:
+    from ..src.icons import previews_icons
+    return previews_icons.get(icon.lower()).icon_id

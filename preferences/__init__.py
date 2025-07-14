@@ -1,14 +1,16 @@
 import bpy
 import rna_keymap_ui
 
+from .align import Align
 from .material import Material
+from .window import Window
 from .. import __package__ as base_package
 
 
-class MaterialHelperPreference(bpy.types.AddonPreferences, Material):
+class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Align):
     bl_idname = base_package
 
-    ui: bpy.props.EnumProperty(name='UI', items=[
+    ui_page: bpy.props.EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 1),
     ], default='SETTINGS')
@@ -39,11 +41,11 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material):
         layout = self.layout
 
         row = layout.row(align=True)
-        row.prop(self, 'ui', expand=True)
+        row.prop(self, 'ui_page', expand=True)
 
-        if self.ui == 'KEYMAP':
+        if self.ui_page == 'KEYMAP':
             self.draw_keymap(context, layout)
-        elif self.ui == 'SETTINGS':
+        elif self.ui_page == 'SETTINGS':
             self.draw_settings(context, layout)
 
     def draw_settings(self, context, layout):

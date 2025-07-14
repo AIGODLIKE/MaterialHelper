@@ -5,7 +5,7 @@ import bpy
 from bpy.utils import previews
 from bpy_extras import asset_utils
 
-from .edit_material_asset import get_local_selected_assets, tag_redraw
+from ops.asset.edit_material_asset import get_local_selected_assets, tag_redraw
 from .functions import ensure_current_file_asset_cats, SelectedAsset
 from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG
 
@@ -62,7 +62,6 @@ class MATHP_OT_clear_tmp_asset(bpy.types.Operator):
 
         return {"FINISHED"}
 
-
 class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
     """Apply Selected as True Assets"""
     bl_idname = "mathp.set_true_asset"
@@ -83,85 +82,6 @@ class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
 
         tag_redraw()
 
-        return {"FINISHED"}
-
-
-class MATHP_OT_delete_asset(SelectedAsset, bpy.types.Operator):
-    """Delete Selected Materials"""
-    bl_idname = "mathp.delete_asset"
-    bl_label = "Delete"
-    bl_options = {"UNDO"}
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_confirm(self, event)
-
-    def execute(self, context):
-        match_obj = get_local_selected_assets(context)
-        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
-
-        for mat in selected_mats:
-            bpy.data.materials.remove(mat)
-
-        bpy.ops.asset.library_refresh()
-
-        return {"FINISHED"}
-
-class MATHP_OT_duplicate_asset(SelectedAsset, bpy.types.Operator):
-    """Duplicate Active Item"""
-    bl_idname = "mathp.duplicate_asset"
-    bl_label = "Duplicate"
-    bl_options = {"UNDO"}
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_confirm(self, event)
-
-    def execute(self, context):
-        match_obj = get_local_selected_assets(context)
-        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
-
-        for mat in selected_mats:
-            mat.copy()
-
-        for mat in selected_mats:
-            context.space_data.activate_asset_by_id(mat)
-
-        return {"FINISHED"}
-
-class MATHP_OT_rename_asset(SelectedAsset, bpy.types.Operator):
-    """Rename Active Item"""
-    bl_idname = "mathp.rename_asset"
-    bl_label = "Rename"
-    bl_options = {"UNDO"}
-
-    @classmethod
-    def poll(cls, context):
-        if hasattr(context, "active_file"):
-            return context.active_file and get_local_selected_assets(context)
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_popup(self)
-
-    def draw(self, context):
-        active = get_local_selected_assets(context)[0]
-
-        layout = self.layout
-        layout.separator()
-        layout.label(text="Name")
-        if isinstance(active, bpy.types.Material):
-            icon = "MATERIAL"
-        elif isinstance(active, bpy.types.Object):
-            icon = "OBJECT_DATA"
-        elif isinstance(active, bpy.types.Collection):
-            icon = "GROUP"
-        elif isinstance(active, bpy.types.World):
-            icon = "WORLD"
-        else:
-            icon = "ASSET_MANAGER"
-
-        layout.prop(active, "name", text="", icon=icon)
-        layout.separator()
-
-    def execute(self, context):
         return {"FINISHED"}
 
 

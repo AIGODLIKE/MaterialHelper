@@ -2,7 +2,7 @@ import bpy
 
 
 def update_shader_ball(self, context):
-    from ..ops.edit_material_asset import set_shader_ball_mat
+    from ops.asset.edit_material_asset import set_shader_ball_mat
     coll = bpy.data.collections.get('tmp_mathp')
 
     if not coll: return

@@ -28,6 +28,7 @@ def clear():
 
 def register():
     load_icons()
+    print(previews_icons.keys())
 
 
 def unregister():

@@ -1,6 +1,6 @@
 import bpy
 
-from ..utils import get_pref
+from utils import get_pref
 
 
 class EditMaterial(bpy.types.Operator):

@@ -18,7 +18,6 @@ class AssetBrowserMenu(bpy.types.Menu):
         layout.separator()
 
         layout.menu(AddMaterialMenu.bl_idname)
-        layout.operator("mathp.add_material", icon="ADD")
         layout.operator("mathp.duplicate_asset")
         layout.operator("mathp.rename_asset")
         layout.operator("mathp.replace_mat")

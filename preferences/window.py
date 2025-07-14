@@ -5,7 +5,7 @@ class Window:
     window_style: bpy.props.EnumProperty(name='Material Window', items=[
         ('BIG', 'Big Window', ''),
         ('SMALL', 'Small Window', ''),
-    ], default='1')
+    ], default='SMALL')
 
     # small_window
     show_UI: bpy.props.BoolProperty(name='Show UI Panel')

@@ -33,5 +33,12 @@ data = {
     'Refresh Preview': '刷新预览',
     'Select Material Object': '选择材质物体',
     "Make the local asset manager your place to create powerful materials": "将本地资产管理器作为你创造强大材质的地方吧",
-    "{} is set as True Asset":"{}设置为真实资产"
+    "{} is set as True Asset": "{}设置为真实资产",
+
+    "Carpaint": "汽车漆",
+    "Emission": "自发光",
+    "Glass": "玻璃",
+    "Metal": "金属",
+    "Plastic": "塑料",
+
 }
