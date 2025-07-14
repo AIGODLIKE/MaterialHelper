@@ -24,13 +24,6 @@ def SaveUpdate():
     bpy.context.window_manager.mathp_global_update = False
 
 
-def tag_redraw():
-    """所有区域重绘制更新"""
-    for window in bpy.context.window_manager.windows:
-        for area in window.screen.areas:
-            for region in area.regions:
-                region.tag_redraw()
-
 
 
 

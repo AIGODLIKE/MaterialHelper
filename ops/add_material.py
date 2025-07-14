@@ -1,7 +1,5 @@
 import bpy
 
-from ..utils.property import import_material
-
 
 class MATHP_OT_add_material(bpy.types.Operator):
     """Add Material"""
@@ -17,6 +15,8 @@ class MATHP_OT_add_material(bpy.types.Operator):
         return hasattr(context, "selected_assets")
 
     def execute(self, context):
+        from ..utils.property import import_material
+        from ..utils import tag_redraw
         self.material = material = import_material(self.file_path)
         material.asset_mark()
         bpy.ops.asset.library_refresh()
@@ -25,25 +25,3 @@ class MATHP_OT_add_material(bpy.types.Operator):
         context.area.tag_redraw()
         bpy.ops.asset.library_refresh()
         return {"FINISHED"}
-
-    # def invoke(self, context, event):
-    #     self.count = 0
-    #     self.execute(context)
-    #     self.timer = context.window_manager.event_timer_add(0.01, window=context.window)
-    #     context.window_manager.modal_handler_add(self)
-    #     return {"RUNNING_MODAL"}
-    #
-    # def modal(self, context, event):
-    #     if event.type == "TIMER":
-    #         if self.count < 10:
-    #             self.count += 1
-    #         else:
-    #             context.area.spaces[0].activate_asset_by_id(self.material)
-    #             context.area.tag_redraw()
-    #
-    #             if self.timer:
-    #                 context.window_manager.event_timer_remove(self.timer)
-    #                 self.timer = None
-    #                 return {"FINISHED"}
-    #
-    #     return {"PASS_THROUGH"}
