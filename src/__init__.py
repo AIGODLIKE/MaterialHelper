@@ -1,5 +1,3 @@
-import os.path
-
 from . import translate, icons, material
 
 

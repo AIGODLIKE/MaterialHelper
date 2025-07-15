@@ -1,4 +1,5 @@
 import ast
+import os.path
 import re
 from typing import Any
 
@@ -45,6 +46,15 @@ def get_local_selected_assets(context):
 
     return match_obj
 
+def get_fbx_path(name):
+    """获取预览文件的fbx路径"""
+    folder = os.path.dirname(os.path.dirname(__file__))
+    fbx_folder = os.path.join(folder, "src", "preview_object")
+    file_name = f"{name.upper()}.fbx"
+    file_path = os.path.join(fbx_folder, file_name)
+    if not os.path.exists(file_path):
+        return os.path.join(fbx_folder, "SHADERBALL.fbx")
+    return file_path
 
 
 def tag_redraw():
