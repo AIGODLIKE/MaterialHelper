@@ -2,38 +2,41 @@ import bpy
 
 
 class Window:
-    window_style: bpy.props.EnumProperty(name='Material Window', items=[
-        ('BIG', 'Big Window', ''),
-        ('SMALL', 'Small Window', ''),
-    ], default='SMALL')
+    window_style: bpy.props.EnumProperty(name="Window Style", items=[
+        ("FULL_SCREEN", "Full Screen", ""),
+        ("BIG", "Big", ""),
+        ("SMALL", "Small", ""),
+    ], default="SMALL")
 
     # small_window
-    show_UI: bpy.props.BoolProperty(name='Show UI Panel')
-    UI_direction: bpy.props.EnumProperty(name='UI Panel Direction',
-                                         items=[('LEFT', 'Left', ''), ('RIGHT', 'Right', '')],
-                                         default='RIGHT')
-    use_shader_ball_pv: bpy.props.BoolProperty(
-        name='Realtime Preview(If enable and open more than 15 window will crash blender)',
-        default=False)
+    show_ui_panel: bpy.props.BoolProperty(name="Show UI Panel", default=False)
+    ui_direction: bpy.props.EnumProperty(name="UI Panel Direction",
+                                         items=[("LEFT", "Left", ""), ("RIGHT", "Right", "")],
+                                         default="RIGHT")
+    use_shader_ball_preview: bpy.props.BoolProperty(
+        name="Realtime Preview",
+        description="If enable and open more than 15 window will crash blender",
+        default=True)
 
     def draw_window(self, layout: bpy.types.UILayout):
-        box = layout.box()
-        row = box.row()
-        row.prop(self, 'window_style', expand=True)
-        if self.window_style == 'BIG':
-            subcol = box.column()
-            subcol.prop(self, 'shader_ball')
-            subrow = subcol.row(align=True)
-            subrow.prop(self, 'shading_type', expand=True)
-        elif self.window_style == 'SMALL':
-            subcol = box.column()
-            subcol.prop(self, 'show_UI')
-            subcol.prop(self, 'UI_direction')
+        column = layout.box().column(align=True)
+        column.label(text="Preview Material Window Style")
 
-            subcol = box.column()
-            subcol.prop(self, 'use_shader_ball_pv')
-            if self.use_shader_ball_pv:
-                subcol = box.column()
-                subcol.prop(self, 'shader_ball')
-                subrow = subcol.row(align=True)
-                subrow.prop(self, 'shading_type', expand=True)
+        column.separator()
+
+        column.row(align=True).prop(self, "window_style", expand=True)
+
+        column.separator()
+
+        column.prop(self, "use_shader_ball_preview")
+        sub_column = column.column(align=True)
+        sub_column.enabled = self.use_shader_ball_preview
+        sub_column.prop(self, "shader_ball", expand=True)
+        sub_column.row(align=True).prop(self, "shading_type", expand=True)
+
+        column.separator()
+
+        column.prop(self, "show_ui_panel")
+        sub_row = column.row(align=True)
+        sub_row.enabled = self.show_ui_panel
+        sub_row.prop(self, "ui_direction", expand=True)

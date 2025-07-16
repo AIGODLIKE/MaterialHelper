@@ -1,33 +1,19 @@
-from typing import Union
-
 import bpy
 
 
-class State:
-    window_count: int = 1
-    new_window: Union[bpy.types.Window, None] = None
-    last_edit_mat: Union[bpy.types.Material, None] = None
+def close_to_one_area(context, window):
+    """只保留一个区域"""
+    screen = context.window.screen
+    while len(screen.areas) != 1:
+        with context.temp_override(window=window, screen=screen, area=screen.areas[-1]):
+            bpy.ops.screen.area_close()
 
 
-def split_shader_3d_area():
-    """用于切分设置实时预览area
-
-    :return:
-    """
+def split_3d_area(context, window, material):
     from . import get_pref
-    screen = bpy.context.window_manager.windows[-1].screen
-    screen.name = 'tmp_mathp'
-
-    screen = bpy.context.window_manager.windows[-1].screen
-    screen.name = 'tmp_mathp'
-
-    area_shader = bpy.context.window_manager.windows[-1].screen.areas[0]
-    # 拆分 拆分区域大的是原面板
     bpy.ops.screen.area_split(direction='VERTICAL', factor=0.25)
-    area_3d = bpy.context.window_manager.windows[-1].screen.areas[-1]
-    # 更改窗口类型
-    area_shader.type = 'NODE_EDITOR'
-    area_shader.ui_type = 'ShaderNodeTree'
+    screen = window.screen
+    area_3d = screen.areas[-1]
 
     # 窗口设置
     area_3d.type = 'VIEW_3D'
@@ -48,104 +34,130 @@ def split_shader_3d_area():
     space.region_3d.view_rotation = (0.62, 0.38, 0.35, 0.58)
     space.region_3d.view_location = (0.16, 0, 0.16)
 
-    # solo
-    override = {'area': area_3d}
-    try:
-        with bpy.context.temp_override(**override):
-            bpy.ops.view3d.localview('INVOKE_DEFAULT')
-    except RuntimeError:
-        if 'tmp_mathp' in bpy.data.screens:
-            # 清理多余screen
-            for s in bpy.data.screens:
-                if not s.name.startswith('tmp_mathp'): continue
-                # 清除屏幕
-                s.user_clear()
-                # 清除局部视图
-                for area in s.areas:
-                    if area.type != 'VIEW_3D': continue
-                    for region in area.regions:
-                        if region.type != 'WINDOW': continue
-
-                        override2 = {'area': area, 'region': region}  # override context
-                        try:
-                            with bpy.context.temp_override(**override2):
-                                bpy.ops.view3d.view_selected(use_all_regions=False)
-                        except:
-                            pass
-                        break
+    # # solo
+    # override = {'area': area_3d, 'screen': screen}
+    # try:
+    #     with bpy.context.temp_override(**override):
+    #         bpy.ops.view3d.localview('INVOKE_DEFAULT')
+    # except RuntimeError:
+    #     if 'tmp_mathp' in bpy.data.screens:
+    #         # 清理多余screen
+    #         for s in bpy.data.screens:
+    #             if not s.name.startswith('tmp_mathp'): continue
+    #             # 清除屏幕
+    #             s.user_clear()
+    #             # 清除局部视图
+    #             for area in s.areas:
+    #                 if area.type != 'VIEW_3D': continue
+    #                 for region in area.regions:
+    #                     if region.type != 'WINDOW': continue
+    #
+    #                     override2 = {'area': area, 'region': region}  # override context
+    #                     try:
+    #                         with bpy.context.temp_override(**override2):
+    #                             bpy.ops.view3d.view_selected(use_all_regions=False)
+    #                     except:
+    #                         pass
+    #                     break
 
     # header
     space.show_region_header = False
     space.shading.studio_light = 'forest.exr'
 
-    return area_shader, area_3d
+
+def create_preview_view_layer(context, window, preview_material):
+    ...
+    # bpy.ops.scene.view_layer_add()
 
 
-def update_window_count():
-    State.window_count = len(bpy.context.window_manager.windows)
-    State.new_window = bpy.context.window_manager.windows[-1]
-
-
-def window_style_big():
-    """大窗口,左属性面板右节点面板
-
-    :return:
-    """
-    update_window_count()
-    bpy.ops.wm.window_new_main()  # 使用新窗口
-    update_window_count()
-    split_shader_3d_area()
-
-def window_style_small(flip_header=True):
-    """小面板
-
-    :return:
-    # 创建新窗口
-    # bpy.ops.render.view_show('INVOKE_AREA')
-    """
-    from . import get_pref
-    update_window_count()
-    bpy.ops.screen.userpref_show("INVOKE_AREA")  # 使用偏好设置而不是渲染（版本更改导致渲染不再置顶）
-    update_window_count()
-
-    if get_pref().use_shader_ball_pv:
-        area_3d, area_shader = split_shader_3d_area()
+def create_preview_object(context, window, preview_material):
+    selected_objects = context.selected_objects
+    print("selected_objects", selected_objects)
+    if len(selected_objects) == 1 and selected_objects[-1].type == "MESH":  # 只选择一个物体
+        active_object = selected_objects[-1]
+        if preview_material in active_object.data.materials:  # 材质在物体材质槽内，独立化物体即可
+            ...
+        else:
+            # 没在材质槽内,添加材质到物体内并独立
+            ...
     else:
-        screen = bpy.context.window_manager.windows[-1].screen
-        screen.name = 'tmp_mathp'
+        # 没选择物体或选择了多个物体,导入预览物体
+        ...
 
-        area_shader = screen.areas[0]
-        area_shader.type = 'NODE_EDITOR'
-        area_shader.ui_type = 'ShaderNodeTree'
+
+def create_node_area(context, window, flip_header=True):
+    from . import get_pref
+    pref = get_pref()
+
+    node_area = window.screen.areas[0]
+    node_area.type = 'NODE_EDITOR'
+    node_area.ui_type = 'ShaderNodeTree'
+    print("selected_objects", context.selected_objects)
 
     # 侧边栏
-    bpy.context.space_data.show_region_ui = True if get_pref().show_UI else False
-    # 翻转菜单栏
-    for region in area_shader.regions:
-        override = {'area': area_shader, 'region': region}
-        if region == 'UI':
-            if get_pref().UI_direction == 'LEFT':
-                bpy.ops.screen.region_flip(override, 'INVOKE_DEFAULT')
-        elif region == 'UI' and flip_header:
-            bpy.ops.screen.region_flip(override, 'INVOKE_DEFAULT')
+    context.space_data.show_region_ui = pref.show_ui_panel
+    for region in node_area.regions:
+        override = {'area': node_area, 'region': region}
+        with context.temp_override(**override):
 
-            # 3.2
-            # with bpy.context.temp_override(**override):
-            #     if flip_header: bpy.ops.screen.region_flip('INVOKE_DEFAULT')
+            if region.type == 'UI':  # 翻转菜单栏
+                if pref.ui_direction == 'LEFT':
+                    bpy.ops.screen.region_flip()
+                elif flip_header:
+                    bpy.ops.screen.region_flip()
 
-        # 等待blender修复
-        # if region.type == 'WINDOW':
-        #     with bpy.context.temp_override(area=area, region=region):
-        #         bpy.ops.node.view_all("INVOKE_AREA")
+            if region.type == 'WINDOW':
+                bpy.ops.node.view_all("INVOKE_DEFAULT")
 
 
-def pop_up_window(style='SMALL'):
-    """
+def split_area(context, window, preview_material):
+    """拆分区域"""
+    from . import get_pref
 
-    :return:
-    """
-    if style == 'BIG':
-        window_style_big()
+    close_to_one_area(context, window)
+    create_node_area(context, window)
+
+    if get_pref().use_shader_ball_preview:
+        split_3d_area(context, window, preview_material)
+
+
+def new_window(context, preview_material) -> bpy.types.Window:
+    from . import get_pref
+    style = get_pref().window_style
+
+    if style == "SMALL":  # 小窗口用偏好设置
+        bpy.ops.screen.userpref_show()
     else:
-        window_style_small()
-    return bpy.context.window_manager.windows[-1]
+        bpy.ops.wm.window_new()
+
+    window = context.window_manager.windows[-1]
+    if style == "FULL_SCREEN":
+        with context.temp_override(window=window):
+            bpy.ops.wm.window_fullscreen_toggle()
+
+    split_area(context, window, preview_material)
+
+
+def pop_up_preview_material_window(context, preview_material):
+    window = new_window(context, preview_material)
+
+    return window
+
+
+def preview_3d(self, context, window):
+    from . import get_pref
+    pref = get_pref()
+
+    print("preview_3d", hash(context.window))
+    return
+    # 创建集合
+    tmp_coll = bpy.data.collections[
+        'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
+        'tmp_mathp')
+    if 'tmp_mathp' not in context.scene.collection.children:
+        context.scene.collection.children.link(tmp_coll)
+
+    # 设置材质球/材质
+
+    set_shader_ball_mat(selected_mat[0], tmp_coll)
+    selected_mat[0].asset_generate_preview()

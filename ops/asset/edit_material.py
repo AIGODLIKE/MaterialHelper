@@ -61,6 +61,7 @@ class EditMaterial(bpy.types.Operator):
             if "FINISHED" not in res:
                 self.exit(context)
                 return res
+        self.popup_preview_window(context, event)
         if DEBUG_EDIT_MATERIAL:
             self.count = 0
             print("context.window", context.window, hash(context.window))
@@ -83,34 +84,35 @@ class EditMaterial(bpy.types.Operator):
         """执行弹出窗口"""
         if res := self.find_material(context):
             return res
-        self.popup_window(context)
         return {'FINISHED'}
 
     def exit(self, context):
         if DEBUG_EDIT_MATERIAL:
             print("exit", self.new_window_hash, flush=True)
-        context.window_manager.event_timer_remove(self.timer)
+        if self.timer:
+            context.window_manager.event_timer_remove(self.timer)
         self.new_window_hash = None
         self.edit_material = None
 
     def cancel(self, context):
         self.exit(context)
-        print("cancel")
-        print(self.edit_material)
+        print("cancel", self.edit_material)
 
-    def popup_window(self, context):
+    def popup_preview_window(self, context, event):
         from ...utils import get_pref
-        from ...utils.window import pop_up_window
+        from ...utils.window import pop_up_preview_material_window
         pref = get_pref()
 
         # 设置鼠标位置，以便弹窗出现在正中央
+        mouse_x, mouse_y = event.mouse_x, event.mouse_y
         w = context.window
         w_center_x, w_center_y = w.width / 2, w.height / 2
         w.cursor_warp(int(w_center_x), int(w_center_y))
 
-        new_window = pop_up_window(pref.window_style)
+        new_window = pop_up_preview_material_window(context, self.edit_material)
         self.new_window_hash = hash(new_window)
-        self.preview_3d(context, new_window)
+
+        w.cursor_warp(mouse_x, mouse_y)
 
     def find_material(self, context):
         from ...utils import get_local_selected_assets
@@ -124,24 +126,3 @@ class EditMaterial(bpy.types.Operator):
 
         self.edit_material = selected_mat[0]
 
-    def preview_3d(self, context, window):
-        from ...utils import get_pref, get_fbx_path
-        pref = get_pref()
-
-        print("preview_3d", hash(context.window))
-        fbx_file = get_fbx_path(pref.shader_ball)
-        bpy.ops.scene.new(type="EMPTY")
-        bpy.ops.import_scene.fbx("EXEC_DEFAULT", filepath=fbx_file)
-        return
-        # 创建集合
-        tmp_coll = bpy.data.collections[
-            'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
-            'tmp_mathp')
-        if 'tmp_mathp' not in context.scene.collection.children:
-            context.scene.collection.children.link(tmp_coll)
-
-        # 设置材质球/材质
-
-        set_shader_ball_mat(selected_mat[0], tmp_coll)
-        selected_mat[0].asset_generate_preview()
-        return {'FINISHED'}
