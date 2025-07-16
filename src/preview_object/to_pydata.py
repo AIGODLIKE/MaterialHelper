@@ -17,12 +17,16 @@ def get_mesh_data(mesh_obj) -> dict:
     v_data = np.zeros(vl * 3, dtype=np.float16)
     mesh_obj.data.vertices.foreach_get("co", v_data)
     mesh_data["verts_len"] = vl
-    mesh_data["verts"] = list((round(float(v), 4) for v in v_data))
+    mesh_data["verts"] = list((round(float(v), 5) for v in v_data))
     faces = []
     for pol in mesh_obj.data.polygons:
         faces.append(list((v.real for v in pol.vertices)))
     mesh_data["faces_len"] = len(mesh_obj.data.polygons)
     mesh_data["faces"] = faces
+
+    vn_data = np.zeros(vl * 3, dtype=np.float16)
+    mesh_obj.data.vertex_normals.foreach_get("vector", vn_data)
+    mesh_data["vertex_normals"] = list((round(float(v), 5) for v in v_data))
     return mesh_data
 
 

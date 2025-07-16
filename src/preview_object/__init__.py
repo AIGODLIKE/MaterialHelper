@@ -11,8 +11,6 @@ def import_uv_to_mesh(mesh, data):
     uv = data["uv"]
     for key, value in uv.items():
         uv_layer = mesh.uv_layers.new(name=key)
-        # uv_layer.data.foreach_set("uv", value)
-        print("import_uv_to_mesh", key, value[:100])
         uv_layer.uv.foreach_set("vector", value)
 
 
@@ -21,14 +19,17 @@ def from_data_new_mesh(name, data) -> bpy.types.Mesh:
     verts_len = data["verts_len"]
     verts = data["verts"]
     faces = data["faces"]
+    vertex_normals = data["vertex_normals"]
     n_verts = np.array(verts, dtype=np.float16).reshape(verts_len, 3)
     mesh.from_pydata(n_verts, [], faces)
+    mesh.vertex_normals.foreach_set("vector", vertex_normals)
     import_uv_to_mesh(mesh, data)
     return mesh
 
 
-def import_lzma_as_mesh(name):
+def lzma_import_as_mesh(name) -> bpy.types.Mesh:
     """
+    通过lzma压缩的网格数据
     dict_keys(['verts_len', 'verts', 'faces_len', 'faces', 'uv'])
     """
     folder = os.path.dirname(__file__)
@@ -43,13 +44,11 @@ def import_lzma_as_mesh(name):
         data = read_file.read()
         raw_data = lzma.decompress(data)
     data = json.loads(raw_data)
-
-    print(data.keys())
-    from_data_new_mesh(name, data)
+    return from_data_new_mesh(name, data)
 
 
 if __name__ == "__main__":
     start_time = time.time()
     print("__file__", __file__)
-    import_lzma_as_mesh("SHADERBALL")
+    lzma_import_as_mesh("SHADERBALL")
     print("time", time.time() - start_time)
