@@ -17,10 +17,6 @@ class MATHP_OT_refresh_asset_preview(bpy.types.Operator):
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
-        mat = bpy.data.materials.get(self.mat_name)
-        if mat:
-            mat.asset_generate_preview()
-
         for mat in selected_mats:
             mat.asset_generate_preview()
 

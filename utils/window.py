@@ -155,7 +155,7 @@ class PreviewMaterialWindow:
         else:
             # 没选择物体或选择了多个物体,导入预览物体
             if shader_ball == 'NONE':
-                shader_ball = mat.mathp_preview_render_type
+                shader_ball = mat.preview_render_type
             mesh = lzma_import_as_mesh(shader_ball)
             name = f"{PREVIEW_KEY} {shader_ball}"
             mesh.name = name

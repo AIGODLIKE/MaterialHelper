@@ -1,7 +1,6 @@
 import bpy
 
 from . import asset
-from .asset import edit_material_asset
 from .add_material import MATHP_OT_add_material
 from .align_nodes import MATHP_OT_move_dependence, MATHP_OT_align_dependence
 from .clear_unused_material import ClearUnusedMaterial
