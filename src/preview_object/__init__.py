@@ -6,6 +6,8 @@ import time
 import bpy
 import numpy as np
 
+data_cache = {}
+
 
 def import_uv_to_mesh(mesh, data):
     uv = data["uv"]
@@ -32,18 +34,22 @@ def lzma_import_as_mesh(name) -> bpy.types.Mesh:
     通过lzma压缩的网格数据
     dict_keys(['verts_len', 'verts', 'faces_len', 'faces', 'uv'])
     """
-    folder = os.path.dirname(__file__)
-    folder = r"C:\Development\Blender Addon\MaterialHelper\src\preview_object"
-    file_name = f"{name}.lzma"
+    global data_cache
+    if name not in data_cache:
+        folder = os.path.dirname(__file__)
+        file_name = f"{name}.lzma"
 
-    file_path = os.path.join(folder, file_name)
-    if not os.path.exists(file_path):
-        file_path = os.path.join(folder, "SHADERBALL.lzma")
+        file_path = os.path.join(folder, file_name)
+        if not os.path.exists(file_path):
+            file_path = os.path.join(folder, "SHADERBALL.lzma")
 
-    with open(file_path, "rb+") as read_file:
-        data = read_file.read()
-        raw_data = lzma.decompress(data)
-    data = json.loads(raw_data)
+        with open(file_path, "rb+") as read_file:
+            data = read_file.read()
+            raw_data = lzma.decompress(data)
+        data = json.loads(raw_data)
+        data_cache[name] = data
+    else:
+        data = data_cache[name]
     return from_data_new_mesh(name, data)
 
 

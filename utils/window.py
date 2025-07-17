@@ -105,7 +105,7 @@ class PreviewMaterialWindow:
         self.ops = ops
         self.new_window(context)
 
-        win.cursor_warp(mouse_x, mouse_y)
+        # win.cursor_warp(mouse_x, mouse_y)
 
     def new_window(self, context) -> bpy.types.Window:
         from . import get_pref
