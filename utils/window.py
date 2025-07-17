@@ -1,5 +1,7 @@
 import bpy
 
+PREVIEW_KEY = "Material Helper Preview"
+
 
 def close_to_one_area(context, window):
     """只保留一个区域"""
@@ -9,7 +11,7 @@ def close_to_one_area(context, window):
             bpy.ops.screen.area_close()
 
 
-def split_3d_area(context, window, material):
+def split_3d_area(window):
     from . import get_pref
     bpy.ops.screen.area_split(direction='VERTICAL', factor=0.25)
     screen = window.screen
@@ -17,15 +19,12 @@ def split_3d_area(context, window, material):
 
     # 窗口设置
     area_3d.type = 'VIEW_3D'
-    space = area_3d.spaces[0]
+    space = [s for s in area_3d.spaces if s.type == "VIEW_3D"][0]
     space.overlay.show_overlays = False
     space.show_gizmo = False
     space.region_3d.view_perspective = 'PERSP'
 
-    shading_type = get_pref().shading_type
-
-    space.shading.type = shading_type
-    space.lock_object = bpy.context.object  # 锁定物体
+    space.shading.type = get_pref().shading_type
     space.shading.use_scene_world_render = False
     space.shading.use_scene_lights_render = False
     space.shading.studio_light = 'city.exr'
@@ -63,37 +62,17 @@ def split_3d_area(context, window, material):
     # header
     space.show_region_header = False
     space.shading.studio_light = 'forest.exr'
+    return area_3d
 
 
-def create_preview_view_layer(context, window, preview_material):
-    ...
-    # bpy.ops.scene.view_layer_add()
-
-
-def create_preview_object(context, window, preview_material):
-    selected_objects = context.selected_objects
-    print("selected_objects", selected_objects)
-    if len(selected_objects) == 1 and selected_objects[-1].type == "MESH":  # 只选择一个物体
-        active_object = selected_objects[-1]
-        if preview_material in active_object.data.materials:  # 材质在物体材质槽内，独立化物体即可
-            ...
-        else:
-            # 没在材质槽内,添加材质到物体内并独立
-            ...
-    else:
-        # 没选择物体或选择了多个物体,导入预览物体
-        ...
-
-
-def create_node_area(context, window, flip_header=True):
+def switch_to_node_tree_area(context, window, flip_header=True):
+    """切换到节点界面"""
     from . import get_pref
     pref = get_pref()
 
     node_area = window.screen.areas[0]
     node_area.type = 'NODE_EDITOR'
     node_area.ui_type = 'ShaderNodeTree'
-    print("selected_objects", context.selected_objects)
-
     # 侧边栏
     context.space_data.show_region_ui = pref.show_ui_panel
     for region in node_area.regions:
@@ -106,58 +85,149 @@ def create_node_area(context, window, flip_header=True):
                 elif flip_header:
                     bpy.ops.screen.region_flip()
 
-            if region.type == 'WINDOW':
-                bpy.ops.node.view_all("INVOKE_DEFAULT")
+    return node_area
 
 
-def split_area(context, window, preview_material):
-    """拆分区域"""
-    from . import get_pref
+class PreviewMaterialWindow:
+    window = None
+    area_node = None
+    area_3d = None
+    waiting_for_deletion_objects = []
+    waiting_for_deletion_mesh_data = []
 
-    close_to_one_area(context, window)
-    create_node_area(context, window)
+    def __init__(self, ops, context, event, material):
+        # 设置鼠标位置，以便弹窗出现在正中央
+        mouse_x, mouse_y = event.mouse_x, event.mouse_y
+        win = context.window
+        win.cursor_warp(int(win.width / 2), int(win.height / 2))
 
-    if get_pref().use_shader_ball_preview:
-        split_3d_area(context, window, preview_material)
+        self.material = material
+        self.ops = ops
+        self.new_window(context)
 
+        win.cursor_warp(mouse_x, mouse_y)
 
-def new_window(context, preview_material) -> bpy.types.Window:
-    from . import get_pref
-    style = get_pref().window_style
+    def new_window(self, context) -> bpy.types.Window:
+        from . import get_pref
+        pref = get_pref()
 
-    if style == "SMALL":  # 小窗口用偏好设置
-        bpy.ops.screen.userpref_show()
-    else:
-        bpy.ops.wm.window_new()
+        # add a window
+        style = pref.window_style
+        if style == "SMALL":  # 小窗口用偏好设置
+            bpy.ops.screen.userpref_show()
+        else:
+            bpy.ops.wm.window_new()
+        self.window = window = context.window_manager.windows[-1]  # 创建的新窗口
+        if style == "FULL_SCREEN":
+            with context.temp_override(window=window):
+                bpy.ops.wm.window_fullscreen_toggle()
 
-    window = context.window_manager.windows[-1]
-    if style == "FULL_SCREEN":
-        with context.temp_override(window=window):
-            bpy.ops.wm.window_fullscreen_toggle()
+        # handle a window type and count
+        close_to_one_area(context, window)
+        self.area_node = switch_to_node_tree_area(context, window)
+        if get_pref().use_shader_ball_preview:
+            self.area_3d = split_3d_area(window)
 
-    split_area(context, window, preview_material)
+        self.create_preview_object(context)
 
+    def create_preview_object(self, context):
+        """创建预览的物体,如果需要添加就加在需要删除的里面"""
+        from . import get_pref
+        from ..src.preview_object import lzma_import_as_mesh
+        pref = get_pref()
+        shader_ball = pref.shader_ball
 
-def pop_up_preview_material_window(context, preview_material):
-    window = new_window(context, preview_material)
+        selected_objects = context.selected_objects
+        mat = self.material
+        if len(selected_objects) == 1 and selected_objects[-1].type == "MESH":  # 只选择一个物体
+            active_object = selected_objects[-1]
+            # if mat in active_object.data.materials[:]:  # 材质在物体材质槽内，独立化物体即可
+            #     active_object.active_material = mat
+            # else:
+            #     # 没在材质槽内,添加材质到物体内并独立
+            new_obj = active_object.copy()
+            new_obj.data.materials.clear()
+            new_obj.name = f"{PREVIEW_KEY} {active_object.name}"
+            active_object = new_obj
+            context.scene.collection.objects.link(active_object)
+            # bpy.ops.object.material_slot_add()
+            self.waiting_for_deletion_objects.append(active_object.name)
+        else:
+            # 没选择物体或选择了多个物体,导入预览物体
+            if shader_ball == 'NONE':
+                shader_ball = mat.mathp_preview_render_type
+            mesh = lzma_import_as_mesh(shader_ball)
+            name = f"{PREVIEW_KEY} {shader_ball}"
+            mesh.name = name
+            self.waiting_for_deletion_mesh_data.append(mesh.name)
+            active_object = bpy.data.objects.new(name, mesh)
+            context.scene.collection.objects.link(active_object)
+            context.view_layer.objects.active = active_object
+            active_object.select_set(True)
+            with context.temp_override(object=active_object, active_object=active_object,
+                                       selected_objects=[active_object, ]):
+                bpy.ops.object.shade_smooth()
 
-    return window
+        active_object.active_material = mat
+        context.view_layer.objects.active = active_object
+        active_object.location = (10000, 10000, 10000)
+        active_object.select_set(True)
+        bpy.ops.object.select_all(action='DESELECT')
 
+        self.preview_lock(context, active_object)
 
-def preview_3d(self, context, window):
-    from . import get_pref
-    pref = get_pref()
+        # if region.type == 'WINDOW': #显示所有节点
+        #     bpy.ops.node.view_all("INVOKE_DEFAULT")
 
-    print("preview_3d", hash(context.window))
-    return
-    # 创建集合
-    tmp_coll = bpy.data.collections[
-        'tmp_mathp'] if 'tmp_mathp' in bpy.data.collections else bpy.data.collections.new(
-        'tmp_mathp')
-    if 'tmp_mathp' not in context.scene.collection.children:
-        context.scene.collection.children.link(tmp_coll)
+    def preview_lock(self, context, obj):
+        """
+        set(i.type for i in bpy.context.area.spaces)
+        {'GRAPH_EDITOR', 'VIEW_3D', 'NODE_EDITOR', 'DOPESHEET_EDITOR', 'INFO', 'FILE_BROWSER', 'OUTLINER',
+         'SEQUENCE_EDITOR', 'TEXT_EDITOR', 'PROPERTIES', 'CLIP_EDITOR', 'NLA_EDITOR', 'CONSOLE'}"""
+        area = self.area_3d
+        if area:
+            space = [s for s in area.spaces if s.type == "VIEW_3D"][0]
+            region = [r for r in area.regions if r.type == "WINDOW"][0]
+            context.view_layer.objects.active = obj
+            obj.select_set(True)
+            print("preview_lock", space, context.object)
+            space.lock_object = obj  # 锁定物体
+            with context.temp_override(
+                    object=obj,
+                    active_object=obj,
+                    selected_objects=[obj, ],
+                    area=area,
+                    region=region,
+            ):
+                bpy.ops.view3d.view_selected("EXEC_DEFAULT")
+                bpy.ops.view3d.localview("EXEC_DEFAULT")
 
-    # 设置材质球/材质
+    def exit(self):
+        for obj_name in self.waiting_for_deletion_objects:
+            if obj := bpy.data.objects.get(obj_name):
+                bpy.data.objects.remove(obj)
+        for mesh_name in self.waiting_for_deletion_mesh_data:
+            if mesh := bpy.data.meshes.get(mesh_name):
+                bpy.data.meshes.remove(mesh)
 
-    set_shader_ball_mat(selected_mat[0], tmp_coll)
-    selected_mat[0].asset_generate_preview()
+    def check(self, ops, context):
+        for window in context.window_manager.windows:
+            if hash(window) == hash(self.window):  # 找到弹出的窗口
+                ops.count += 1
+                return True
+        return False
+
+    @staticmethod
+    def clear_temp_preview_data():
+        clear_list = []
+        for obj in bpy.data.objects:
+            if PREVIEW_KEY in obj.name:
+                clear_list.append(obj.name)
+                bpy.data.objects.remove(obj)
+        for mesh in bpy.data.meshes:
+            if PREVIEW_KEY in mesh.name:
+                clear_list.append(mesh.name)
+                bpy.data.meshes.remove(mesh)
+        cl = len(clear_list)
+        if cl != 0:
+            print(f"Material Helper Clear temp preview {cl} data: {clear_list}")

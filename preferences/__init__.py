@@ -29,7 +29,7 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Ali
                                             ('CLOTH', 'Cloth', ''),
                                             ('FLUID', 'Fluid', ''),
                                         ],
-                                        default='NONE')
+                                        default='SHADERBALL')
     shading_type: bpy.props.EnumProperty(name='Shading',
                                          items=[
                                              ('SOLID', 'Solid', ''),

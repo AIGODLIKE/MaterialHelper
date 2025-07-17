@@ -1,56 +1,17 @@
 import bpy
 
 from ...debug import DEBUG_EDIT_MATERIAL
-from ...utils import get_pref
-
-
-def set_shader_ball_mat(mat, coll):
-    """导入并设置材质球模型/材质
-
-    :param mat: bpy.types.Material
-    :param coll: bpy.types.Collection
-    :return:
-    """
-    # 获取设置
-    with SaveUpdate():
-        mat_pv_type = get_pref().shader_ball
-        if mat_pv_type == 'NONE':
-            mat_pv_type = mat.mathp_preview_render_type
-
-        shader_ball_lib = Path(__file__).parent.parent.joinpath('shader_ball_lib')
-        blend_file = shader_ball_lib.joinpath('shader_ball.blend')
-
-        with bpy.data.libraries.load(str(blend_file), link=False) as (data_from, data_to):
-            data_to.objects = [mat_pv_type]
-
-        tmp_obj = data_to.objects[0]
-
-        # 移动到比较远的地方
-        tmp_obj.location = (10000, 10000, 10000)
-
-        coll.objects.link(tmp_obj)
-
-        # 设置激活项和材质
-        bpy.context.view_layer.objects.active = tmp_obj
-
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.context.object.select_set(True)
-        bpy.ops.object.shade_smooth()
-
-        tmp_obj.select_set(True)
-        tmp_obj.active_material = mat
-
-        State.last_edit_mat = mat.name
+from ...utils.window import PreviewMaterialWindow
 
 
 class EditMaterial(bpy.types.Operator):
     bl_idname = 'mathp.edit_material_asset'
     bl_label = 'Edit Material Asset'
 
-    new_window_hash = None
     edit_material = None
     count = None
-    timer = None
+    # timer = None
+    window: PreviewMaterialWindow = None
 
     @classmethod
     def poll(cls, context):
@@ -61,21 +22,17 @@ class EditMaterial(bpy.types.Operator):
             if "FINISHED" not in res:
                 self.exit(context)
                 return res
-        self.popup_preview_window(context, event)
+        self.window = PreviewMaterialWindow(self, context, event, self.edit_material)
         if DEBUG_EDIT_MATERIAL:
             self.count = 0
-            print("context.window", context.window, hash(context.window))
+        print(self.bl_idname, self.edit_material)
         self.timer = context.window_manager.event_timer_add(1, window=context.window)
         context.window_manager.modal_handler_add(self)
         return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
-        for window in context.window_manager.windows:
-            if hash(window) == self.new_window_hash:  # 找到弹出的窗口
-                self.count += 1
-                if DEBUG_EDIT_MATERIAL:
-                    print(f"\rpass {self.count}", self.new_window_hash, end="", flush=True)
-                return {"PASS_THROUGH"}
+        if self.window.check(self, context):
+            return {"PASS_THROUGH"}
 
         self.exit(context)
         return {"FINISHED"}
@@ -88,31 +45,15 @@ class EditMaterial(bpy.types.Operator):
 
     def exit(self, context):
         if DEBUG_EDIT_MATERIAL:
-            print("exit", self.new_window_hash, flush=True)
+            print("exit")
         if self.timer:
             context.window_manager.event_timer_remove(self.timer)
-        self.new_window_hash = None
+        self.window.exit()
         self.edit_material = None
 
     def cancel(self, context):
         self.exit(context)
         print("cancel", self.edit_material)
-
-    def popup_preview_window(self, context, event):
-        from ...utils import get_pref
-        from ...utils.window import pop_up_preview_material_window
-        pref = get_pref()
-
-        # 设置鼠标位置，以便弹窗出现在正中央
-        mouse_x, mouse_y = event.mouse_x, event.mouse_y
-        w = context.window
-        w_center_x, w_center_y = w.width / 2, w.height / 2
-        w.cursor_warp(int(w_center_x), int(w_center_y))
-
-        new_window = pop_up_preview_material_window(context, self.edit_material)
-        self.new_window_hash = hash(new_window)
-
-        w.cursor_warp(mouse_x, mouse_y)
 
     def find_material(self, context):
         from ...utils import get_local_selected_assets
@@ -125,4 +66,3 @@ class EditMaterial(bpy.types.Operator):
             return {"CANCELLED"}
 
         self.edit_material = selected_mat[0]
-

@@ -21,26 +21,18 @@ def load_subscribe():
 
 
 @persistent
-def depsgraph_update_post(scene, depsgraph):
-    # print("depsgraph_update_post", scene, depsgraph)
-    ...
-
-
-@persistent
-def depsgraph_update_pre(scene, depsgraph):
-    # print("depsgraph_update_pre", scene, depsgraph)
-    ...
+def load_post(file_path):
+    from .utils.window import PreviewMaterialWindow
+    PreviewMaterialWindow.clear_temp_preview_data()
 
 
 def register():
     load_subscribe()
 
-    bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_post)
-    bpy.app.handlers.depsgraph_update_pre.append(depsgraph_update_pre)
+    bpy.app.handlers.load_post.append(load_post)
 
 
 def unregister():
     bpy.msgbus.clear_by_owner(owner)
 
-    bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_post)
-    bpy.app.handlers.depsgraph_update_pre.remove(depsgraph_update_pre)
+    bpy.app.handlers.load_post.remove(load_post)
