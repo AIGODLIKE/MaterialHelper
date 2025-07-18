@@ -1,94 +1,105 @@
+from pathlib import Path
+
 import bpy
-from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG,get_pref
+
+from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG, get_pref, tag_redraw
+
+
+def cat_uuid_in_file(path: Path, uuid: str = MATERIAL_HELPER_ASSET_UUID):
+    with open(path, 'r', encoding='utf-8') as f:
+        for i, line in enumerate(f.readlines()):
+            if ":" not in line: continue
+            uuid = line.split(":")[0]
+            if uuid != MATERIAL_HELPER_ASSET_UUID:
+                continue
+            return i
+    return False
+
+
+def append_asset_cats_txt(path: Path) -> None:
+    try:
+        with open(path, 'a', encoding='utf-8') as f:
+            f.write(f"{MATERIAL_HELPER_ASSET_UUID}:Material Helper:Material Helper\n")
+    except PermissionError:
+        print('Material Helper: Permission Denied')
+    except FileNotFoundError:
+        print('Material Helper: Category file not found')
+    except Exception as e:
+        print('Unexpected Error:', e)
+
 
 class AssetSync:
+    is_sync = False
+    material_count = -1
 
-    @staticmethod
-    def sync():
+    @classmethod
+    def sync(cls):
         pref = get_pref()
-def remove_all_tmp_tags():
-    for mat in bpy.data.materials:
-        if mat.asset_data is None: continue
-        for tag in mat.asset_data.tags:
-            if tag.name == MATERIAL_HELPER_ASSET_TAG:
-                mat.asset_data.tags.remove(tag)
 
+        if bpy.data.filepath == "":  # 未保存文件无法写入
+            return
+        if pref.auto_update:
+            if not cls.is_sync:
+                cls.is_sync = True
+                cls.ensure_current_file_asset_cats()
+            if len(bpy.data.materials) != cls.material_count:
+                cls.material_sync_asset()
+        elif cls.is_sync:  # 关闭同步
+            cls.close_sync()
 
-class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
-    """Apply Selected as True Assets"""
-    bl_idname = "mathp.set_true_asset"
-    bl_label = "Apply"
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_confirm(self, event)
-
-    def execute(self, context):
-        match_obj = get_local_selected_assets(context)
-        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
-
-        for mat in selected_mats:
-            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
-                tag = mat.asset_data.tags[MATERIAL_HELPER_ASSET_TAG]
-                mat.asset_data.tags.remove(tag)
-                self.report({"INFO"}, bpy.app.translations.pgettext_iface("{} is set as True Asset").format(mat.name))
-        tag_redraw()
-        return {"FINISHED"}
-
-
-def update_tmp_asset(scene, depsgraph):
-    if scene.mathp_update_mat is False: return
-
-    global G_MATERIAL_COUNT
-    old_value = G_MATERIAL_COUNT
-
-    if len(bpy.data.materials) != old_value:
-        G_MATERIAL_COUNT = len(bpy.data.materials)
-        bpy.ops.mathp.set_tmp_asset()
-
-
-class MATHP_OT_set_tmp_asset(bpy.types.Operator):
-    bl_idname = "mathp.set_tmp_asset"
-    bl_label = "Set Temp Asset"
-    bl_options = {"INTERNAL"}
-
-    def execute(self, context):
+    @classmethod
+    def close_sync(cls):
         for mat in bpy.data.materials:
-            if mat.asset_data: continue
-            if mat.is_grease_pencil: continue
+            if mat.asset_data is None:
+                continue
+            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
+                mat.asset_clear()
+
+    @classmethod
+    def material_sync_asset(cls):
+        for mat in bpy.data.materials:
+            if mat.asset_data:  # 已经是资产
+                continue
+            if mat.is_grease_pencil:  # 是GP
+                continue
+
             mat.asset_mark()
             mat.asset_generate_preview()
             mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
-
+            if mat.asset_data.catalog_id != MATERIAL_HELPER_ASSET_UUID:
+                mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
         tag_redraw()
 
-        if bpy.data.filepath == "":
-            return {"CANCELLED"}
+    @classmethod
+    def check_is_sync(cls):
+        return get_pref().auto_update and cls.is_sync
 
-        ensure_current_file_asset_cats()
+    @classmethod
+    def ensure_current_file_asset_cats(cls):
+        if bpy.data.filepath == '':
+            print("Material Helper: File Not Save! Set category failed")
+            return
 
-        for mat in bpy.data.materials:
-            if mat.asset_data is None: continue
-            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
-                if mat.asset_data.catalog_id != MATERIAL_HELPER_ASSET_UUID:
-                    mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
-        try:
-            bpy.ops.asset.library_refresh()
-        except Exception as e:
-            print(e)
+        cat_path = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt')
+        cat_path_mod = Path(bpy.data.filepath).parent.joinpath('blender_assets.cats.txt~')
 
-        return {"FINISHED"}
+        if cat_path_mod.exists():  # delete
+            cat_path_mod.unlink()
 
+        if cat_path.exists():
+            if not cat_uuid_in_file(cat_path):
+                print('Material Helper: Writing category to current file')
+                append_asset_cats_txt(cat_path)
+        else:
+            with open(cat_path, "w", encoding='utf-8') as f:
+                print('Material Helper Creating Category')
+                f.write(f"""# This is an Asset Catalog Definition file for Blender.
+    #
+    # Empty lines and lines starting with `#` will be ignored.
+    # The first non-ignored line should be the version indicator.
+    # Other lines are of the format "UUID:catalog/path/for/assets:simple catalog name"
 
-class MATHP_OT_clear_tmp_asset(bpy.types.Operator):
-    bl_idname = "mathp.clear_tmp_asset"
-    bl_label = "Clear Temp Asset"
-    bl_options = {"INTERNAL"}
+    VERSION 1
 
-    def execute(self, context):
-        for mat in bpy.data.materials:
-            if mat.asset_data is None: continue
-
-            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
-                mat.asset_clear()
-        tag_redraw()
-        return {"FINISHED"}
+    {MATERIAL_HELPER_ASSET_UUID}:Material Helper:Material Helper
+    """)
