@@ -3,7 +3,7 @@ import bpy
 PREVIEW_KEY = "Material Helper Preview"
 
 
-def close_to_one_area(context, window):
+def saved_one_area(context, window):
     """只保留一个区域"""
     screen = context.window.screen
     while len(screen.areas) != 1:
@@ -124,7 +124,7 @@ class PreviewMaterialWindow:
                 bpy.ops.wm.window_fullscreen_toggle()
 
         # handle a window type and count
-        close_to_one_area(context, window)
+        saved_one_area(context, window)
         self.area_node = switch_to_node_tree_area(context, window)
         if get_pref().use_shader_ball_preview:
             self.area_3d = split_3d_area(window)

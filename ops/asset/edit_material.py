@@ -21,7 +21,7 @@ class EditMaterial(bpy.types.Operator):
     bl_label = 'Edit Material Asset'
 
     edit_material = None
-    count = None
+    count = 0
     timer = None
     window: "PreviewMaterialWindow|None" = None
 
@@ -36,8 +36,7 @@ class EditMaterial(bpy.types.Operator):
                 return res
         self.window = PreviewMaterialWindow(self, context, event, self.edit_material)
         if DEBUG_EDIT_MATERIAL:
-            self.count = 0
-        print(self.bl_idname, self.edit_material)
+            print(self.bl_idname, self.edit_material)
         self.timer = context.window_manager.event_timer_add(2, window=context.window)
         context.window_manager.modal_handler_add(self)
         return {"RUNNING_MODAL"}
