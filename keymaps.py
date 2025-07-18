@@ -5,7 +5,8 @@ addon_keymaps = []
 
 def register():
     wm = bpy.context.window_manager
-    if not wm.keyconfigs.addon: return
+    if not wm.keyconfigs.addon:
+        return
     # 双击点开材质
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
     kmi = km.keymap_items.new("mathp.edit_material_asset", 'LEFTMOUSE', 'DOUBLE_CLICK', ctrl=False, shift=False)
@@ -28,7 +29,8 @@ def register():
     addon_keymaps.append((km, kmi))
     # 添加资产
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
-    kmi = km.keymap_items.new("mathp.add_material", 'A', 'PRESS', ctrl=False, shift=True)
+    kmi = km.keymap_items.new("wm.call_menu", 'A', 'PRESS', ctrl=False, shift=True)
+    kmi.properties.name = "MATERIAL_HELPER_MT_add_material_menu"
     addon_keymaps.append((km, kmi))
     # 节点对齐
     km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')

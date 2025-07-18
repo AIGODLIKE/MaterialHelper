@@ -16,7 +16,6 @@ class MATHP_OT_add_material(bpy.types.Operator):
 
     def execute(self, context):
         from ..utils.property import import_material
-        from ..utils import tag_redraw
         self.material = material = import_material(self.file_path)
         material.asset_mark()
         bpy.ops.asset.library_refresh()

@@ -1,7 +1,11 @@
 import bpy
-from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG
+from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG,get_pref
 
+class AssetSync:
 
+    @staticmethod
+    def sync():
+        pref = get_pref()
 def remove_all_tmp_tags():
     for mat in bpy.data.materials:
         if mat.asset_data is None: continue
@@ -27,9 +31,7 @@ class MATHP_OT_set_true_asset(SelectedAsset, bpy.types.Operator):
                 tag = mat.asset_data.tags[MATERIAL_HELPER_ASSET_TAG]
                 mat.asset_data.tags.remove(tag)
                 self.report({"INFO"}, bpy.app.translations.pgettext_iface("{} is set as True Asset").format(mat.name))
-
         tag_redraw()
-
         return {"FINISHED"}
 
 
@@ -88,7 +90,5 @@ class MATHP_OT_clear_tmp_asset(bpy.types.Operator):
 
             if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
                 mat.asset_clear()
-
         tag_redraw()
-
         return {"FINISHED"}

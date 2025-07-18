@@ -203,6 +203,7 @@ class MATHP_OT_move_dependence(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
 
     def invoke(self, context, event):
+        from ..utils.node_wrangler import node_at_pos
         # 初始化
         self.dependence.clear()
         self.dependent.clear()
@@ -314,6 +315,7 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
         bpy.context.window_manager.mathp_node_anim = False
 
     def invoke(self, context, event):
+        from ..utils.node_wrangler import node_at_pos
         # 初始化
         self.node_loc_dict = dict()
         self._timer = None
@@ -329,6 +331,7 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
         return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
+        from ..utils.node_wrangler import abs_node_location
         if event.type == 'TIMER':
             # 绘制
             # --------

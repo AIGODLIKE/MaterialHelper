@@ -170,7 +170,6 @@ class PreviewMaterialWindow:
     def try_show_all_node(self, ops, context):
         if hasattr(ops, "is_show_all_node"):
             return
-
         from . import get_pref
         pref = get_pref()
         node_area = self.area_node

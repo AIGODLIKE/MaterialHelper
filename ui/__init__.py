@@ -1,6 +1,6 @@
 import bpy
 
-from . import panel, menu, header
+from . import panel, menu
 from ..utils import get_pref
 
 
@@ -48,7 +48,6 @@ def draw_context_menu(self, context):
 def register():
     panel.register()
     menu.register()
-    header.register()
 
     bpy.types.ASSETBROWSER_MT_editor_menus.append(draw_asset_browser)
     bpy.types.ASSETBROWSER_MT_context_menu.prepend(draw_context_menu)
@@ -57,7 +56,6 @@ def register():
 def unregister():
     panel.unregister()
     menu.unregister()
-    header.unregister()
 
     bpy.types.ASSETBROWSER_MT_editor_menus.remove(draw_asset_browser)
     bpy.types.ASSETBROWSER_MT_context_menu.remove(draw_context_menu)

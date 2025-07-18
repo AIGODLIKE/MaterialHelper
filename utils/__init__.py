@@ -6,7 +6,7 @@ from typing import Any
 import bpy
 
 MATERIAL_HELPER_ASSET_TAG = 'Material Helper temp asset tag'
-MATERIAL_HELPER_ASSET_UUID = '11451419-1981-0000-0000-000000000000'
+MATERIAL_HELPER_ASSET_UUID = '11451419-1981-6666-6666-000000000000'
 
 
 def get_pref() -> bpy.types.AddonPreferences:
