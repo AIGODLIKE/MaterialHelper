@@ -11,9 +11,6 @@ class MATHP_OT_duplicate_asset(bpy.types.Operator):
     def poll(cls, context):
         return hasattr(context, 'selected_assets') and context.selected_assets
 
-    # def invoke(self, context, event):
-    #     return context.window_manager.invoke_confirm(self, event)
-
     def execute(self, context):
         from ...utils import get_local_selected_assets
         match_obj = get_local_selected_assets(context)

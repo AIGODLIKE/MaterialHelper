@@ -1,4 +1,6 @@
 import bpy
+
+
 class MATHP_OT_rename_asset(bpy.types.Operator):
     """Rename Active Item"""
     bl_idname = "mathp.rename_asset"
@@ -10,6 +12,7 @@ class MATHP_OT_rename_asset(bpy.types.Operator):
         from ...utils import get_local_selected_assets
         if hasattr(context, "active_file"):
             return context.active_file and get_local_selected_assets(context)
+        return False
 
     def invoke(self, context, event):
         return context.window_manager.invoke_popup(self)

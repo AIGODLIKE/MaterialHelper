@@ -19,7 +19,7 @@ class MATHP_PT_NodePanel(bpy.types.Panel):
                                    hide_buttons=True,
                                    rows=5, cols=5)
         row = layout.row(align=True)
-        row.prop(context.object.active_material, 'mathp_preview_render_type', expand=True)
+        row.prop(context.object.active_material, 'preview_render_type', expand=True)
 
 
 def register():

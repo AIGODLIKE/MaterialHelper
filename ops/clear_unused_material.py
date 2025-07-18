@@ -1,14 +1,13 @@
 import bpy
 
 
-
 class ClearUnusedMaterial(bpy.types.Operator):
     bl_label = "Clear Unused Material"
     bl_idname = "mathp.clear_unused_material"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG,tag_redraw
+        from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG, tag_redraw
 
         for mat in bpy.data.materials:
             if not mat.asset_data:

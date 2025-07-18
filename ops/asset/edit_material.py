@@ -1,7 +1,19 @@
+from threading import Thread
+
 import bpy
 
 from ...debug import DEBUG_EDIT_MATERIAL
 from ...utils.window import PreviewMaterialWindow
+
+
+def refresh_material_asset_preview(material):
+    """子进程刷新材质
+    TIPS: 在关闭窗口时刷新会导致崩溃
+    """
+    bpy.data.materials[material.name].asset_generate_preview()
+    material.asset_generate_preview()
+    with bpy.context.temp_override(id=material):
+        bpy.ops.ed.lib_id_generate_preview()
 
 
 class EditMaterial(bpy.types.Operator):
@@ -45,15 +57,17 @@ class EditMaterial(bpy.types.Operator):
 
     def exit(self, context):
         if DEBUG_EDIT_MATERIAL:
-            print("exit")
+            print("exit", self.bl_idname, context.area.type)
         if self.timer:
             context.window_manager.event_timer_remove(self.timer)
         self.window.exit()
+        Thread(target=refresh_material_asset_preview, args=(self.edit_material,)).start()
         self.edit_material = None
 
     def cancel(self, context):
+        if DEBUG_EDIT_MATERIAL:
+            print("cancel", self.edit_material)
         self.exit(context)
-        print("cancel", self.edit_material)
 
     def find_material(self, context):
         from ...utils import get_local_selected_assets
@@ -66,3 +80,4 @@ class EditMaterial(bpy.types.Operator):
             return {"CANCELLED"}
 
         self.edit_material = selected_mat[0]
+        return None
