@@ -2,18 +2,22 @@ import bpy
 
 
 class Material:
-    # 用户总控制开关
-    # bpy.types.Scene
-    auto_update: bpy.props.BoolProperty(
-        name='Auto Update',
-        default=True,
-        description='If checked, the material will be automatically add as temp asset\nElse, temp assets will be cleared',
-    )
+    shader_ball: bpy.props.EnumProperty(name='Shader Ball',
+                                        items=[
+                                            ('NONE', 'Follow Material', ''),
+                                            ('FLAT', 'Flat', ''),
+                                            ('SPHERE', 'Sphere', ''),
+                                            ('CUBE', 'Cube', ''),
+                                            ('HAIR', 'Hair', ''),
+                                            ('SHADERBALL', 'Shader Ball', ''),
+                                            ('CLOTH', 'Cloth', ''),
+                                            ('FLUID', 'Fluid', ''),
+                                        ],
+                                        default='SHADERBALL')
+    shading_type: bpy.props.EnumProperty(name='Shading',
+                                         items=[
+                                             ('SOLID', 'Solid', ''),
+                                             ('MATERIAL', 'Material', '', 'SHADING_SOLID', 1),
+                                             ('RENDERED', 'Rendered', '', 'SHADING_RENDERED', 2),
+                                         ], default='MATERIAL')
 
-    # bpy.types.WindowManager
-    update_active_obj_materials: bpy.props.BoolProperty(
-        name='Object / Material Select Sync',
-        description="If checked, the active object's materials will be automatically selected",
-        default=False)
-
-    show_text: bpy.props.BoolProperty(name="Show Text", default=False)

@@ -14,10 +14,10 @@ def register():
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
     kmi = km.keymap_items.new("mathp.delete_asset", 'X', 'PRESS', ctrl=False, shift=False)
     addon_keymaps.append((km, kmi))
-    # 应用资产
-    km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
-    kmi = km.keymap_items.new("mathp.set_true_asset", 'A', 'PRESS', ctrl=True, shift=False)
-    addon_keymaps.append((km, kmi))
+    # # 应用资产
+    # km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
+    # kmi = km.keymap_items.new("mathp.set_true_asset", 'A', 'PRESS', ctrl=True, shift=False)
+    # addon_keymaps.append((km, kmi))
     # 复制资产
     km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
     kmi = km.keymap_items.new("mathp.duplicate_asset", 'D', 'PRESS', ctrl=False, shift=True)

@@ -10,7 +10,6 @@ def update_windows(*args):
 
 
 def load_subscribe():
-    print("load_subscribe")
     bpy.msgbus.subscribe_rna(
         key=(bpy.types.WindowManager, 'windows'),
         owner=owner,

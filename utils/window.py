@@ -33,59 +33,17 @@ def split_3d_area(window):
     space.region_3d.view_rotation = (0.62, 0.38, 0.35, 0.58)
     space.region_3d.view_location = (0.16, 0, 0.16)
 
-    # # solo
-    # override = {'area': area_3d, 'screen': screen}
-    # try:
-    #     with bpy.context.temp_override(**override):
-    #         bpy.ops.view3d.localview('INVOKE_DEFAULT')
-    # except RuntimeError:
-    #     if 'tmp_mathp' in bpy.data.screens:
-    #         # 清理多余screen
-    #         for s in bpy.data.screens:
-    #             if not s.name.startswith('tmp_mathp'): continue
-    #             # 清除屏幕
-    #             s.user_clear()
-    #             # 清除局部视图
-    #             for area in s.areas:
-    #                 if area.type != 'VIEW_3D': continue
-    #                 for region in area.regions:
-    #                     if region.type != 'WINDOW': continue
-    #
-    #                     override2 = {'area': area, 'region': region}  # override context
-    #                     try:
-    #                         with bpy.context.temp_override(**override2):
-    #                             bpy.ops.view3d.view_selected(use_all_regions=False)
-    #                     except:
-    #                         pass
-    #                     break
-
     # header
     space.show_region_header = False
     space.shading.studio_light = 'forest.exr'
     return area_3d
 
 
-def switch_to_node_tree_area(context, window, flip_header=True):
+def switch_to_node_tree_area(window):
     """切换到节点界面"""
-    from . import get_pref
-    pref = get_pref()
-
     node_area = window.screen.areas[0]
     node_area.type = 'NODE_EDITOR'
     node_area.ui_type = 'ShaderNodeTree'
-    # 侧边栏
-    context.space_data.show_region_ui = pref.show_ui_panel
-    for region in node_area.regions:
-        override = {'area': node_area, 'region': region}
-        with context.temp_override(**override):
-
-            if region.type == 'UI':  # 翻转菜单栏
-                if pref.ui_direction == 'LEFT':
-                    bpy.ops.screen.region_flip()
-                elif flip_header:
-                    bpy.ops.screen.region_flip()
-    # context.space_data.show_region_ui = pref.show_ui_panel
-
     return node_area
 
 
@@ -125,7 +83,7 @@ class PreviewMaterialWindow:
 
         # handle a window type and count
         saved_one_area(context, window)
-        self.area_node = switch_to_node_tree_area(context, window)
+        self.area_node = switch_to_node_tree_area(window)
         if get_pref().use_shader_ball_preview:
             self.area_3d = split_3d_area(window)
 
@@ -142,16 +100,11 @@ class PreviewMaterialWindow:
         mat = self.material
         if len(selected_objects) == 1 and selected_objects[-1].type == "MESH":  # 只选择一个物体
             active_object = selected_objects[-1]
-            # if mat in active_object.data.materials[:]:  # 材质在物体材质槽内，独立化物体即可
-            #     active_object.active_material = mat
-            # else:
-            #     # 没在材质槽内,添加材质到物体内并独立
             new_obj = active_object.copy()
             new_obj.data.materials.clear()
             new_obj.name = f"{PREVIEW_KEY} {active_object.name}"
             active_object = new_obj
             context.scene.collection.objects.link(active_object)
-            # bpy.ops.object.material_slot_add()
             self.waiting_for_deletion_objects.append(active_object.name)
         else:
             # 没选择物体或选择了多个物体,导入预览物体
@@ -177,9 +130,6 @@ class PreviewMaterialWindow:
 
         self.preview_lock(context, active_object)
 
-        # if region.type == 'WINDOW': #显示所有节点
-        #     bpy.ops.node.view_all("INVOKE_DEFAULT")
-
     def preview_lock(self, context, obj):
         """
         set(i.type for i in bpy.context.area.spaces)
@@ -191,7 +141,6 @@ class PreviewMaterialWindow:
             region = [r for r in area.regions if r.type == "WINDOW"][0]
             context.view_layer.objects.active = obj
             obj.select_set(True)
-            print("preview_lock", space, context.object)
             space.lock_object = obj  # 锁定物体
             with context.temp_override(
                     object=obj,
@@ -217,6 +166,30 @@ class PreviewMaterialWindow:
                 ops.count += 1
                 return True
         return False
+
+    def try_show_all_node(self, ops, context):
+        if hasattr(ops, "is_show_all_node"):
+            return
+
+        from . import get_pref
+        pref = get_pref()
+        node_area = self.area_node
+        flip_header = False
+        # 侧边栏
+        context.space_data.show_region_ui = pref.show_ui_panel
+        space = [s for s in node_area.spaces if s.type == "NODE_EDITOR"][0]
+        for region in node_area.regions:
+            override = {'area': node_area, 'region': region, "space_data": space}
+            with context.temp_override(**override):
+                if region.type == 'WINDOW':  # 显示所有节点
+                    bpy.ops.node.view_all("EXEC_DEFAULT")
+                if region.type == 'UI':  # 翻转菜单栏
+                    if pref.ui_direction == 'LEFT':
+                        bpy.ops.screen.region_flip()
+                    elif flip_header:
+                        bpy.ops.screen.region_flip()
+
+        setattr(ops, "is_show_all_node", True)
 
     @staticmethod
     def clear_temp_preview_data():

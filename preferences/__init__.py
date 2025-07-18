@@ -3,50 +3,27 @@ import rna_keymap_ui
 
 from .align import Align
 from .material import Material
+from .sync import Sync
 from .window import Window
 from .. import __package__ as base_package
 
 
-class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Align):
+class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Align, Sync):
     bl_idname = base_package
 
     ui_page: bpy.props.EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 1),
     ], default='SETTINGS')
-
-    # big_window
-
-    # general window setting
-    shader_ball: bpy.props.EnumProperty(name='Shader Ball',
-                                        items=[
-                                            ('NONE', 'Follow Material', ''),
-                                            ('FLAT', 'Flat', ''),
-                                            ('SPHERE', 'Sphere', ''),
-                                            ('CUBE', 'Cube', ''),
-                                            ('HAIR', 'Hair', ''),
-                                            ('SHADERBALL', 'Shader Ball', ''),
-                                            ('CLOTH', 'Cloth', ''),
-                                            ('FLUID', 'Fluid', ''),
-                                        ],
-                                        default='SHADERBALL')
-    shading_type: bpy.props.EnumProperty(name='Shading',
-                                         items=[
-                                             ('SOLID', 'Solid', ''),
-                                             ('MATERIAL', 'Material', '', 'SHADING_SOLID', 1),
-                                             ('RENDERED', 'Rendered', '', 'SHADING_RENDERED', 2),
-                                         ], default='MATERIAL')
+    show_text: bpy.props.BoolProperty(name="Show Text", default=False)
 
     def draw(self, context):
         layout = self.layout
 
         row = layout.row(align=True)
         row.prop(self, 'ui_page', expand=True)
-
-        if self.ui_page == 'KEYMAP':
-            self.draw_keymap(context, layout)
-        elif self.ui_page == 'SETTINGS':
-            self.draw_settings(context, layout)
+        
+        getattr(self, f"draw_{self.ui_page.lower()}")(context, layout)
 
     def draw_settings(self, context, layout):
         col = layout.column()

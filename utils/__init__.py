@@ -5,7 +5,7 @@ from typing import Any
 
 import bpy
 
-MATERIAL_HELPER_ASSET_TAG = 'tmp_asset_mathp'
+MATERIAL_HELPER_ASSET_TAG = 'Material Helper temp asset tag'
 MATERIAL_HELPER_ASSET_UUID = '11451419-1981-0000-0000-000000000000'
 
 
@@ -34,6 +34,7 @@ def get_icon(icon: str) -> int:
     from ..src.icons import previews_icons
     return previews_icons.get(icon.lower()).icon_id
 
+
 def get_local_selected_assets(context):
     """获取选择的本地资产
     :param context: bpy.context
@@ -45,6 +46,7 @@ def get_local_selected_assets(context):
                  cur_lib_name in {"LOCAL", "ALL"}]
 
     return match_obj
+
 
 def get_fbx_path(name):
     """获取预览文件的fbx路径"""

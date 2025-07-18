@@ -42,6 +42,7 @@ class EditMaterial(bpy.types.Operator):
         return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
+        self.window.try_show_all_node(self, context)
         if self.window.check(self, context):
             return {"PASS_THROUGH"}
 

@@ -2,7 +2,7 @@ import bpy
 
 from .duplicate import MATHP_OT_duplicate_asset
 from .delete import MATHP_OT_delete_asset
-from .refresh_asset import MATHP_OT_refresh_asset_preview
+from .refresh_asset_preview import MATHP_OT_refresh_asset_preview
 from .edit_material import EditMaterial
 
 class_list = [
