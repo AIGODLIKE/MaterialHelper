@@ -6,11 +6,11 @@ from ...debug import DEBUG_EDIT_MATERIAL
 from ...utils.window import PreviewMaterialWindow
 
 
-def refresh_material_asset_preview(material):
+def refresh_material_asset_preview(name):
     """子进程刷新材质
     TIPS: 在关闭窗口时刷新会导致崩溃
     """
-    bpy.data.materials[material.name].asset_generate_preview()
+    material = bpy.data.materials[name]
     material.asset_generate_preview()
     with bpy.context.temp_override(id=material):
         bpy.ops.ed.lib_id_generate_preview()
@@ -22,8 +22,8 @@ class EditMaterial(bpy.types.Operator):
 
     edit_material = None
     count = None
-    # timer = None
-    window: PreviewMaterialWindow = None
+    timer = None
+    window: "PreviewMaterialWindow|None" = None
 
     @classmethod
     def poll(cls, context):
@@ -38,7 +38,7 @@ class EditMaterial(bpy.types.Operator):
         if DEBUG_EDIT_MATERIAL:
             self.count = 0
         print(self.bl_idname, self.edit_material)
-        self.timer = context.window_manager.event_timer_add(1, window=context.window)
+        self.timer = context.window_manager.event_timer_add(2, window=context.window)
         context.window_manager.modal_handler_add(self)
         return {"RUNNING_MODAL"}
 
@@ -61,7 +61,10 @@ class EditMaterial(bpy.types.Operator):
         if self.timer:
             context.window_manager.event_timer_remove(self.timer)
         self.window.exit()
-        Thread(target=refresh_material_asset_preview, args=(self.edit_material,)).start()
+        self.window = None
+        t = Thread(target=refresh_material_asset_preview, args=(self.edit_material.name,))
+        t.start()
+        t.join()
         self.edit_material = None
 
     def cancel(self, context):

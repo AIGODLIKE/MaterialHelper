@@ -84,6 +84,7 @@ def switch_to_node_tree_area(context, window, flip_header=True):
                     bpy.ops.screen.region_flip()
                 elif flip_header:
                     bpy.ops.screen.region_flip()
+    # context.space_data.show_region_ui = pref.show_ui_panel
 
     return node_area
 

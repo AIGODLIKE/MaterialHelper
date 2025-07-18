@@ -1,25 +1,24 @@
 import bpy
 
 
+def get_mats(self, context) -> list:
+    enum_mats = []
+
+    for i, m in enumerate(bpy.data.materials):
+        enum_mats.append((m.name, m.name, '', m.preview.icon_id, i))
+    return enum_mats
+
+
 class MATHP_OT_replace_mat(bpy.types.Operator):
     bl_label = "Replace Selected Material to..."
     bl_idname = "mathp.replace_mat"
     bl_property = 'enum_mats'
     bl_options = {'REGISTER', 'UNDO'}
 
-    _enum_mats = []  # store
 
     @classmethod
     def poll(cls, context):
         return hasattr(context, 'selected_assets') and context.selected_assets
-
-    def get_mats(self, context) -> list:
-        enum_mats = MATHP_OT_replace_mat._enum_mats
-        enum_mats.clear()
-
-        for i, m in enumerate(bpy.data.materials):
-            enum_mats.append((m.name, m.name, '', m.preview.icon_id, i))
-        return enum_mats
 
     enum_mats: bpy.props.EnumProperty(
         name="Material",
