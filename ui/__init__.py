@@ -1,6 +1,7 @@
 import bpy
 
 from . import panel, menu
+from ..sync.select_material_to_object import select_material_to_object
 from ..utils import get_pref
 
 
@@ -18,12 +19,15 @@ def draw_asset_browser(self, context):
     row.menu(AssetBrowserMenu.bl_idname)
     ar = row.row(align=True)
     ar.prop(pref, "auto_update", toggle=True, icon="ASSET_MANAGER", **args)
-    ar.prop(pref, "update_active_obj_materials", toggle=True, icon="VIS_SEL_11", **args)
+    ar.prop(pref, "sync_select", toggle=True, icon="VIS_SEL_11", **args)
 
     br = row.row(align=True)
     # br.separator()
     br.operator(MATHP_OT_select_material_obj.bl_idname, icon="RESTRICT_SELECT_OFF", **args)
     br.operator("mathp.replace_mat", icon="CON_TRANSLIKE", **args)
+
+    if pref.sync_select:
+        select_material_to_object(context)
 
 
 def draw_context_menu(self, context):

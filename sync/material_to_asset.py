@@ -5,7 +5,7 @@ import bpy
 from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG, get_pref, tag_redraw
 
 
-def cat_uuid_in_file(path: Path, uuid: str = MATERIAL_HELPER_ASSET_UUID):
+def cat_uuid_in_file(path: Path):
     with open(path, 'r', encoding='utf-8') as f:
         for i, line in enumerate(f.readlines()):
             if ":" not in line: continue
@@ -36,8 +36,6 @@ class AssetSync:
     def sync(cls):
         pref = get_pref()
 
-        if bpy.data.filepath == "":  # 未保存文件无法写入
-            return
         if pref.auto_update:
             if not cls.is_sync:
                 cls.is_sync = True
@@ -76,7 +74,7 @@ class AssetSync:
 
     @classmethod
     def ensure_current_file_asset_cats(cls):
-        if bpy.data.filepath == '':
+        if bpy.data.filepath == '': # 未保存文件无法写入
             print("Material Helper: File Not Save! Set category failed")
             return
 
@@ -91,7 +89,7 @@ class AssetSync:
                 print('Material Helper: Writing category to current file')
                 append_asset_cats_txt(cat_path)
         else:
-            with open(cat_path, "w", encoding='utf-8') as f:
+            with open(cat_path, "w+", encoding='utf-8') as f:
                 print('Material Helper Creating Category')
                 f.write(f"""# This is an Asset Catalog Definition file for Blender.
     #
