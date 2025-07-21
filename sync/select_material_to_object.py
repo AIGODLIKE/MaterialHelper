@@ -22,14 +22,8 @@ def select_material_to_object(context):
         material = last_asset.local_id
         id_type = last_asset.id_type
         if id_type == "MATERIAL":
-            print("select_material_to_object", material, id_type)
 
-            last_mesh = None
             for obj in context.scene.objects:
                 if obj.type == "MESH" and not obj.hide_get() and not obj.hide_viewport:
                     is_select = material in obj.data.materials[:]
                     obj.select_set(is_select)
-                    last_mesh = obj
-
-            if last_mesh is not None:
-                context.view_layer.objects.active = last_mesh

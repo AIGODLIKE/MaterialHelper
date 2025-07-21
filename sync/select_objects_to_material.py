@@ -1,12 +1,12 @@
 import bpy
+from bpy_extras import asset_utils
+
+from ..utils import get_pref
 
 
 def select_objects_to_material(context) -> None:
-    wm = bpy.context.window_manager
-    scene = context.scene
-    if scene.mathp_update_mat is False:
-        return
-    elif wm.mathp_update_active_obj_mats is False:
+    pref = get_pref()
+    if pref.sync_select is False:
         return
     elif not hasattr(bpy.context, "object"):
         return
@@ -23,25 +23,23 @@ def select_objects_to_material(context) -> None:
             asset_area = area
             break
 
-    if asset_area is None: return
+    if asset_area is None:
+        return
 
     # 获取材质
-    global G_ACTIVE_MATS_LIST
-    G_ACTIVE_MATS_LIST.clear()
+    materials_list = []
 
     for mat_slot in bpy.context.object.material_slots:
-        G_ACTIVE_MATS_LIST.append(mat_slot.material)
-
-    G_ACTIVE_MATS_LIST.reverse()
+        materials_list.append(mat_slot.material)
 
     try:
         asset_area.spaces[0].deselect_all()  # window上有bug
         # 激活材质
-        space_data = asset_area.spaces[0]
+        space_data = [a for a in asset_area.spaces if a.type == "FILE_BROWSER"][0]
         assert asset_utils.SpaceAssetInfo.is_asset_browser(space_data)
 
         if bpy.context.object.select_get():
-            for mat in G_ACTIVE_MATS_LIST:
+            for mat in materials_list:
                 space_data.activate_asset_by_id(mat, deferred=False)
 
 

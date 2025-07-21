@@ -2,12 +2,15 @@ import bpy
 from bpy.app.handlers import persistent
 
 from .sync.material_to_asset import AssetSync
+from .sync.select_objects_to_material import select_objects_to_material
 
 owner = object()
 
 
 def switch_object():
     print("switch_object", )
+    select_objects_to_material(bpy.context)
+
 
 def load_subscribe():
     bpy.msgbus.subscribe_rna(
@@ -36,7 +39,6 @@ def load_post(file_path):
 
 
 def register():
-
     bpy.app.handlers.load_post.append(load_post)
     bpy.app.handlers.save_post.append(save_post)
 
