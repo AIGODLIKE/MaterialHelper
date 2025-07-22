@@ -4,7 +4,7 @@ import bpy
 class SetTrueAsset(bpy.types.Operator):
     """Apply Selected as True Assets"""
     bl_idname = "mathp.set_true_asset"
-    bl_label = "Apply as Asset"
+    bl_label = "Apply as asset"
     bl_description = "Convert temporary assets into regular assets"
 
     @classmethod
