@@ -3,13 +3,11 @@ import bpy
 from ..sync.material_to_asset import AssetSync
 
 
-class Sync:
-    # 用户总控制开关
-    # bpy.types.Scene
-    def update_material(self, context):
-        print("update_material", self.auto_update)
-        AssetSync.sync()
+def update_material(self, context):
+    AssetSync.sync()
 
+
+class Sync:
     auto_update: bpy.props.BoolProperty(
         name='Auto Update',
         default=True,
@@ -17,8 +15,7 @@ class Sync:
         update=update_material
     )
 
-    # bpy.types.WindowManager
     sync_select: bpy.props.BoolProperty(
-        name='Object / Material Select Sync',
+        name='Select Sync',
         description="If checked, the active object's materials will be automatically selected",
         default=False)

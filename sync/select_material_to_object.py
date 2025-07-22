@@ -1,18 +1,25 @@
 from . import is_sync, sync_lock
 from ..debug import DEBUG_SYNC
+from ..utils import get_pref
 
 cache_len = {}
 
 
 def select_material_to_object(context):
     global cache_len
-    if sync_lock():
+
+    pref = get_pref()
+    if pref.sync_select is False:
         return
-    if getattr(context, "selected_assets", None) is None:
+    elif pref.auto_update is False:
+        return
+    elif sync_lock():
+        return
+    elif getattr(context, "selected_assets", None) is None:
         return
     area_hash = hash(context.area)
     sl = len(context.selected_assets)
-
+    # bpy.data.screens["temp"].areas[0].spaces[0].shader_type
     last_asset = context.selected_assets[-1] if sl != 0 else None
 
     value = sl, hash(last_asset)

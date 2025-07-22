@@ -1,3 +1,3 @@
 DEBUG_EDIT_MATERIAL = False
 
-DEBUG_SYNC = True
+DEBUG_SYNC = False

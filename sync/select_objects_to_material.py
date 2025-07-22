@@ -12,6 +12,8 @@ def select_objects_to_material(context) -> None:
     pref = get_pref()
     if pref.sync_select is False:
         return
+    elif pref.auto_update is False:
+        return
     elif not hasattr(context, "object"):
         return
     elif context.object is None:
@@ -31,10 +33,7 @@ def select_objects_to_material(context) -> None:
         return
 
     # 获取材质
-    materials_list = []
-
-    for mat_slot in context.object.material_slots:
-        materials_list.append(mat_slot.material)
+    materials_list = list(mat_slot.material for mat_slot in context.object.material_slots)
 
     try:
         asset_area.spaces[0].deselect_all()  # window上有bug

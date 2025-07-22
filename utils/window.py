@@ -53,10 +53,11 @@ class PreviewMaterialWindow:
     area_3d = None
     waiting_for_deletion_objects = []
     waiting_for_deletion_mesh_data = []
+    window_fullscreen = []
 
     def __init__(self, ops, context, event, material):
         # 设置鼠标位置，以便弹窗出现在正中央
-        mouse_x, mouse_y = event.mouse_x, event.mouse_y
+        # mouse_x, mouse_y = event.mouse_x, event.mouse_y
         win = context.window
         win.cursor_warp(int(win.width / 2), int(win.height / 2))
 
@@ -65,6 +66,10 @@ class PreviewMaterialWindow:
         self.new_window(context)
 
         # win.cursor_warp(mouse_x, mouse_y)
+
+    @classmethod
+    def check_full_window(cls, window):
+        return hash(window) in cls.window_fullscreen
 
     def new_window(self, context) -> bpy.types.Window:
         from . import get_pref
@@ -80,7 +85,8 @@ class PreviewMaterialWindow:
         if style == "FULL_SCREEN":
             with context.temp_override(window=window):
                 bpy.ops.wm.window_fullscreen_toggle()
-
+            PreviewMaterialWindow.window_fullscreen.append(hash(window))
+        self.window.screen.name = PREVIEW_KEY
         # handle a window type and count
         saved_one_area(context, window)
         self.area_node = switch_to_node_tree_area(window)
@@ -159,6 +165,9 @@ class PreviewMaterialWindow:
         for mesh_name in self.waiting_for_deletion_mesh_data:
             if mesh := bpy.data.meshes.get(mesh_name):
                 bpy.data.meshes.remove(mesh)
+        wh = hash(self.window)
+        if wh in PreviewMaterialWindow.window_fullscreen:
+            PreviewMaterialWindow.window_fullscreen.remove(wh)
 
     def check(self, ops, context):
         for window in context.window_manager.windows:

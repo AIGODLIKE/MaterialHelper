@@ -10,7 +10,7 @@ def get_mats(self, context) -> list:
 
 
 class MATHP_OT_replace_mat(bpy.types.Operator):
-    bl_label = "Replace Selected Material to..."
+    bl_label = "Replace Material"
     bl_idname = "mathp.replace_mat"
     bl_property = 'enum_mats'
     bl_options = {'REGISTER', 'UNDO'}

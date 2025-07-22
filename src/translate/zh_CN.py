@@ -34,11 +34,17 @@ data = {
     'Select Material Object': '选择材质物体',
     "Make the local asset manager your place to create powerful materials": "将本地资产管理器作为你创造强大材质的地方吧",
     "{} is set as True Asset": "{}设置为真实资产",
+    "Select Sync": "选择同步",
+    "Realtime Preview": "时实预览",
+    "Full Screen": "全屏",
+    "Contract the window": "缩小窗口",
+    "Close Window": "关闭窗口",
+    "Window Style": "窗口样式",
+    "Preview Material Window Style": "预览材质窗口样式",
 
     "Carpaint": "汽车漆",
     "Emission": "自发光",
     "Glass": "玻璃",
     "Metal": "金属",
     "Plastic": "塑料",
-
 }
