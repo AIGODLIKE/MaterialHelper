@@ -3,7 +3,7 @@ import bpy
 
 class Window:
     window_style: bpy.props.EnumProperty(name="Window Style", items=[
-        ("FULL_SCREEN", "Full Screen", ""),
+        # ("FULL_SCREEN", "Full Screen", ""),
         ("BIG", "Big", ""),
         ("SMALL", "Small", ""),
     ], default="SMALL")
