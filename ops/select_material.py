@@ -6,6 +6,10 @@ class MATHP_OT_select_material_obj(bpy.types.Operator):
     bl_label = "Select Material Object"
     bl_options = {"UNDO"}
 
+    @classmethod
+    def poll(cls, context):
+        return hasattr(context, 'selected_assets') and context.selected_assets
+
     def execute(self, context):
         from ..utils import get_local_selected_assets
         match_obj = get_local_selected_assets(context)

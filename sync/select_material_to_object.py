@@ -1,9 +1,13 @@
-cache_len = {
-}
+from . import is_sync, sync_lock
+from ..debug import DEBUG_SYNC
+
+cache_len = {}
 
 
 def select_material_to_object(context):
     global cache_len
+    if sync_lock():
+        return
     if getattr(context, "selected_assets", None) is None:
         return
     area_hash = hash(context.area)
@@ -22,7 +26,8 @@ def select_material_to_object(context):
         material = last_asset.local_id
         id_type = last_asset.id_type
         if id_type == "MATERIAL":
-
+            if DEBUG_SYNC:
+                print("select_material_to_object", is_sync, material)
             for obj in context.scene.objects:
                 if obj.type == "MESH" and not obj.hide_get() and not obj.hide_viewport:
                     is_select = material in obj.data.materials[:]
