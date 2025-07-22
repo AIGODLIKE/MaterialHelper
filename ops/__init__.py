@@ -9,7 +9,6 @@ from .select_material import MATHP_OT_select_material_obj
 
 module_list = [
     asset,
-    # tmp_asset,
 ]
 
 class_list = [

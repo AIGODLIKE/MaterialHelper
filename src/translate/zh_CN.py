@@ -41,6 +41,8 @@ data = {
     "Close Window": "关闭窗口",
     "Window Style": "窗口样式",
     "Preview Material Window Style": "预览材质窗口样式",
+    "Apply as Asset": "应用为资产",
+    "Convert temporary assets into regular assets": "将临时资产转换为固定资产",
 
     "Carpaint": "汽车漆",
     "Emission": "自发光",

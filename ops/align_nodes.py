@@ -277,7 +277,7 @@ def draw_process_callback_px(self, context):
 
 
 ### TODO 单个节点到多个父级，父级间有依赖关系时候该节点过低的
-
+mathp_node_anim = False
 class MATHP_OT_align_dependence(bpy.types.Operator):
     bl_idname = 'mathp.align_dependence'
     bl_label = 'Align Dependence Nodes'
@@ -297,22 +297,25 @@ class MATHP_OT_align_dependence(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not context.window_manager.mathp_node_anim:
+        if not mathp_node_anim:
             return hasattr(context, 'selected_nodes') and len(context.selected_nodes) != 0
+        return False
 
     def append_handle(self):
+        global mathp_node_anim
         self._timer = bpy.context.window_manager.event_timer_add(self.anim_time / self.anim_iter,
                                                                  window=bpy.context.window)  # 添加计时器检测状态
         args = (self, bpy.context)
         self._handle = bpy.types.SpaceNodeEditor.draw_handler_add(draw_process_callback_px, args, 'WINDOW',
                                                                   'POST_PIXEL')
         bpy.context.window_manager.modal_handler_add(self)
-        bpy.context.window_manager.mathp_node_anim = True
+        mathp_node_anim = True
 
     def remove_handle(self):
+        global mathp_node_anim
         bpy.types.SpaceNodeEditor.draw_handler_remove(self._handle, 'WINDOW')
         bpy.context.window_manager.event_timer_remove(self._timer)
-        bpy.context.window_manager.mathp_node_anim = False
+        mathp_node_anim = False
 
     def invoke(self, context, event):
         from ..utils.node_wrangler import node_at_pos

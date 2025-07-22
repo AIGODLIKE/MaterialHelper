@@ -48,6 +48,7 @@ def draw_context_menu(self, context):
     layout.operator("mathp.delete_asset")
     layout.operator("mathp.replace_mat")
     layout.operator("mathp.rename_asset")
+    layout.operator("mathp.set_true_asset")
     layout.operator(MATHP_OT_refresh_asset_preview.bl_idname, icon="FILE_REFRESH")
     layout.separator()
 
