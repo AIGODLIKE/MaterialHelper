@@ -1,0 +1,5 @@
+DEBUG_EDIT_MATERIAL = False
+
+DEBUG_SYNC = False
+
+DEBUG_HANDLER = False
