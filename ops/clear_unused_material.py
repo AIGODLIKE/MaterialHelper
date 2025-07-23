@@ -24,5 +24,4 @@ class ClearUnusedMaterial(bpy.types.Operator):
                     mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
 
         tag_redraw()
-
         return {"FINISHED"}

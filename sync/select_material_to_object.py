@@ -19,7 +19,6 @@ def select_material_to_object(context):
         return
     area_hash = hash(context.area)
     sl = len(context.selected_assets)
-    # bpy.data.screens["temp"].areas[0].spaces[0].shader_type
     last_asset = context.selected_assets[-1] if sl != 0 else None
 
     value = sl, hash(last_asset)

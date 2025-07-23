@@ -8,7 +8,9 @@ owner = object()
 
 
 def switch_object():
-    print("switch_object", )
+    from .debug import DEBUG_HANDLER
+    if DEBUG_HANDLER:
+        print("switch_object")
     select_objects_to_material(bpy.context)
 
 
@@ -24,18 +26,21 @@ def load_subscribe():
 
 @persistent
 def save_post(file_path):
-    print("save_post", file_path)
+    from .debug import DEBUG_HANDLER
+    if DEBUG_HANDLER:
+        print("save_post", file_path)
     AssetSync.sync()
 
 
 @persistent
 def load_post(file_path):
+    from .debug import DEBUG_HANDLER
+    if DEBUG_HANDLER:
+        print("load_post", file_path)
     load_subscribe()
     from .utils.window import PreviewMaterialWindow
     PreviewMaterialWindow.clear_temp_preview_data()
     AssetSync.sync()
-
-    print("load_post", file_path)
 
 
 def register():

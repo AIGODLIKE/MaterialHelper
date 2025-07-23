@@ -1,4 +1,4 @@
-from math import sqrt, hypot
+from math import sqrt
 from typing import Optional
 
 import blf
@@ -165,6 +165,9 @@ def get_offset_from_anim(fac) -> float:
     return sqrt(min(max(fac, 0), 1))
 
 
+mathp_node_move = False
+
+
 class MATHP_OT_move_dependence(bpy.types.Operator):
     bl_idname = 'mathp.move_dependence'
     bl_label = 'Move Dependence'
@@ -188,16 +191,19 @@ class MATHP_OT_move_dependence(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.window_manager.mathp_node_move: return False
-
+        global mathp_node_move
+        if mathp_node_move:
+            return False
         return hasattr(context, 'selected_nodes')
 
     def remove_handler(self, context):
-        context.window_manager.mathp_node_move = False
+        global mathp_node_move
+        mathp_node_move = False
         context.window.cursor_modal_restore()
 
     def append_handler(self, context):
-        context.window_manager.mathp_node_move = True
+        global mathp_node_move
+        mathp_node_move = True
         context.window.cursor_modal_set('SCROLL_X')
         # 添加
         context.window_manager.modal_handler_add(self)
@@ -270,7 +276,7 @@ def draw_process_callback_px(self, context):
     font_id = 0
     step = 8
 
-    blf.size(font_id, 8, 120)
+    # blf.size(font_id, 8, 120)
     blf.position(font_id, self.draw_pos[0], self.draw_pos[1] + step, 0)
     blf.color(font_id, 1, 1, 1, 0.5)
     blf.draw(font_id, f"对齐中..{min(int(self.anim_fac / 2 * 100), 100)} %")
@@ -278,6 +284,8 @@ def draw_process_callback_px(self, context):
 
 ### TODO 单个节点到多个父级，父级间有依赖关系时候该节点过低的
 mathp_node_anim = False
+
+
 class MATHP_OT_align_dependence(bpy.types.Operator):
     bl_idname = 'mathp.align_dependence'
     bl_label = 'Align Dependence Nodes'

@@ -43,7 +43,8 @@ class EditMaterial(bpy.types.Operator):
 
     def modal(self, context, event):
         self.window.try_show_all_node(self, context)
-        print(self.bl_idname, event.ctrl, event.type, event.value)
+        if DEBUG_EDIT_MATERIAL:
+            print(self.bl_idname, event.ctrl, event.type, event.value)
         if event.type == "Q" and event.value == "PRESS":
             return {"CANCELLED"}
         elif self.window.check(self, context):
@@ -63,12 +64,14 @@ class EditMaterial(bpy.types.Operator):
             print("exit", self.bl_idname, context.area.type)
         if self.timer:
             context.window_manager.event_timer_remove(self.timer)
-        self.window.exit()
-        self.window = None
-        t = Thread(target=refresh_material_asset_preview, args=(self.edit_material.name,))
-        t.start()
-        t.join()
-        self.edit_material = None
+        if self.window:
+            self.window.exit()
+            self.window = None
+        if self.edit_material:
+            t = Thread(target=refresh_material_asset_preview, args=(self.edit_material.name,))
+            t.start()
+            t.join()
+            self.edit_material = None
 
     def cancel(self, context):
         if DEBUG_EDIT_MATERIAL:
