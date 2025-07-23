@@ -1,11 +1,11 @@
 import bpy
-import rna_keymap_ui
 
 from .align import Align
 from .material import Material
 from .sync import Sync
 from .window import Window
 from .. import __package__ as base_package
+from ..utils.keymap import draw_kmi
 
 
 class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Align, Sync):
@@ -22,7 +22,7 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Ali
 
         row = layout.row(align=True)
         row.prop(self, 'ui_page', expand=True)
-        
+
         getattr(self, f"draw_{self.ui_page.lower()}")(context, layout)
 
     def draw_settings(self, context, layout):
@@ -64,11 +64,14 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Ali
         get_kmi_l = sorted(set(get_kmi_l), key=get_kmi_l.index)
 
         for km, kmi in get_kmi_l:
+            sub_col = col.column()
             if not km.name == old_km_name:
-                col.label(text=str(km.name), icon="DOT")
+                sub_col.label(text=str(km.name), icon="DOT")
 
-            col.context_pointer_set("keymap", km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
+            if (not kmi.is_user_defined) and kmi.is_user_modified:
+                sub_col.context_pointer_set("keymap", km)
+
+            draw_kmi(sub_col, km, kmi)
 
             old_km_name = km.name
 
