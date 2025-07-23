@@ -19,24 +19,24 @@ class MATHP_OT_rename_asset(bpy.types.Operator):
 
     def draw(self, context):
         from ...utils import get_local_selected_assets
-        active = get_local_selected_assets(context)[0]
-
         layout = self.layout
-        layout.separator()
-        layout.label(text="Name")
-        if isinstance(active, bpy.types.Material):
+        column = layout.column(align=True)
+        column.separator()
+        column.label(text="Name")
+        asset = get_local_selected_assets(context)[0]
+        if isinstance(asset, bpy.types.Material):
             icon = "MATERIAL"
-        elif isinstance(active, bpy.types.Object):
+        elif isinstance(asset, bpy.types.Object):
             icon = "OBJECT_DATA"
-        elif isinstance(active, bpy.types.Collection):
+        elif isinstance(asset, bpy.types.Collection):
             icon = "GROUP"
-        elif isinstance(active, bpy.types.World):
+        elif isinstance(asset, bpy.types.World):
             icon = "WORLD"
         else:
             icon = "ASSET_MANAGER"
 
-        layout.prop(active, "name", text="", icon=icon)
-        layout.separator()
+        column.prop(asset, "name", text="", icon=icon)
+        column.separator()
 
     def execute(self, context):
         return {"FINISHED"}

@@ -43,6 +43,7 @@ def draw_context_menu(self, context):
         return
 
     layout = self.layout
+    layout.operator_context = "INVOKE_DEFAULT"
     layout.operator("mathp.edit_material_asset")
     layout.operator("mathp.duplicate_asset")
     layout.operator("mathp.delete_asset")
