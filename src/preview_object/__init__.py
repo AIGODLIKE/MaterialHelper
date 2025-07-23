@@ -1,7 +1,6 @@
 import json
 import lzma
 import os
-import time
 
 import bpy
 import numpy as np
@@ -53,8 +52,5 @@ def lzma_import_as_mesh(name) -> bpy.types.Mesh:
     return from_data_new_mesh(name, data)
 
 
-if __name__ == "__main__":
-    start_time = time.time()
-    print("__file__", __file__)
-    lzma_import_as_mesh("SHADERBALL")
-    print("time", time.time() - start_time)
+def from_blend_import_mesh(name) -> bpy.types.Mesh:
+    ...
