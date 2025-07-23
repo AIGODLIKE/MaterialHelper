@@ -7,7 +7,7 @@ class MATHP_OT_add_material(bpy.types.Operator):
     bl_label = "Add Material"
     bl_options = {"REGISTER", "UNDO"}
 
-    file_path: bpy.props.StringProperty(subtype="FILE_PATH")
+    material_name: bpy.props.StringProperty()
     dep_class = []  # 动态ops
 
     @classmethod
@@ -15,8 +15,8 @@ class MATHP_OT_add_material(bpy.types.Operator):
         return hasattr(context, "selected_assets")
 
     def execute(self, context):
-        from ..utils.property import import_material
-        self.material = material = import_material(self.file_path)
+        from ..src.material import import_material
+        self.material = material = import_material(self.material_name)
         material.asset_mark()
         bpy.ops.asset.library_refresh()
         material.asset_generate_preview()

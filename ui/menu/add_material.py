@@ -8,20 +8,14 @@ class AddMaterialMenu(bpy.types.Menu):
     bl_idname = "MATERIAL_HELPER_MT_add_material_menu"
 
     def draw(self, context):
-        from ...src.material import material_list
+        from ...src.material import get_all_material
         from ...utils import get_icon
         layout = self.layout
 
         layout.separator()
-
-        for name, file_path in material_list.items():
+        for name in get_all_material():
             layout.operator(
                 MATHP_OT_add_material.bl_idname,
                 icon_value=get_icon(name),
-                text=name.title()).file_path = file_path
-
+                text=name.title()).material_name = name
         layout.separator()
-
-
-
-
