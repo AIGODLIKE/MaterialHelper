@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Material Helper 材质助手",
     "author": "AIGODLIKE社区, Atticus",
-    "version": (1, 3, 3),
-    "blender": (4, 1, 0),
+    "version": (1, 4, 0),
+    "blender": (4, 5, 0),
     "location": "资产管理器>顶部菜单>材质助手",
     "description": "Make the local asset manager your place to create powerful materials",
     "warning": "",

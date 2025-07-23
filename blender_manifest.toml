@@ -1,13 +1,13 @@
 schema_version = "1.0.0"
 
-blender_version_min = "4.1.0"
+blender_version_min = "4.5.0"
 id = "MaterialHelper"
 license = ["SPDX:GPL-3.0-or-later", ]
 maintainer = "AIGODLIKE社区, Atticus"
 name = "MaterialHelper"
 tagline = "Make the local asset manager your place to create powerful materials"
 type = "add-on"
-version = "1.3.3"
+version = "1.4.0"
 tags = ["3D View", "Material"]
 
 [permissions]
