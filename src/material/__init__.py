@@ -1,15 +1,11 @@
 import os
 
-material_list = {}
+import bpy
 
-def register():
+
+def import_material(name) -> "bpy.types.Material":
     folder = os.path.dirname(__file__)
-    for file in os.listdir(folder):
-        if file.endswith(".json"):
-            name = file.replace(".json", "")
-            file_path = os.path.join(folder, file)
-            material_list[name] = file_path
-
-
-def unregister():
-    material_list.clear()
+    file_path = os.path.join(folder, "mat.blend")
+    with bpy.data.libraries.load(str(file_path), link=False) as (data_from, data_to):
+        data_to.materials = [name, ]
+    return data_to.materials[0]

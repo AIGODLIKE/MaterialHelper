@@ -401,12 +401,3 @@ def test_export():
             wf.writelines(json.dumps(aa, indent=2))
     print()
 
-
-def test_import():
-    import_material(r"C:\Development\Blender Addon\MaterialHelper\src\material\CARPAINT.json")
-    print()
-
-
-if __name__ == "__main__":
-    # test_import()
-    test_export()
