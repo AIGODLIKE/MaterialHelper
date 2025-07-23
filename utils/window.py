@@ -13,21 +13,21 @@ def saved_one_area(context, window):
 
 def split_3d_area(window):
     from . import get_pref
-    bpy.ops.screen.area_split(direction='VERTICAL', factor=0.25)
+    bpy.ops.screen.area_split(direction="VERTICAL", factor=0.25)
     screen = window.screen
     area_3d = screen.areas[-1]
 
     # 窗口设置
-    area_3d.type = 'VIEW_3D'
+    area_3d.type = "VIEW_3D"
     space = [s for s in area_3d.spaces if s.type == "VIEW_3D"][0]
     space.overlay.show_overlays = False
     space.show_gizmo = False
-    space.region_3d.view_perspective = 'PERSP'
+    space.region_3d.view_perspective = "PERSP"
 
     space.shading.type = get_pref().shading_type
     space.shading.use_scene_world_render = False
     space.shading.use_scene_lights_render = False
-    space.shading.studio_light = 'city.exr'
+    space.shading.studio_light = "city.exr"
 
     # set view
     space.region_3d.view_rotation = (0.62, 0.38, 0.35, 0.58)
@@ -35,15 +35,15 @@ def split_3d_area(window):
 
     # header
     space.show_region_header = False
-    space.shading.studio_light = 'forest.exr'
+    space.shading.studio_light = "forest.exr"
     return area_3d
 
 
 def switch_to_node_tree_area(window):
     """切换到节点界面"""
     node_area = window.screen.areas[0]
-    node_area.type = 'NODE_EDITOR'
-    node_area.ui_type = 'ShaderNodeTree'
+    node_area.type = "NODE_EDITOR"
+    node_area.ui_type = "ShaderNodeTree"
     return node_area
 
 
@@ -115,7 +115,7 @@ class PreviewMaterialWindow:
             self.waiting_for_deletion_objects.append(active_object.name)
         else:
             # 没选择物体或选择了多个物体,导入预览物体
-            if preview_render_type == 'NONE':
+            if preview_render_type == "NONE":
                 preview_render_type = mat.preview_render_type
             active_object = from_blend_import_object(preview_render_type)
             mesh = active_object.data
@@ -137,15 +137,15 @@ class PreviewMaterialWindow:
         loc = 1000
         active_object.location = (loc, loc, loc)
         active_object.select_set(True)
-        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.select_all(action="DESELECT")
 
         self.preview_lock(context, active_object)
 
     def preview_lock(self, context, obj):
         """
         set(i.type for i in bpy.context.area.spaces)
-        {'GRAPH_EDITOR', 'VIEW_3D', 'NODE_EDITOR', 'DOPESHEET_EDITOR', 'INFO', 'FILE_BROWSER', 'OUTLINER',
-         'SEQUENCE_EDITOR', 'TEXT_EDITOR', 'PROPERTIES', 'CLIP_EDITOR', 'NLA_EDITOR', 'CONSOLE'}"""
+        {"GRAPH_EDITOR", "VIEW_3D", "NODE_EDITOR", "DOPESHEET_EDITOR", "INFO", "FILE_BROWSER", "OUTLINER",
+         "SEQUENCE_EDITOR", "TEXT_EDITOR", "PROPERTIES", "CLIP_EDITOR", "NLA_EDITOR", "CONSOLE"}"""
         area = self.area_3d
         if area:
             space = [s for s in area.spaces if s.type == "VIEW_3D"][0]
@@ -161,7 +161,10 @@ class PreviewMaterialWindow:
                     region=region,
             ):
                 bpy.ops.view3d.view_selected("EXEC_DEFAULT")
-                bpy.ops.view3d.localview("EXEC_DEFAULT")
+                try:
+                    bpy.ops.view3d.localview("EXEC_DEFAULT")
+                except RuntimeError:
+                    self.ops.report({"WARNING"}, "Too many partial views, cannot exceed 16")
 
     def exit(self):
         for obj_name in self.waiting_for_deletion_objects:
@@ -192,12 +195,12 @@ class PreviewMaterialWindow:
         context.space_data.show_region_ui = pref.show_ui_panel
         space = [s for s in node_area.spaces if s.type == "NODE_EDITOR"][0]
         for region in node_area.regions:
-            override = {'area': node_area, 'region': region, "space_data": space}
+            override = {"area": node_area, "region": region, "space_data": space}
             with context.temp_override(**override):
-                if region.type == 'WINDOW':  # 显示所有节点
+                if region.type == "WINDOW":  # 显示所有节点
                     bpy.ops.node.view_all("EXEC_DEFAULT")
-                if region.type == 'UI':  # 翻转菜单栏
-                    if pref.ui_direction == 'LEFT':
+                if region.type == "UI":  # 翻转菜单栏
+                    if pref.ui_direction == "LEFT":
                         bpy.ops.screen.region_flip()
                     elif flip_header:
                         bpy.ops.screen.region_flip()

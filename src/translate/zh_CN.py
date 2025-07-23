@@ -46,6 +46,7 @@ data = {
     "Shader Ball": "着色球",
     "Preview Render Type": "预渲染类型",
     "Load preview material file": "加载预览材质文件",
+    "Too many partial views, cannot exceed 16": "局部视图过多,无法超过16个",
 
     "Carpaint": "汽车漆",
     "Emission": "自发光",
