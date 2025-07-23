@@ -43,7 +43,10 @@ class EditMaterial(bpy.types.Operator):
 
     def modal(self, context, event):
         self.window.try_show_all_node(self, context)
-        if self.window.check(self, context):
+        print(self.bl_idname, event.ctrl, event.type, event.value)
+        if event.type == "Q" and event.value == "PRESS":
+            return {"CANCELLED"}
+        elif self.window.check(self, context):
             return {"PASS_THROUGH"}
 
         self.exit(context)
