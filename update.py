@@ -14,12 +14,26 @@ def switch_object():
     select_objects_to_material(bpy.context)
 
 
+def update_material_slots():
+    from .debug import DEBUG_HANDLER
+    if DEBUG_HANDLER:
+        print("update_material_slots")
+    AssetSync.sync()
+
+
 def load_subscribe():
     bpy.msgbus.subscribe_rna(
         key=(bpy.types.LayerObjects, 'active'),
         owner=owner,
         args=(),
         notify=switch_object,
+        options={"PERSISTENT"}
+    )
+    bpy.msgbus.subscribe_rna(
+        key=(bpy.types.Object, 'active_material'),
+        owner=owner,
+        args=(),
+        notify=update_material_slots,
         options={"PERSISTENT"}
     )
 
