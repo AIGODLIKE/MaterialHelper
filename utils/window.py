@@ -111,6 +111,7 @@ class PreviewMaterialWindow:
             new_obj.name = f"{PREVIEW_KEY} {active_object.name}"
             active_object = new_obj
             context.scene.collection.objects.link(active_object)
+
             self.waiting_for_deletion_objects.append(active_object.name)
         else:
             # 没选择物体或选择了多个物体,导入预览物体
@@ -118,7 +119,6 @@ class PreviewMaterialWindow:
                 preview_render_type = mat.preview_render_type
             active_object = from_blend_import_object(preview_render_type)
             mesh = active_object.data
-            self.waiting_for_deletion_mesh_data.append(mesh.name)
             name = f"{PREVIEW_KEY} {preview_render_type}"
             mesh.name = name
             active_object.name = name
@@ -128,6 +128,9 @@ class PreviewMaterialWindow:
             with context.temp_override(object=active_object, active_object=active_object,
                                        selected_objects=[active_object, ]):
                 bpy.ops.object.shade_smooth()
+
+            self.waiting_for_deletion_mesh_data.append(mesh.name)
+            self.waiting_for_deletion_objects.append(active_object.name)
 
         active_object.active_material = mat
         context.view_layer.objects.active = active_object
