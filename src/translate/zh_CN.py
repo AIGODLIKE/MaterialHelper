@@ -43,6 +43,7 @@ data = {
     "Preview Material Window Style": "预览材质窗口样式",
     "Apply as asset": "应用为资产",
     "Convert temporary assets into regular assets": "将临时资产转换为固定资产",
+    "Shader Ball": "着色球",
 
     "Carpaint": "汽车漆",
     "Emission": "自发光",

@@ -98,9 +98,9 @@ class PreviewMaterialWindow:
     def create_preview_object(self, context):
         """创建预览的物体,如果需要添加就加在需要删除的里面"""
         from . import get_pref
-        from ..src.preview_object import lzma_import_as_mesh
+        from ..src.preview_object import from_blend_import_object
         pref = get_pref()
-        shader_ball = pref.shader_ball
+        preview_render_type = pref.preview_render_type
 
         selected_objects = context.selected_objects
         mat = self.material
@@ -114,13 +114,14 @@ class PreviewMaterialWindow:
             self.waiting_for_deletion_objects.append(active_object.name)
         else:
             # 没选择物体或选择了多个物体,导入预览物体
-            if shader_ball == 'NONE':
-                shader_ball = mat.preview_render_type
-            mesh = lzma_import_as_mesh(shader_ball)
-            name = f"{PREVIEW_KEY} {shader_ball}"
-            mesh.name = name
+            if preview_render_type == 'NONE':
+                preview_render_type = mat.preview_render_type
+            active_object = from_blend_import_object(preview_render_type)
+            mesh = active_object.data
             self.waiting_for_deletion_mesh_data.append(mesh.name)
-            active_object = bpy.data.objects.new(name, mesh)
+            name = f"{PREVIEW_KEY} {preview_render_type}"
+            mesh.name = name
+            active_object.name = name
             context.scene.collection.objects.link(active_object)
             context.view_layer.objects.active = active_object
             active_object.select_set(True)
@@ -130,7 +131,8 @@ class PreviewMaterialWindow:
 
         active_object.active_material = mat
         context.view_layer.objects.active = active_object
-        active_object.location = (10000, 10000, 10000)
+        loc = 1000
+        active_object.location = (loc, loc, loc)
         active_object.select_set(True)
         bpy.ops.object.select_all(action='DESELECT')
 

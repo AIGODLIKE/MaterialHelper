@@ -31,7 +31,7 @@ class Window:
         column.prop(self, "use_shader_ball_preview")
         sub_column = column.column(align=True)
         sub_column.enabled = self.use_shader_ball_preview
-        sub_column.prop(self, "shader_ball", expand=True)
+        sub_column.prop(self, "preview_render_type", expand=True)
         sub_column.row(align=True).prop(self, "shading_type", expand=True)
 
         column.separator()
