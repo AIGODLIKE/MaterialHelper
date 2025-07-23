@@ -17,8 +17,8 @@ def refresh_material_asset_preview(name):
 
 
 class EditMaterial(bpy.types.Operator):
-    bl_idname = 'mathp.edit_material_asset'
-    bl_label = 'Edit Material Asset'
+    bl_idname = "mathp.edit_material_asset"
+    bl_label = "Edit Material Asset"
 
     edit_material = None
     count = 0
@@ -27,7 +27,7 @@ class EditMaterial(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return (hasattr(context, 'selected_assets') and context.selected_assets) or context.asset
+        return (hasattr(context, "selected_assets") and context.selected_assets) or context.asset
 
     def invoke(self, context, event):
         if res := self.execute(context):
@@ -45,7 +45,9 @@ class EditMaterial(bpy.types.Operator):
         self.window.try_show_all_node(self, context)
         if DEBUG_EDIT_MATERIAL:
             print(self.bl_idname, event.ctrl, event.type, event.value)
-        if event.type == "Q" and event.value == "PRESS":
+        if event.type in ("Q", "O") and event.value == "PRESS":
+            self.exit(context)
+            bpy.ops.wm.window_close()
             return {"CANCELLED"}
         elif self.window.check(self, context):
             return {"PASS_THROUGH"}
@@ -57,7 +59,7 @@ class EditMaterial(bpy.types.Operator):
         """执行弹出窗口"""
         if res := self.find_material(context):
             return res
-        return {'FINISHED'}
+        return {"FINISHED"}
 
     def exit(self, context):
         if DEBUG_EDIT_MATERIAL:
@@ -74,6 +76,7 @@ class EditMaterial(bpy.types.Operator):
             self.edit_material = None
 
     def cancel(self, context):
+        """关闭当前窗口时将会触发"""
         if DEBUG_EDIT_MATERIAL:
             print("cancel", self.edit_material)
         self.exit(context)
@@ -85,7 +88,7 @@ class EditMaterial(bpy.types.Operator):
         selected_mat = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
         if not selected_mat:
-            self.report({'WARNING'}, '请选择一个本地材质资产')
+            self.report({"WARNING"}, "请选择一个本地材质资产")
             return {"CANCELLED"}
 
         self.edit_material = selected_mat[0]

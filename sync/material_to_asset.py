@@ -35,11 +35,11 @@ class AssetSync:
     @classmethod
     def sync(cls):
         pref = get_pref()
+        cls.ensure_current_file_asset_cats()
 
         if pref.auto_update:
             if not cls.is_sync:
                 cls.is_sync = True
-                cls.ensure_current_file_asset_cats()
             if len(bpy.data.materials) != cls.material_count:
                 cls.material_sync_asset()
         elif cls.is_sync:  # 关闭同步

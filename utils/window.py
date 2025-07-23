@@ -164,7 +164,10 @@ class PreviewMaterialWindow:
                 try:
                     bpy.ops.view3d.localview("EXEC_DEFAULT")
                 except RuntimeError:
-                    self.ops.report({"WARNING"}, "Too many partial views, cannot exceed 16")
+                    self.ops.report(
+                        {"WARNING"},
+                        "Blender performance limitations: Too many partial views, cannot exceed 16"
+                    )
 
     def exit(self):
         for obj_name in self.waiting_for_deletion_objects:
