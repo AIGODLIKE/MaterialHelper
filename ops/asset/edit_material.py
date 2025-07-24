@@ -34,6 +34,8 @@ class EditMaterial(bpy.types.Operator):
             if "FINISHED" not in res:
                 self.exit(context)
                 return res
+        if len(context.window_manager.windows) > 10:
+            return {"FINISHED"}
         self.window = PreviewMaterialWindow(self, context, event, self.edit_material)
         if DEBUG_EDIT_MATERIAL:
             print(self.bl_idname, self.edit_material)
@@ -46,6 +48,7 @@ class EditMaterial(bpy.types.Operator):
         if DEBUG_EDIT_MATERIAL:
             print(self.bl_idname, event.ctrl, event.type, event.value)
         if event.type in ("Q", "O") and event.value == "PRESS":
+            self.report({"WARNING"}, "Please close the preview window before proceeding with the operation")
             self.exit(context)
             bpy.ops.wm.window_close()
             return {"CANCELLED"}
@@ -88,8 +91,7 @@ class EditMaterial(bpy.types.Operator):
         selected_mat = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
 
         if not selected_mat:
-            self.report({"WARNING"}, "请选择一个本地材质资产")
+            self.report({"WARNING"}, "Please select a local material asset")
             return {"CANCELLED"}
-
         self.edit_material = selected_mat[0]
         return None

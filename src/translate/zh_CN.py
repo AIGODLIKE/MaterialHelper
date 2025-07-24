@@ -46,7 +46,9 @@ data = {
     "Shader Ball": "着色球",
     "Preview Render Type": "预渲染类型",
     "Load preview material file": "加载预览材质文件",
-    "Blender performance limitations: Too many partial views, cannot exceed 16": "Blender性能限制: 局部视图过多,无法超过16个",
+    "Blender performance limitations: Too many partial views, cannot exceed 16": "Blender性能限制: 部视图过多,无法超过16个",
+    "Please select a local material asset": "请选择一个本地材质资产",
+    "Please close the preview window before proceeding with the operation": "请关闭预览窗口后再进行操作",
 
     "Carpaint": "汽车漆",
     "Emission": "自发光",
