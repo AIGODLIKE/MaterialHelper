@@ -58,8 +58,8 @@ class PreviewMaterialWindow:
     def __init__(self, ops, context, event, material):
         # 设置鼠标位置，以便弹窗出现在正中央
         # mouse_x, mouse_y = event.mouse_x, event.mouse_y
-        win = context.window
-        win.cursor_warp(int(win.width / 2), int(win.height / 2))
+        # win = context.window
+        # win.cursor_warp(int(win.width / 2), int(win.height / 2))
 
         self.material = material
         self.ops = ops
