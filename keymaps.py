@@ -32,10 +32,6 @@ def register():
     kmi = km.keymap_items.new("wm.call_menu", "A", "PRESS", ctrl=False, shift=True)
     kmi.properties.name = "MATERIAL_HELPER_MT_add_material_menu"
     addon_keymaps.append((km, kmi))
-    # 拖动资产
-    km = wm.keyconfigs.addon.keymaps.new(name="File Browser", space_type="FILE_BROWSER")
-    kmi = km.keymap_items.new("mathp.drag_asset", "LEFTMOUSE", "PRESS")
-    addon_keymaps.append((km, kmi))
     # 节点对齐
     km = wm.keyconfigs.addon.keymaps.new(name="Node Editor", space_type="NODE_EDITOR")
     kmi = km.keymap_items.new("mathp.align_dependence", "A", "PRESS", ctrl=True)
