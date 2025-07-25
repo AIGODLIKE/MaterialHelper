@@ -28,8 +28,11 @@ def refresh_material_asset_preview(name):
         # material.asset_generate_preview()
         dprint("asset_generate_preview", name)
         with bpy.context.temp_override(id=material):
-            bpy.ops.ed.lib_id_generate_preview()
-            dprint("lib_id_generate_preview", name)
+            try:
+                bpy.ops.ed.lib_id_generate_preview()
+                dprint("lib_id_generate_preview", name)
+            except RuntimeError:
+                pass
     dprint("refresh_material_asset_preview", name)
 
 

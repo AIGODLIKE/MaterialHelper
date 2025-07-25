@@ -202,7 +202,10 @@ class PreviewMaterialWindow:
             override = {"area": node_area, "region": region, "space_data": space}
             with context.temp_override(**override):
                 if region.type == "WINDOW":  # 显示所有节点
-                    bpy.ops.node.view_all("EXEC_DEFAULT")
+                    try:
+                        bpy.ops.node.view_all("EXEC_DEFAULT")
+                    except RuntimeError:
+                        pass
                 if region.type == "UI":  # 翻转菜单栏
                     if pref.ui_direction == "LEFT":
                         bpy.ops.screen.region_flip()
