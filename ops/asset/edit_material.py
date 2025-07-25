@@ -1,31 +1,7 @@
-from threading import Thread
-
 import bpy
 
-from ...debug import DEBUG_EDIT_MATERIAL
+from ...utils.refresh_material import async_refresh_material, dprint
 from ...utils.window import PreviewMaterialWindow
-
-
-def dprint(*args, end="\n"):
-    if DEBUG_EDIT_MATERIAL:
-        print(*args, end=end)
-
-
-def refresh_material_asset_preview(name):
-    """子进程刷新材质
-    TIPS: 在关闭窗口时刷新会导致崩溃
-    """
-    if DEBUG_EDIT_MATERIAL:
-        dprint("start refresh_material_asset_preview", name)
-    if name in bpy.data.materials:
-        material = bpy.data.materials[name]
-        dprint("material", material)
-        # material.asset_generate_preview()
-        dprint("asset_generate_preview", name)
-        with bpy.context.temp_override(id=material):
-            bpy.ops.ed.lib_id_generate_preview()
-            dprint("lib_id_generate_preview", name)
-    dprint("refresh_material_asset_preview", name)
 
 
 class EditMaterial(bpy.types.Operator):
@@ -49,9 +25,10 @@ class EditMaterial(bpy.types.Operator):
         if len(context.window_manager.windows) > 10:
             return {"FINISHED"}
         self.window = PreviewMaterialWindow(self, context, event, self.edit_material)
-        dprint(self.bl_idname, self.edit_material)
-        self.timer = context.window_manager.event_timer_add(2, window=context.window)
         context.window_manager.modal_handler_add(self)
+        self.timer = context.window_manager.event_timer_add(1, window=context.window)
+
+        dprint(self.bl_idname, self.edit_material)
         return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
@@ -59,12 +36,12 @@ class EditMaterial(bpy.types.Operator):
         dprint(self.bl_idname, event.ctrl, event.type, event.value, self.count, end="\r")
         if event.type in ("Q", "O") and event.value == "PRESS":
             self.report({"WARNING"}, "Please close the preview window before proceeding with the operation")
+
             self.exit(context)
             bpy.ops.wm.window_close()
-            return {"CANCELLED"}
+            return {"FINISHED"}
         elif self.window.check(self, context):
             return {"PASS_THROUGH"}
-
         self.exit(context)
         return {"FINISHED"}
 
@@ -81,14 +58,10 @@ class EditMaterial(bpy.types.Operator):
             dprint("self.timer", self.timer)
         if self.window:
             dprint("self.window", self.window)
-
             self.window.exit()
             self.window = None
         if self.edit_material:
-            dprint("self.edit_material", self.edit_material)
-            t = Thread(target=refresh_material_asset_preview, args=(self.edit_material.name,))
-            t.start()
-            t.join(timeout=1)
+            async_refresh_material(self.edit_material.name)
             self.edit_material = None
 
     def cancel(self, context):

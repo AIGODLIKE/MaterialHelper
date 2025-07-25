@@ -39,6 +39,12 @@ def load_subscribe():
 
 
 @persistent
+def depsgraph_update_post(scene, depsgraph):
+    from .utils.refresh_material import refresh_all
+    refresh_all()
+
+
+@persistent
 def save_post(file_path):
     from .debug import DEBUG_HANDLER
     if DEBUG_HANDLER:
@@ -60,6 +66,7 @@ def load_post(file_path):
 def register():
     bpy.app.handlers.load_post.append(load_post)
     bpy.app.handlers.save_post.append(save_post)
+    bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_post)
 
 
 def unregister():
@@ -67,3 +74,4 @@ def unregister():
 
     bpy.app.handlers.load_post.remove(load_post)
     bpy.app.handlers.save_post.remove(save_post)
+    bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_post)

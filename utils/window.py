@@ -48,7 +48,7 @@ def switch_to_node_tree_area(window):
 
 
 class PreviewMaterialWindow:
-    window = None
+    window_hash = None
     area_node = None
     area_3d = None
     waiting_for_deletion_objects = []
@@ -81,12 +81,13 @@ class PreviewMaterialWindow:
             bpy.ops.screen.userpref_show()
         else:
             bpy.ops.wm.window_new()
-        self.window = window = context.window_manager.windows[-1]  # 创建的新窗口
+        window = context.window_manager.windows[-1]  # 创建的新窗口
+        wh = self.window_hash = hash(window)
         if style == "FULL_SCREEN":
             with context.temp_override(window=window):
                 bpy.ops.wm.window_fullscreen_toggle()
-            PreviewMaterialWindow.window_fullscreen.append(hash(window))
-        self.window.screen.name = PREVIEW_KEY
+            PreviewMaterialWindow.window_fullscreen.append(wh)
+        window.screen.name = PREVIEW_KEY
         # handle a window type and count
         saved_one_area(context, window)
         self.area_node = switch_to_node_tree_area(window)
@@ -176,13 +177,13 @@ class PreviewMaterialWindow:
         for mesh_name in self.waiting_for_deletion_mesh_data:
             if mesh := bpy.data.meshes.get(mesh_name):
                 bpy.data.meshes.remove(mesh)
-        wh = hash(self.window)
+        wh = self.window_hash
         if wh in PreviewMaterialWindow.window_fullscreen:
             PreviewMaterialWindow.window_fullscreen.remove(wh)
 
     def check(self, ops, context):
         for window in context.window_manager.windows:
-            if hash(window) == hash(self.window):  # 找到弹出的窗口
+            if hash(window) == self.window_hash:  # 找到弹出的窗口
                 ops.count += 1
                 return True
         return False
