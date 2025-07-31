@@ -9,6 +9,7 @@ from ..utils.window import PreviewMaterialWindow
 def draw_asset_browser(self, context):
     from .menu.asset_browser import AssetBrowserMenu
     from ..ops.select_material import MATHP_OT_select_material_obj
+    from ..ops.asset.refresh_asset_preview import MATHP_OT_refresh_asset_preview
     pref = get_pref()
 
     args = {}
@@ -27,6 +28,7 @@ def draw_asset_browser(self, context):
     sub_row = row.row(align=True)
     sub_row.operator(MATHP_OT_select_material_obj.bl_idname, icon="RESTRICT_SELECT_OFF", **args)
     sub_row.operator("mathp.replace_mat", icon="CON_TRANSLIKE", **args)
+    sub_row.operator(MATHP_OT_refresh_asset_preview.bl_idname, icon="FILE_REFRESH", **args)
 
     if pref.sync_select:
         select_material_to_object(context)
