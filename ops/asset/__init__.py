@@ -4,7 +4,7 @@ from .delete import MATHP_OT_delete_asset
 from .duplicate import MATHP_OT_duplicate_asset
 from .edit_material import EditMaterial
 from .refresh_asset_preview import MATHP_OT_refresh_asset_preview
-from .set_true_asset import SetTrueAsset
+from .apply_asset import ApplyAsset
 from .rename import MATHP_OT_rename_asset
 
 class_list = [
@@ -13,7 +13,7 @@ class_list = [
     MATHP_OT_refresh_asset_preview,
     MATHP_OT_rename_asset,
     EditMaterial,
-    SetTrueAsset,
+    ApplyAsset,
 ]
 
 register_class, unregister_class = bpy.utils.register_classes_factory(class_list)
