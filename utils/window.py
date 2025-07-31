@@ -135,7 +135,7 @@ class PreviewMaterialWindow:
 
         active_object.active_material = mat
         context.view_layer.objects.active = active_object
-        loc = 1000
+        loc = 0
         active_object.location = (loc, loc, loc)
         active_object.select_set(True)
         bpy.ops.object.select_all(action="DESELECT")

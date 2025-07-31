@@ -2,44 +2,58 @@ import bpy
 
 addon_keymaps = []
 
+KEYMAPS = {
+    "File Browser": [
+        {"idname": "mathp.edit_material_asset", "type": "LEFTMOUSE", "value": "DOUBLE_CLICK"},
+        {"idname": "mathp.delete_asset", "type": "X", "value": "PRESS"},
+        {"idname": "mathp.apply_asset", "type": "A", "value": "PRESS", "ctrl": True},
+        {"idname": "mathp.duplicate_asset", "type": "D", "value": "PRESS", "shift": True},
+        {"idname": "mathp.rename_asset", "type": "F2", "value": "PRESS"},
+        {"idname": "wm.call_menu", "type": "A", "value": "PRESS","shift":True,
+         "properties": {"name": "MATERIAL_HELPER_MT_add_material_menu"}},
+    ],
+    "Node Editor": [
+        {"idname": "mathp.align_dependence", "type": "A", "value": "PRESS", "ctrl": True},
+        {"idname": "mathp.move_dependence", "type": "D", "value": "PRESS"}
+    ]
+}
+
+
+def get_keymap(keymap_name) -> "bpy.types.KeyMap":
+    kc = bpy.context.window_manager.keyconfigs
+    addon = kc.addon
+    keymap = kc.default.keymaps.get(keymap_name, None)
+    return addon.keymaps.new(
+        keymap_name,
+        space_type=keymap.space_type,
+        region_type=keymap.region_type
+    )
+
 
 def register():
     wm = bpy.context.window_manager
     if not wm.keyconfigs.addon:
         return
-    # 双击点开材质
-    km = wm.keyconfigs.addon.keymaps.new(name="File Browser", space_type="FILE_BROWSER")
-    kmi = km.keymap_items.new("mathp.edit_material_asset", "LEFTMOUSE", "DOUBLE_CLICK", ctrl=False, shift=False)
-    addon_keymaps.append((km, kmi))
-    # 删除材质
-    km = wm.keyconfigs.addon.keymaps.new(name="File Browser", space_type="FILE_BROWSER")
-    kmi = km.keymap_items.new("mathp.delete_asset", "X", "PRESS", ctrl=False, shift=False)
-    addon_keymaps.append((km, kmi))
-    # 应用资产
-    km = wm.keyconfigs.addon.keymaps.new(name="File Browser", space_type="FILE_BROWSER")
-    kmi = km.keymap_items.new("mathp.set_true_asset", "A", "PRESS", ctrl=True, shift=False)
-    addon_keymaps.append((km, kmi))
-    # 复制资产
-    km = wm.keyconfigs.addon.keymaps.new(name="File Browser", space_type="FILE_BROWSER")
-    kmi = km.keymap_items.new("mathp.duplicate_asset", "D", "PRESS", ctrl=False, shift=True)
-    addon_keymaps.append((km, kmi))
-    # 重命名资产
-    km = wm.keyconfigs.addon.keymaps.new(name="File Browser", space_type="FILE_BROWSER")
-    kmi = km.keymap_items.new("mathp.rename_asset", "F2", "PRESS", ctrl=False, shift=False)
-    addon_keymaps.append((km, kmi))
-    # 添加资产
-    km = wm.keyconfigs.addon.keymaps.new(name="File Browser", space_type="FILE_BROWSER")
-    kmi = km.keymap_items.new("wm.call_menu", "A", "PRESS", ctrl=False, shift=True)
-    kmi.properties.name = "MATERIAL_HELPER_MT_add_material_menu"
-    addon_keymaps.append((km, kmi))
-    # 节点对齐
-    km = wm.keyconfigs.addon.keymaps.new(name="Node Editor", space_type="NODE_EDITOR")
-    kmi = km.keymap_items.new("mathp.align_dependence", "A", "PRESS", ctrl=True)
-    addon_keymaps.append((km, kmi))
-    # 控制依赖项
-    km = wm.keyconfigs.addon.keymaps.new(name="Node Editor", space_type="NODE_EDITOR")
-    kmi = km.keymap_items.new("mathp.move_dependence", "D", "PRESS")
-    addon_keymaps.append((km, kmi))
+
+    for keymap_name, keymap_items in KEYMAPS.items():
+        km = get_keymap(keymap_name)
+        for item in keymap_items:
+            idname = item.get("idname")
+            key_type = item.get("type")
+            value = item.get("value")
+
+            shift = item.get("shift", False)
+            ctrl = item.get("ctrl", False)
+            alt = item.get("alt", False)
+
+            kmi = km.keymap_items.new(idname, key_type, value, shift=shift, ctrl=ctrl, alt=alt)
+
+            if kmi:
+                properties = item.get("properties")
+                if properties:
+                    for name, value in properties.items():
+                        setattr(kmi.properties, name, value)
+            addon_keymaps.append((km, kmi))
 
 
 def unregister():
