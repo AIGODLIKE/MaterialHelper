@@ -17,8 +17,8 @@ class ApplyAsset(bpy.types.Operator):
                 return True
         return False
 
-    def invoke(self, context, event):
-        return context.window_manager.invoke_confirm(self, event)
+    # def invoke(self, context, event):
+    #     return context.window_manager.invoke_confirm(self, event)
 
     def execute(self, context):
         from ...utils import get_local_selected_assets, MATERIAL_HELPER_ASSET_TAG, tag_redraw
