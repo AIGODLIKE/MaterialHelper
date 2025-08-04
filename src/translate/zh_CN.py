@@ -35,7 +35,7 @@ data = {
     "Make the local asset manager your place to create powerful materials": "将本地资产管理器作为你创造强大材质的地方吧",
     "{} is set as True Asset": "{}设置为真实资产",
     "Select Sync": "选择同步",
-    "Realtime Preview": "时实预览",
+    "Realtime Preview": "实时预览",
     "Full Screen": "全屏",
     "Contract the window": "缩小窗口",
     "Switch window": "切换窗口",
