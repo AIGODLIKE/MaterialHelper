@@ -6,12 +6,14 @@ from .align_nodes import MATHP_OT_move_dependence, MATHP_OT_align_dependence
 from .clear_unused_material import ClearUnusedMaterial
 from .replace_mat import MATHP_OT_replace_mat
 from .select_material import MATHP_OT_select_material_obj
+from .tips import Tips
 
 module_list = [
     asset,
 ]
 
 class_list = [
+    Tips,
     ClearUnusedMaterial,
     MATHP_OT_move_dependence,
     MATHP_OT_align_dependence,

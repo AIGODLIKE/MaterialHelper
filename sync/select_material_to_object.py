@@ -34,7 +34,16 @@ def select_material_to_object(context):
         if id_type == "MATERIAL":
             if DEBUG_SYNC:
                 print("select_material_to_object", is_sync, material)
+            count = 0
             for obj in context.scene.objects:
                 if obj.type == "MESH" and not obj.hide_get() and not obj.hide_viewport:
                     is_select = material in obj.data.materials[:]
-                    obj.select_set(is_select)
+                    if is_select:
+                        count += 1
+            if count != 0:
+                pref.tips = "当前材质未被应用到物体上"
+            else:
+                for obj in context.scene.objects:
+                    if obj.type == "MESH" and not obj.hide_get() and not obj.hide_viewport:
+                        is_select = material in obj.data.materials[:]
+                        obj.select_set(is_select)

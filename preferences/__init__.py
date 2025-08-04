@@ -16,6 +16,7 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Ali
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 1),
     ], default='SETTINGS')
     show_text: bpy.props.BoolProperty(name="Show Text", default=False)
+    tips: bpy.props.StringProperty(update=lambda self, context: bpy.ops.mathp.tips(tips=self.tips))
 
     def draw(self, context):
         layout = self.layout
