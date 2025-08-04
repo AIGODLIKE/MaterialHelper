@@ -25,4 +25,4 @@ class AssetBrowserMenu(bpy.types.Menu):
 
         layout.separator()
 
-        layout.operator("mathp.set_true_asset", icon="ASSET_MANAGER")
+        layout.operator("mathp.apply_asset", icon="ASSET_MANAGER")

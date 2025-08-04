@@ -26,7 +26,6 @@ def draw_asset_browser(self, context):
     ss_row.prop(pref, "sync_select", toggle=True, icon="VIS_SEL_11", **args)
 
     sub_row = row.row(align=True)
-    sub_row.operator(MATHP_OT_select_material_obj.bl_idname, icon="RESTRICT_SELECT_OFF", **args)
     sub_row.operator("mathp.replace_mat", icon="CON_TRANSLIKE", **args)
     sub_row.operator(MATHP_OT_refresh_asset_preview.bl_idname, icon="FILE_REFRESH", **args)
 
@@ -36,6 +35,7 @@ def draw_asset_browser(self, context):
 
 def draw_context_menu(self, context):
     from ..ops.asset.refresh_asset_preview import MATHP_OT_refresh_asset_preview
+    from ..ops.select_material import MATHP_OT_select_material_obj
 
     if not hasattr(context, "selected_assets"):
         return
@@ -51,7 +51,8 @@ def draw_context_menu(self, context):
     layout.operator("mathp.delete_asset")
     layout.operator("mathp.replace_mat")
     layout.operator("mathp.rename_asset")
-    layout.operator("mathp.set_true_asset")
+    layout.operator("mathp.apply_asset")
+    layout.operator(MATHP_OT_select_material_obj.bl_idname, icon="RESTRICT_SELECT_OFF")
     layout.operator(MATHP_OT_refresh_asset_preview.bl_idname, icon="FILE_REFRESH")
     layout.separator()
 
