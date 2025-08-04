@@ -1,6 +1,6 @@
 import bpy
 
-refresh_material_list = []
+REFRESH_MATERIAL_LIST = []
 
 
 def dprint(*args, end="\n"):
@@ -10,10 +10,10 @@ def dprint(*args, end="\n"):
 
 
 def refresh_all():
-    global refresh_material_list
-    if refresh_material_list:
-        while refresh_material_list:
-            item = refresh_material_list.pop()
+    global REFRESH_MATERIAL_LIST
+    if REFRESH_MATERIAL_LIST:
+        while REFRESH_MATERIAL_LIST:
+            item = REFRESH_MATERIAL_LIST.pop()
             refresh_material_asset_preview(item)
 
 
@@ -37,4 +37,4 @@ def refresh_material_asset_preview(name):
 
 
 def async_refresh_material(name):
-    refresh_material_list.append(name)
+    REFRESH_MATERIAL_LIST.append(name)

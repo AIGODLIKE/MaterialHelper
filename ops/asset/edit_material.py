@@ -3,6 +3,8 @@ import bpy
 from ...utils.refresh_material import async_refresh_material, dprint
 from ...utils.window import PreviewMaterialWindow
 
+window: "PreviewMaterialWindow|None" = None
+
 
 class EditMaterial(bpy.types.Operator):
     bl_idname = "mathp.edit_material_asset"
@@ -11,20 +13,23 @@ class EditMaterial(bpy.types.Operator):
     edit_material = None
     count = 0
     timer = None
-    window: "PreviewMaterialWindow|None" = None
 
     @classmethod
     def poll(cls, context):
         return (hasattr(context, "selected_assets") and context.selected_assets) or context.asset
 
     def invoke(self, context, event):
+        global window
         if res := self.execute(context):
             if "FINISHED" not in res:
                 self.exit(context)
                 return res
         if len(context.window_manager.windows) > 10:
             return {"FINISHED"}
-        self.window = PreviewMaterialWindow(self, context, event, self.edit_material)
+        elif window:  # 单例模式
+            window.replace_material(context, self.edit_material)
+            return {"FINISHED"}
+        window = PreviewMaterialWindow(self, context, event, self.edit_material)
         context.window_manager.modal_handler_add(self)
         self.timer = context.window_manager.event_timer_add(1, window=context.window)
 
@@ -32,15 +37,18 @@ class EditMaterial(bpy.types.Operator):
         return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
-        self.window.try_show_all_node(self, context)
+        global window
+        if window:
+            window.try_show_all_node(self, context)
+            window.pin_node_tree()
         dprint(self.bl_idname, event.ctrl, event.type, event.value, self.count, end="\r")
         if event.type in ("Q", "O") and event.value == "PRESS":
-            self.report({"WARNING"}, "Please close the preview window before proceeding with the operation")
 
             self.exit(context)
             bpy.ops.wm.window_close()
+            self.report({"WARNING"}, "Please close the preview window before proceeding with the operation")
             return {"FINISHED"}
-        elif self.window.check(self, context):
+        elif window and window.check(self, context):
             return {"PASS_THROUGH"}
         self.exit(context)
         return {"FINISHED"}
@@ -52,14 +60,15 @@ class EditMaterial(bpy.types.Operator):
         return {"FINISHED"}
 
     def exit(self, context):
+        global window
         dprint("exit", self.bl_idname, context.area.type)
         if self.timer:
             context.window_manager.event_timer_remove(self.timer)
             dprint("self.timer", self.timer)
-        if self.window:
-            dprint("self.window", self.window)
-            self.window.exit()
-            self.window = None
+        if window:
+            dprint("window", window)
+            window.exit()
+            window = None
         if self.edit_material:
             async_refresh_material(self.edit_material.name)
             self.edit_material = None
@@ -70,6 +79,7 @@ class EditMaterial(bpy.types.Operator):
         self.exit(context)
 
     def find_material(self, context):
+        global window
         from ...utils import get_local_selected_assets
 
         match_obj = get_local_selected_assets(context)
@@ -78,5 +88,8 @@ class EditMaterial(bpy.types.Operator):
         if not selected_mat:
             self.report({"WARNING"}, "Please select a local material asset")
             return {"CANCELLED"}
-        self.edit_material = selected_mat[0]
+        material = selected_mat[0]
+        if window and material and self.edit_material:
+            async_refresh_material(self.edit_material.name)
+        self.edit_material = material
         return None

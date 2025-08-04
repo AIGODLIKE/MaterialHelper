@@ -44,6 +44,7 @@ def switch_to_node_tree_area(window):
     node_area = window.screen.areas[0]
     node_area.type = "NODE_EDITOR"
     node_area.ui_type = "ShaderNodeTree"
+
     return node_area
 
 
@@ -57,15 +58,15 @@ class PreviewMaterialWindow:
 
     def __init__(self, ops, context, event, material):
         # 设置鼠标位置，以便弹窗出现在正中央
-        # mouse_x, mouse_y = event.mouse_x, event.mouse_y
-        # win = context.window
-        # win.cursor_warp(int(win.width / 2), int(win.height / 2))
+        mouse_x, mouse_y = event.mouse_x, event.mouse_y
+        win = context.window
+        win.cursor_warp(int(win.width / 2), int(win.height / 2))
 
         self.material = material
         self.ops = ops
         self.new_window(context)
 
-        # win.cursor_warp(mouse_x, mouse_y)
+        win.cursor_warp(mouse_x, mouse_y)
 
     @classmethod
     def check_full_window(cls, window):
@@ -95,6 +96,7 @@ class PreviewMaterialWindow:
             self.area_3d = split_3d_area(window)
 
         self.create_preview_object(context)
+        self.pin_node_tree()
 
     def create_preview_object(self, context):
         """创建预览的物体,如果需要添加就加在需要删除的里面"""
@@ -228,3 +230,21 @@ class PreviewMaterialWindow:
         cl = len(clear_list)
         if cl != 0:
             print(f"Material Helper Clear temp preview {cl} data: {clear_list}")
+
+    @property
+    def node_tree_space(self):
+        return [i for i in self.area_node.spaces if i.type == "NODE_EDITOR"][0]
+
+    def pin_node_tree(self):
+        space = self.node_tree_space
+        space.pin = True
+
+    def replace_material(self, context, material):
+        space = self.node_tree_space
+        space.pin = False
+        # bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+        self.area_node.tag_redraw()
+        for obj_name in self.waiting_for_deletion_objects:
+            if obj := context.scene.objects.get(obj_name):
+                obj.active_material = material
+        # space.pin = True
