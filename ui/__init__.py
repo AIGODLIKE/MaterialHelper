@@ -61,8 +61,8 @@ def draw_node_header(self, context):
         layout = self.layout
         row = layout.row(align=True)
         row.alert = True
-        row.operator("wm.window_fullscreen_toggle", icon="FULLSCREEN_EXIT", text="Contract the window")
-        # row.operator("wm.window_close",icon="PANEL_CLOSE",text="Close Window") # bug 直接关闭可能会闪退
+        row.operator("wm.window_fullscreen_toggle", icon="DESKTOP", text="Switch window")
+        row.operator("wm.window_close", icon="PANEL_CLOSE", text="Close Window")  # bug 直接关闭可能会闪退
 
 
 def register():

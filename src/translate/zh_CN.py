@@ -38,6 +38,7 @@ data = {
     "Realtime Preview": "时实预览",
     "Full Screen": "全屏",
     "Contract the window": "缩小窗口",
+    "Switch window": "切换窗口",
     "Close Window": "关闭窗口",
     "Window Style": "窗口样式",
     "Preview Material Window Style": "预览材质窗口样式",
