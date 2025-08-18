@@ -15,10 +15,3 @@ class MATERIAL_ASSET_PT_Header(AssetMetaDataPanel, bpy.types.Panel):
         layout.label(text="Edit Material")
         layout.label(text=f"id :{getattr(context, 'id', None)}")
 
-
-def register():
-    bpy.utils.register_class(MATERIAL_ASSET_PT_Header)
-
-
-def unregister():
-    bpy.utils.unregister_class(MATERIAL_ASSET_PT_Header)

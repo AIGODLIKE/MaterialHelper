@@ -1,11 +1,19 @@
-from . import node, asset
+import bpy
+
+from .asset import MATERIAL_ASSET_PT_Header
+from .material import MaterialPanel
+from .node import MATHP_PT_NodePanel
+
+register_class, unregister_class = bpy.utils.register_classes_factory([
+    MATERIAL_ASSET_PT_Header,
+    MATHP_PT_NodePanel,
+    MaterialPanel,
+])
 
 
 def register():
-    node.register()
-    asset.register()
+    register_class()
 
 
 def unregister():
-    node.unregister()
-    asset.unregister()
+    unregister_class()

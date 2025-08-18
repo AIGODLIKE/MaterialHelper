@@ -8,7 +8,6 @@ from ..utils.window import PreviewMaterialWindow
 
 def draw_asset_browser(self, context):
     from .menu.asset_browser import AssetBrowserMenu
-    from ..ops.select_material import MATHP_OT_select_material_obj
     from ..ops.asset.refresh_asset_preview import MATHP_OT_refresh_asset_preview
     pref = get_pref()
 
@@ -33,6 +32,20 @@ def draw_asset_browser(self, context):
         select_material_to_object(context)
 
 
+def draw_picker_by_asset(self, context):
+    from ..ops.picker_material.from_asset_picker_material import MaterialPickerByAsset
+    if not hasattr(context, "selected_assets"):
+        return
+    if len(context.selected_assets) == 0:
+        return
+    if not isinstance(context.selected_assets[0].local_id, bpy.types.Material):
+        return
+
+    layout = self.layout
+    layout.operator_context = "INVOKE_DEFAULT"
+    layout.operator(MaterialPickerByAsset.bl_idname, icon="ASSET_MANAGER")
+
+
 def draw_context_menu(self, context):
     from ..ops.asset.refresh_asset_preview import MATHP_OT_refresh_asset_preview
     from ..ops.select_material import MATHP_OT_select_material_obj
@@ -54,8 +67,10 @@ def draw_context_menu(self, context):
     layout.operator("mathp.apply_asset")
     layout.operator(MATHP_OT_select_material_obj.bl_idname, icon="RESTRICT_SELECT_OFF")
     layout.operator(MATHP_OT_refresh_asset_preview.bl_idname, icon="FILE_REFRESH")
-    layout.separator()
 
+    draw_picker_by_asset(self, context)
+
+    layout.separator()
 
 def draw_node_header(self, context):
     if PreviewMaterialWindow.check_full_window(context.window):

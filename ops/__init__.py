@@ -1,6 +1,7 @@
 import bpy
 
 from . import asset
+from . import picker_material
 from .add_material import MATHP_OT_add_material
 from .align_nodes import MATHP_OT_move_dependence, MATHP_OT_align_dependence
 from .clear_unused_material import ClearUnusedMaterial
@@ -9,6 +10,7 @@ from .select_material import MATHP_OT_select_material_obj
 
 module_list = [
     asset,
+    picker_material,
 ]
 
 class_list = [

@@ -73,3 +73,18 @@ def is_blender_close() -> bool:
         if stack.name == "disable_all" and stack.line == "disable(mod_name)":
             return True
     return False
+
+def refresh_ui(context, screen=True):
+    """刷新UI
+    # bpy.ops.wm.redraw_timer(type='DRAW', iterations=1)
+    """
+    if context.screen and screen:
+        context.screen.update_tag()
+        for area in context.screen.areas:
+            if area.type == "VIEW_3D":
+                for region in area.regions:
+                    region.tag_redraw()
+    if context.area:
+        context.area.tag_redraw()
+    if context.region:
+        context.region.tag_redraw()

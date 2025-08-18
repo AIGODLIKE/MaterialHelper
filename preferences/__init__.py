@@ -35,6 +35,7 @@ class MaterialHelperPreference(bpy.types.AddonPreferences, Material, Window, Ali
         row.prop(self, 'show_text', expand=True)
 
         self.draw_window(box)
+        self.draw_material(box)
 
         col.separator()
         self.draw_align(col)

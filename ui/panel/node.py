@@ -22,11 +22,3 @@ class MATHP_PT_NodePanel(bpy.types.Panel):
                                        rows=5, cols=5)
             row = layout.row(align=True)
             row.prop(context.object.active_material, "preview_render_type", expand=True)
-
-
-def register():
-    bpy.utils.register_class(MATHP_PT_NodePanel)
-
-
-def unregister():
-    bpy.utils.unregister_class(MATHP_PT_NodePanel)
