@@ -7,7 +7,7 @@ maintainer = "AIGODLIKE社区, Atticus, 小萌新"
 name = "MaterialHelper"
 tagline = "Make the local asset manager your place to create powerful materials"
 type = "add-on"
-version = "1.4.2"
+version = "1.4.3"
 tags = ["3D View", "Material"]
 
 [permissions]
