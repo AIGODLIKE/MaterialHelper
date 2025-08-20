@@ -92,5 +92,6 @@ data = {
     "Assign object material": "分配物休材质",
     "Continuous assign material": "连续分配材质",
     "3D View Generic": "3D视图通用",
-    "Assign material by modal": "赋予材质按模态"
+    "Assign material by modal": "赋予材质按模态",
+    "Please pick at least one material to the material board": "请至少拾取一个材质到材质板",
 }

@@ -166,7 +166,7 @@ class MaterialAssignByModal(PublicMaterial, Draw, bpy.types.Operator):
     bl_label = "Assign material by modal"
     bl_options = {"REGISTER", "UNDO"}
 
-    header_text = "Material Assign by modal"
+    header_text = "Assign material by modal"
     default_cursor = "CROSS"
     draw_paint_bucket = False
     area_hash = None
@@ -202,6 +202,9 @@ class MaterialAssignByModal(PublicMaterial, Draw, bpy.types.Operator):
         picker_material_list = context.scene.material_helper_property.picker_material_list
         material_list = [mi.material for mi in picker_material_list if mi and mi.material and mi.material.preview][:]
         self.start_material_list = material_list
+        if len(material_list) == 0:
+            self.report({"INFO"}, "Please pick at least one material to the material board")
+            return True
 
     def click(self, context, event):
         active_material = context.scene.material_helper_property.active_material
@@ -212,10 +215,7 @@ class MaterialAssignByModal(PublicMaterial, Draw, bpy.types.Operator):
     def modal(self, context, event):
         self.offset = Vector((event.mouse_region_x, event.mouse_region_y))
 
-        self.draw_info["in_bar"] = in_bar = self.check_mouse_in_bar_area(event)
-        start_bar_index = self.draw_info.get("start_bar_index", None)
-        bar_index = self.draw_info.get("bar_index")
-        print(event.value, event.type, in_bar, start_bar_index, bar_index)
+        self.draw_info["in_bar"] = self.check_mouse_in_bar_area(event)
         if res := self.left_mouse_scroll_bar(context, event):
             return res
         elif res := self.mouse_up_down_wheel_scroll_bar(context, event):
