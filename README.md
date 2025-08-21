@@ -60,4 +60,5 @@ When selecting an asset in the Asset Browser, it will be synchronized to the 3D 
 Pick the selected material to the material board
 
 ## Install
-Drag install zip file to Blender window
+Drag install zip file to Blender window\
+install
