@@ -2,7 +2,7 @@ from pathlib import Path
 
 import bpy
 
-from ..debug import DEBUG_ENSURE_CURRENT_FILE_ASSET_CATS
+from ..debug import DEBUG_ENSURE_CURRENT_FILE_ASSET_CATS, DEBUG_SYNC
 from ..utils import MATERIAL_HELPER_ASSET_UUID, MATERIAL_HELPER_ASSET_TAG, get_pref, tag_redraw
 
 
@@ -47,6 +47,8 @@ class AssetSync:
     def sync(cls):
         pref = get_pref()
         cls.ensure_current_file_asset_cats()
+        if DEBUG_SYNC:
+            print("AssetSync sync", pref.auto_update, cls.is_sync, cls.material_count)
 
         if pref.auto_update:
             if not cls.is_sync:
@@ -59,24 +61,54 @@ class AssetSync:
 
     @classmethod
     def close_sync(cls):
+        if DEBUG_SYNC:
+            print("close_sync start")
         for mat in bpy.data.materials:
             if mat.asset_data is None:
                 continue
+            print("close_sync", mat)
             if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
                 mat.asset_clear()
 
     @classmethod
     def material_sync_asset(cls):
+        # import threading
+        if DEBUG_SYNC:
+            print("material_sync_asset")
         for mat in bpy.data.materials:
             if mat.asset_data:  # 已经是资产
                 continue
             if mat.is_grease_pencil:  # 是GP
                 continue
 
-            mat.asset_mark()
-            mat.asset_generate_preview()
-            mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
-            mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
+            if DEBUG_SYNC:
+                print("sync", mat)
+
+            def asset_mark(mat):
+                if DEBUG_SYNC:
+                    print("asset_mark thread\t", mat)
+                mat.asset_mark()
+                with bpy.context.temp_override(id=mat):
+                    try:
+                        # mat.asset_generate_preview()
+                        if DEBUG_SYNC:
+                            print("asset_generate_preview\t", mat)
+                        bpy.ops.ed.lib_id_generate_preview()
+                    except RuntimeError:
+                        pass
+                if DEBUG_SYNC:
+                    print("tags new\t", mat)
+                mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
+                if DEBUG_SYNC:
+                    print("catalog_id =\t", mat)
+                mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
+
+            asset_mark(mat)
+            # Process(target=asset_mark, args=(mat,)).start()
+            # 创建子线程
+            # thread = threading.Thread(target=asset_mark, args=(mat,))
+            # # 启动子线程
+            # thread.start()
 
         tag_redraw()
 

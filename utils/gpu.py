@@ -4,6 +4,7 @@ from functools import cache
 import bpy
 import gpu
 import numpy as np
+from gpu.types import GPUTexture
 from gpu_extras.batch import batch_for_shader
 
 
@@ -25,16 +26,19 @@ def from_material_get_texture_by_image(material: bpy.types.Material) -> gpu.type
     return texture
 
 
-def from_material_get_gpu_texture_by_pixel(material: bpy.types.Material) -> gpu.types.GPUTexture:
+def from_material_get_gpu_texture_by_pixel(material: bpy.types.Material) -> gpu.types.GPUTexture | None:
     from .color import srgb_to_linear
     w, h = material.preview.icon_size[:]
     size = w * h * 4
     flow_data = np.zeros(size, dtype=np.float32)
     material.preview_ensure().icon_pixels_float.foreach_get(flow_data)
     flow_data = srgb_to_linear(flow_data)
-    buffer = gpu.types.Buffer("FLOAT", (w, h, 4), flow_data.reshape((w, h, 4)))
-    texture = gpu.types.GPUTexture((w, h), format="RGBA16F", data=buffer)
-    return texture
+    try:
+        buffer = gpu.types.Buffer("FLOAT", (w, h, 4), flow_data.reshape((w, h, 4)))
+        texture = gpu.types.GPUTexture((w, h), format="RGBA16F", data=buffer)
+        return texture
+    except AttributeError:
+        return None
 
 
 def from_file_get_texture(file_path: str) -> gpu.types.GPUTexture:

@@ -54,7 +54,10 @@ class MaterialAssignByItem(PublicMaterial, bpy.types.Operator):
 
     @staticmethod
     def assign_to_select_face(context, obj, material):
-        """赋予到选择面"""
+        """赋予到选择面
+        反回是否有赋予选择面的布尔值
+        """
+        count_faces = 0
         with context.temp_override(context=obj, active_object=obj):
             material_slot = None
             if len(obj.material_slots) == 0:
@@ -76,9 +79,11 @@ class MaterialAssignByItem(PublicMaterial, bpy.types.Operator):
             bm = bmesh.from_edit_mesh(data)
             for face in bm.faces:
                 if face.select:
+                    count_faces += 1
                     face.material_index = slot_index
             bmesh.update_edit_mesh(data)
             bm.free()
+        return count_faces != 0
 
     def start(self, context, event):
         material = getattr(context, "material", None)
