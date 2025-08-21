@@ -5,6 +5,7 @@ class MATHP_OT_add_material(bpy.types.Operator):
     """Add Material"""
     bl_idname = "mathp.add_material"
     bl_label = "Add Material"
+    bl_description = "Add Material Assistant to preset materials"
     bl_options = {"REGISTER", "UNDO"}
 
     material_name: bpy.props.StringProperty()

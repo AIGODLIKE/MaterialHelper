@@ -19,6 +19,9 @@ class MATHP_OT_duplicate_asset(bpy.types.Operator):
         for mat in selected_mats:
             cp = mat.copy()
             cp.asset_mark()
+            for tag in mat.asset_data.tags:
+                cp.asset_data.tags.new(tag.name)
+            cp.asset_data.catalog_id = mat.asset_data.catalog_id
 
         for mat in selected_mats:
             context.space_data.activate_asset_by_id(mat)

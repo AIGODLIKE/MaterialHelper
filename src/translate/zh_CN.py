@@ -94,4 +94,5 @@ data = {
     "3D View Generic": "3D视图通用",
     "Assign material by modal": "赋予材质按模态",
     "Please pick at least one material to the material board": "请至少拾取一个材质到材质板",
+    "Add Material Assistant to preset materials":"添加材质助手预设材质",
 }
