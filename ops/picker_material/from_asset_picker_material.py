@@ -21,5 +21,5 @@ class MaterialPickerByAsset(bpy.types.Operator):
         match_obj = get_local_selected_assets(context)
         selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
         for asset in selected_mats:
-            material_helper_property.try_picker_material(asset, self)
+            material_helper_property.try_picker_material(asset)
         return {"FINISHED"}

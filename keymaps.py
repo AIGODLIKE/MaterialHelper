@@ -88,7 +88,7 @@ KEYMAPS = {
     ],
     "3D View Generic": [
         {"idname": "mathp.material_picker", "type": "BUTTON4MOUSE",
-         "value": "PRESS", "alt": True, "properties": {"picker_to_select": True}},
+         "value": "PRESS", "alt": True},
         {"idname": "mathp.material_drag", "type": "LEFTMOUSE",
          "value": "CLICK_DRAG", "alt": True, "ctrl": True, "shift": True},
         {"idname": "mathp.material_assign_by_modal", "type": "BUTTON4MOUSE",

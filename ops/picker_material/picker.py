@@ -1,11 +1,11 @@
 import blf
-import bmesh
 import bpy
 import gpu.matrix
 from bpy.app.translations import pgettext_iface
 from mathutils import Vector
 
 from .public_material import PublicMaterial
+from ...debug import DEBUG_PICKER_MATERIAL
 from ...utils.translate import translate_lines_text
 
 
@@ -14,15 +14,10 @@ class MaterialPicker(bpy.types.Operator, PublicMaterial):
     bl_label = "Picker Material"
     bl_options = {"REGISTER"}
 
-    picker_all_selected: bpy.props.BoolProperty(options={"SKIP_SAVE"})
-    picker_to_select: bpy.props.BoolProperty(default=False, options={"SKIP_SAVE"})
-
     header_text = "Ctrl:Continuous pick    Alt:Pick object all material"
 
     @classmethod
     def description(cls, context, properties):
-        if properties.picker_all_selected:
-            return translate_lines_text("Picker the materials of all selected objects")
         return translate_lines_text(
             "\n",
             "Ctrl: Pick all material in asset",
@@ -53,21 +48,25 @@ class MaterialPicker(bpy.types.Operator, PublicMaterial):
 
             objects_name = list((i.name for i in context.selected_objects))
             select_count = len(objects_name)
-            if self.picker_to_select:
-                if start_result:
-                    face_index = pgettext_iface("Face Index")
-                    assign = pgettext_iface("Assign material")
-                    text = f"{assign}: {start_material_obj.name} -> {face_index}:{start_index}"
-                    texts.append(text)
-                elif select_count:
-                    text = pgettext_iface("Assign material to %i objects %s")
-                    texts.append(text % (select_count, ""))
-            else:
-                event = self.event
-                if event.alt:
-                    texts.append(pgettext_iface("Picker the materials of all selected objects"))
-                if event.ctrl:
-                    texts.append(pgettext_iface("Continuous picker material"))
+            event = self.event
+
+            if start_result:
+                face_index = pgettext_iface("Face Index")
+                assign = pgettext_iface("Assign material")
+                text = f"{assign}: {start_material_obj.name} -> {face_index}:{start_index}"
+                texts.append(text)
+
+            if select_count:
+                text = pgettext_iface("Assign material to %i objects %s")
+                names = objects_name
+                if select_count > 5:
+                    names = [*names[:5], "..."]
+                texts.append(text % (select_count, ",".join(names)))
+
+            if event.alt:
+                texts.append(pgettext_iface("Picker the materials of all selected objects"))
+            if event.ctrl:
+                texts.append(pgettext_iface("Continuous picker material"))
             texts.append(self.pick_hub_text)
             self.draw_text_list(texts)
 
@@ -79,99 +78,95 @@ class MaterialPicker(bpy.types.Operator, PublicMaterial):
                 self.draw_material(material)
 
     def start(self, context, event):
+        if DEBUG_PICKER_MATERIAL:
+            print("start", event.value, event.type, event.alt, event.shift, event.ctrl)
+
         material_helper_property = context.scene.material_helper_property
         self.update(context, event)
-        if self.picker_to_select:  # 拾取材质到所有选中的物体
+
+        if event.type == "BUTTON4MOUSE":  # 拾取材质到所有选中的物体
             (start_result, start_material_obj, start_material, start_index) = self.start_pick_info
-            self.continuous = False
             if start_result:
-                text = bpy.app.translations.pgettext_iface("Assign picker material to %s -> %i")
+                text = pgettext_iface("Assign picker material to %s -> %i")
                 self.header_text = text % (start_material_obj.name, start_index)
             else:
-                text = bpy.app.translations.pgettext_iface("Assign picker material to %i objects %s")
+                text = pgettext_iface("Assign picker material to %i objects %s")
                 objects_name = list((i.name for i in context.selected_objects))
                 self.header_text = text % (len(objects_name), ",".join(objects_name))
-        elif event.shift or self.picker_all_selected:  # 拾取所有选择物体材质
-            count = 0
-            for obj in context.selected_objects:
-                if obj.type == "MESH":
-                    for material in obj.data.materials:
-                        if material_helper_property.try_picker_material(material, None):
-                            count += 1
-            text = bpy.app.translations.pgettext_iface("%i materials have been picker") % count
-            self.report({"INFO"}, text)
-            return True
-        elif event.ctrl:  # 拾取所有资产
-            for mat in bpy.data.materials:
-                if mat.asset_data:
-                    material_helper_property.try_picker_material(mat, None)
-            return True
-        elif event.alt:  # 拾取所有场景材质
-            count = 0
-            for obj in context.scene.objects:
-                if obj.type == "MESH":
-                    for material in obj.data.materials:
-                        if material_helper_property.try_picker_material(material, None):
-                            count += 1
+        else:
+            if event.shift:  # 拾取所有选择物体材质
+                count = 0
+                for obj in context.selected_objects:
+                    if obj.type == "MESH":
+                        for material in obj.data.materials:
+                            if material_helper_property.try_picker_material(material):
+                                count += 1
+                text = pgettext_iface("%i materials have been picker") % count
+                self.report({"INFO"}, text)
+                return True
+            elif event.ctrl:  # 拾取所有资产
+                for mat in bpy.data.materials:
+                    if mat.asset_data:
+                        material_helper_property.try_picker_material(mat)
+                return True
+            elif event.alt:  # 拾取所有场景材质
+                count = 0
+                for obj in context.scene.objects:
+                    if obj.type == "MESH":
+                        for material in obj.data.materials:
+                            if material_helper_property.try_picker_material(material):
+                                count += 1
 
-            text = bpy.app.translations.pgettext_iface("%i materials have been picker") % count
-            self.report({"INFO"}, text)
-            return True
+                text = pgettext_iface("%i materials have been picker") % count
+                self.report({"INFO"}, text)
+                return True
+        return False
 
     def click(self, context, event):
         """拾取材质
         在按下左键时"""
+        self.picker_material(context, event)
+        self.asset_material(context, event)
+
+    def picker_material(self, context, event):
         result, material_obj, material, index = self.pick_info
+        if DEBUG_PICKER_MATERIAL:
+            print("picker_material")
+
         material_helper_property = context.scene.material_helper_property
-        pgettext_iface = bpy.app.translations.pgettext_iface
-        if result:
-            text = self.pick_hub_text
-            if self.picker_to_select:  # 拾取材质到所有选择物体
-                if t := self.assign_to_select(context, event): text = t
-            elif event.alt:  # 拾取所有物体的材质
-                picker_count = 0
-                for material in material_obj.data.materials:
-                    if material is not None:
-                        if material_helper_property.try_picker_material(material, self):
-                            picker_count += 1
-                text = pgettext_iface("Picker material: %i") % picker_count
-            elif material_obj:
+        if event.alt:  # 拾取所有物体的材质
+            picker_count = 0
+            for material in material_obj.data.materials:
                 if material is not None:
-                    material_helper_property.try_picker_material(material, self)
+                    if material_helper_property.try_picker_material(material):
+                        picker_count += 1
+            self.report({"INFO"}, pgettext_iface("Picker material: %i") % picker_count)
+        elif material_obj:
+            if material is not None:
+                material_helper_property.try_picker_material(material)
 
-            not_modify = (not event.alt) and (not event.ctrl) and (not event.shift)
-            if len(context.selected_objects) != 0 and not_modify:
-                if active_material := context.scene.material_helper_property.active_material:
-                    for obj in context.selected_objects:
-                        if obj.type == "MESH":
-                            active_material.assign_material(context, obj, -1, True)
-        else:
-            text = pgettext_iface("Material not picked up")
+    def asset_material(self, context, event):
 
-        self.report({"INFO"}, text)
-
-    def assign_to_select(self, context, event):
         result, material_obj, material, index = self.pick_info
         material_helper_property = context.scene.material_helper_property
-        material_helper_property.try_picker_material(material, self)
         active_material = material_helper_property.active_material
-        if active_material:
+
+        if DEBUG_PICKER_MATERIAL:
+            print("asset_material", result, material_obj, material, index, event.alt, active_material)
+
+        if result and active_material:
             start_result, start_material_obj, _, start_index = self.start_pick_info
-            if start_result:
-                if context.mode == "EDIT_MESH":
-                    bm = bmesh.from_edit_mesh(start_material_obj.data)
-                    if bm.faces[start_index].select:
-                        from .assign_by_item import MaterialAssignByItem
-                        for obj in context.selected_objects:
-                            if obj.type == "MESH":
-                                MaterialAssignByItem.assign_to_select_face(context, obj, active_material.material)
+            if start_result and start_material_obj:
                 active_material.assign_material(context, start_material_obj, start_index, assign_obj=False)
-                material_name = active_material.material.name if active_material.material is not None else None
-                return f"{start_material_obj.name} -> {start_index} -> {material_name}"
-            else:
-                objects_name = []
-                for obj in context.selected_objects:
-                    objects_name.append(obj.name)
-                    active_material.assign_material(context, obj, 0, assign_obj=True)
-                return f"{active_material.material.name} -> {objects_name.__repr__()}"
-        return None
+
+            objects_name = []
+            for obj in context.selected_objects:
+                objects_name.append(obj.name)
+                if context.mode == "EDIT_MESH" and obj.mode == "EDIT" and obj.type == "MESH":
+                    from .assign_by_item import MaterialAssignByItem
+                    if MaterialAssignByItem.assign_to_select_face(context, obj, active_material.material):
+                        continue
+                active_material.assign_material(context, obj, 0, assign_obj=True)
+
+        else:
+            self.report({"INFO"}, pgettext_iface("Material not picked up"))

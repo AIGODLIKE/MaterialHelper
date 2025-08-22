@@ -46,7 +46,30 @@ class MaterialDrag(bpy.types.Operator, PublicMaterial):
         return None
 
     def click(self, context, event):
-        from .picker import MaterialPicker
+        import bmesh
         self.start_pick_info, self.pick_info = self.pick_info, self.start_pick_info
-        MaterialPicker.assign_to_select(self, context, event)
+
+        result, material_obj, material, index = self.pick_info
+        material_helper_property = context.scene.material_helper_property
+        material_helper_property.try_picker_material(material, self)
+        active_material = material_helper_property.active_material
+        if active_material:
+            start_result, start_material_obj, _, start_index = self.start_pick_info
+            if start_result:
+                if context.mode == "EDIT_MESH":
+                    bm = bmesh.from_edit_mesh(start_material_obj.data)
+                    if bm.faces[start_index].select:
+                        from .assign_by_item import MaterialAssignByItem
+                        for obj in context.selected_objects:
+                            if obj.type == "MESH":
+                                MaterialAssignByItem.assign_to_select_face(context, obj, active_material.material)
+                active_material.assign_material(context, start_material_obj, start_index, assign_obj=False)
+                material_name = active_material.material.name if active_material.material is not None else None
+                return f"{start_material_obj.name} -> {start_index} -> {material_name}"
+            else:
+                objects_name = []
+                for obj in context.selected_objects:
+                    objects_name.append(obj.name)
+                    active_material.assign_material(context, obj, 0, assign_obj=True)
+                return f"{active_material.material.name} -> {objects_name.__repr__()}"
         return True

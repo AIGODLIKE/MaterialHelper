@@ -26,7 +26,6 @@ def from_mouse_get_material(context, event):
 
 
 class PublicMaterial:
-    continuous: bpy.props.BoolProperty()
     view_3d_handler = None
 
     start_area_hash = None
@@ -41,7 +40,6 @@ class PublicMaterial:
 
     def invoke(self, context, event):
         self.event = event
-        self.continuous = event.ctrl
         self.offset = Vector((event.mouse_region_x, event.mouse_region_y))
         self.start_pick_info = self.pick_info = from_mouse_get_material(context, event)
         self.texture_cache = {}
@@ -96,7 +94,7 @@ class PublicMaterial:
                 if self.click(context, event):
                     self.exit(context)
                     return {"FINISHED"}
-                if not self.continuous and not event.ctrl:
+                if not event.ctrl:
                     self.exit(context)
                     return {"FINISHED"}
             elif (is_right or is_space) and is_press:
