@@ -1,6 +1,9 @@
 # Material Helper
 
-Quickly assign materials and manage them more efficiently
+
+## Supercharge Your Material Workflow in Blender!
+
+Material Helper is your ultimate companion for lightning-fast material assignment and efficient material management. Whether you're a beginner or a pro, this addon will transform how you work with materials in Blender!
 
 🚀 Why Material Helper? \
 Stay Organized: Keep your material library clean and efficient\
