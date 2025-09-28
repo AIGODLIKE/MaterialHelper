@@ -1,64 +1,59 @@
 # Material Helper
+
 Quickly assign materials and manage them more efficiently
-<img alt="Image" height="500" src="https://private-user-images.githubusercontent.com/49475772/480290956-0135dfa6-444b-4a10-a6d0-76345276510b.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTQxMzUsIm5iZiI6MTc1NTg1MzgzNSwicGF0aCI6Ii80OTQ3NTc3Mi80ODAyOTA5NTYtMDEzNWRmYTYtNDQ0Yi00YTEwLWE2ZDAtNzYzNDUyNzY1MTBiLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5MTAzNVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWVkYzdhZTIyYWI1NjFlYmM4NjIwNGQzOTg2YzIzNmJmYzMzNTkzMWQ3OTI5MGE0MTZmMmFlNTE3MWI5ZDYzZmImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.ocNBu9VCgMgG3xBajWYXz04yVk-eS8qLFEZwDlsx0tg" />
+
+🚀 Why Material Helper? \
+Stay Organized: Keep your material library clean and efficient\
+Work Smarter:     Intuitive tools that match your creative workflow\
+Perfect for All Levels:   From beginners to seasoned professionals\
+Ready to revolutionize your material workflow? Install Material Helper today and experience the difference!
+
+💡Addon version 1.4.1+ Works with Blender 4.5.0 and above
 
 ___
-## Pick Material
-### Material assigned by bar
-`Ctrl + Alt + Shift + MOUSE 4 BUTTON` bar mode\
-Display the material on the material board on the bar and quickly assign it
-<img src="https://private-user-images.githubusercontent.com/49475772/480373884-89ed9a40-9f03-4118-b018-77e8317c86f1.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTQzODIsIm5iZiI6MTc1NTg1NDA4MiwicGF0aCI6Ii80OTQ3NTc3Mi80ODAzNzM4ODQtODllZDlhNDAtOWYwMy00MTE4LWIwMTgtNzdlODMxN2M4NmYxLmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5MTQ0MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWFjNDY3NGNlMTI2OTM3MmM2ZjM4OGZhM2M5N2U3MDAwY2NjZmFlN2I2MDNhNDU5MjkzZGMxOTRmODJhNmJhZDcmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.y_yczchTOiPlgSa8_8DYfFGkJhORRHN4PSMJsoJaUio">
+## 🖱️ Smart Material Picking
+### Quick Bar Selection
+Press `Ctrl + Alt + Shift + Mouse Button 4` to activate bar mode - instantly access your material library and assign materials with a single click!
 
-### Drag Material
-`Ctrl + Alt + Shift Drag`\
-Drag materials to quickly transfer one material to another object
-<img src="https://private-user-images.githubusercontent.com/49475772/480371610-ff05f603-0a8f-437d-b170-f215812850ab.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTU1NTMsIm5iZiI6MTc1NTg1NTI1MywicGF0aCI6Ii80OTQ3NTc3Mi80ODAzNzE2MTAtZmYwNWY2MDMtMGE4Zi00MzdkLWIxNzAtZjIxNTgxMjg1MGFiLmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5MzQxM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTI3NDc1OTBjODJlMzlmM2U5NGUwYzAxNzliNTJlMWUxMzI4NzA3NGE0NGQxOTMxNGFkNWIwNzAzYzA3ZDc3MWQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.D9fHGThE0HdOUo0PAtIsO3v-oIPTNmeZyU5nT-OLfg0">
+### Drag & Drop Material Transfer
+Simply `Ctrl + Alt + Shift + Drag` to quickly transfer materials between objects. It's that easy!
 
-### Material board
-Picker material\
-`Alt + MOUSE 4 BUTTON` or `Material board panel handler picker button`\
-If the material selected for object picking is chosen, it will be assigned to the selected object
-```
-Ctrl: Pick all material in asset
-Shift: Picker the materials of all selected objects
-Alt: Pick all materials in the scene
-```
-<img src="https://private-user-images.githubusercontent.com/49475772/480316063-a5e37be9-5369-45a9-9b16-01d6f840e203.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTQ0MzMsIm5iZiI6MTc1NTg1NDEzMywicGF0aCI6Ii80OTQ3NTc3Mi80ODAzMTYwNjMtYTVlMzdiZTktNTM2OS00NWE5LTliMTYtMDFkNmY4NDBlMjAzLmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5MTUzM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk1ZTY3YmUzNWQ0YWMzZTM2ZmVkNjI5YmMwZTAzYzllZjQ1Yzk3NDNmMWFkMDFkZWI0OTg3ODMwODRiYmM1ZWImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.lTfTcO0yMZ0lwUG4-FfhxV29jfNM1mxN6a_k0YZWkTs">
+### Intelligent Material Board
+Use `Alt + Mouse Button 4` or click the material board picker button to smartly collect materials. Selected materials are automatically assigned to your chosen objects!
+
+#### Smart Modifiers:
+`Ctrl`: Pick all material in asset\
+`Shift`: Picker the materials of all selected objects\
+`Alt`: Pick all materials in the scene
+
 
 ## Material asset
-### Edit material asset
-`Double click left mouse` to edit material window\
-After closing the pop-up window, the material preview will automatically refresh\
-Tips: Only allow editing of assets in the current file\
-<img src="https://private-user-images.githubusercontent.com/49475772/480380830-17374a2c-d84b-4c9f-8b4f-702668af2ab6.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTU5MDQsIm5iZiI6MTc1NTg1NTYwNCwicGF0aCI6Ii80OTQ3NTc3Mi80ODAzODA4MzAtMTczNzRhMmMtZDg0Yi00YzlmLThiNGYtNzAyNjY4YWYyYWI2LmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5NDAwNFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTVjN2EzODJhOGVkZWM3ZWUxNzhmYTk0ZjAzYTQzOWU3YzM0Nzg4OTg5NmRhNjI1YTZlZDYwOWNkZWQ2YWMxNjQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.WCWNTfXAXKZkwJnx0nwmQOXIjprSC8P9uASwRTsoDHw">
+### 📦 Powerful Material Asset Management
+Instant Material Editing
+`Double-click` any material to open the editor window. Preview updates automatically when you're done!\
+💡 Only materials in the current file can be edited
 
-#### Asset header
-Clear Unused Material: Unused materials will be deleted\
-Add Material`Shift + A`: Add Material Assistant to preset materials\
-Duplicat `Shift + D`: Copy the selected material asset\
-Rename `F2`: Quickly rename material asset\
-Replace Material: Quickly replace asset materials\
-Delete `X`: Completely remove the material\
-Apply as asset `Ctrl + A`: Remove the Material Assistant TAG from the selected material\
-<img src="https://private-user-images.githubusercontent.com/49475772/480291746-3995d466-6c3a-4e45-b560-f27de65c69db.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTQ0MzMsIm5iZiI6MTc1NTg1NDEzMywicGF0aCI6Ii80OTQ3NTc3Mi80ODAyOTE3NDYtMzk5NWQ0NjYtNmMzYS00ZTQ1LWI1NjAtZjI3ZGU2NWM2OWRiLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5MTUzM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU0OTk5NmVmMmEzMjIxMDY2NmM1OTUzYWE2OTk0MTJmYzIxOTNkYTNlMGJhNjY2NDgzMTFkNDNkMjZjZTNkNzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.lvfTpXYRzjjdrDROykFGQPVV1QiedyMF7L8nkKSrmoQ">
+#### Asset Header Tools
+Clean Up Unused Materials: Remove unused materials with one click\
+Add Material`Shift + A`: Quickly add preset material assistants\
+Duplicat `Shift + D`: Copy selected material assets\
+Rename `F2`: Fast material renaming\
+Replace Material: Batch replace asset materials\
+Delete `X`: Completely remove materials\
+Apply as asset `Ctrl + A`: Convert `MaterialHelper Material Asset`  to regular asset\
 
-##### Sync material
+##### Smart Selection Sync
 
-##### Sync select
-<img src="https://private-user-images.githubusercontent.com/49475772/480295684-cdf1b82f-883b-4032-b715-041104eede7e.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTQ0MzMsIm5iZiI6MTc1NTg1NDEzMywicGF0aCI6Ii80OTQ3NTc3Mi80ODAyOTU2ODQtY2RmMWI4MmYtODgzYi00MDMyLWI3MTUtMDQxMTA0ZWVkZTdlLmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5MTUzM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWNlZjQ0ZGIxZTZhM2Q4YTA4MmNlMjFjMTM5OWMzYTE4YjM0MTM1NmYzOWU5YmVkMDJhNjcwYmMxMGVmMDAxN2YmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.xq9WPGVyqBqGtn1Zzd8Qy6gELwGGG2X3QXNi9oOxDag">
+Select objects in 3D view → Materials auto-highlight in Asset Browser
 
-When selecting a new object in the 3D view, it will be synchronized to the Asset Browser \
-When selecting an asset in the Asset Browser, it will be synchronized to the 3D view
-<img height="500" src="https://private-user-images.githubusercontent.com/49475772/480296542-281ab0a9-34bd-46e4-9c44-2c8141fe0f73.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU3NDM0MDksIm5iZiI6MTc1NTc0MzEwOSwicGF0aCI6Ii80OTQ3NTc3Mi80ODAyOTY1NDItMjgxYWIwYTktMzRiZC00NmU0LTljNDQtMmM4MTQxZmUwZjczLmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIxVDAyMjUwOVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPThmYjJlZmEwNGRlYjc3MDk0MDA4NWQxM2FhNGRmY2ViMjM4MGRlZmYzYjgyMGE5MzkwMTg0NGJiZTJiMDJmYjEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.BuRmg2rLsNv-uCjexPBttQJn4ot4PUVbFfTcOHByHXo">
-
+Select materials in Asset Browser → Objects auto-select in 3D view
 
 
 #### Asset context menu
-<img src="https://private-user-images.githubusercontent.com/49475772/480291760-5a047150-ecdd-444c-9a8b-4d891bf49ffc.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTU4NTQ0MzMsIm5iZiI6MTc1NTg1NDEzMywicGF0aCI6Ii80OTQ3NTc3Mi80ODAyOTE3NjAtNWEwNDcxNTAtZWNkZC00NDRjLTlhOGItNGQ4OTFiZjQ5ZmZjLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MjIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODIyVDA5MTUzM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTZiNzI3YjNmNTNkZjc1YmFkNTAzZmQ3YTcxMGNkYWRiZjcyYmYxZGY3ZjU2YWM3OWJkM2EzNDM0NTIwMDY1ZmImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.gvx3dsSr7rG-TgWMLVNRfJTaqlNY_e_kKHT8X-dNJqY">
+
 
 ##### Picker material(Material Helper)
 Pick the selected material to the material board
 
-## Install
-Drag install zip file to Blender window\
-install
+## ⚡ Installation
+One-step installation: Simply drag the ZIP file into your Blender window and you're ready to go!
