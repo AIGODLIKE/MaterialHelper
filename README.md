@@ -1,4 +1,5 @@
 # Material Helper
+<img width="2560" height="1380" alt="image" src="https://github.com/user-attachments/assets/006d391a-f097-42ff-947a-66a6abce2c10" />
 
 
 ## Supercharge Your Material Workflow in Blender!
