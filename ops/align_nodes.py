@@ -165,6 +165,11 @@ def get_offset_from_anim(fac) -> float:
     return sqrt(min(max(fac, 0), 1))
 
 
+def deselect_node(context):
+    for node in context.space_data.edit_tree.nodes:
+        node.select = False
+
+
 mathp_node_move = False
 
 
@@ -238,14 +243,14 @@ class MATHP_OT_move_dependence(bpy.types.Operator):
         # 移动子级
         if event.type == 'MOUSEMOVE':
             if event.mouse_x - self.ori_mouse_x < self.threshold_x:
-                bpy.ops.node.select_all(action='DESELECT')
+                deselect_node(context)
 
                 for node in self.dependence:
                     node.select = True
 
             # 选择父级
             elif event.mouse_x - self.ori_mouse_x > self.threshold_x:
-                bpy.ops.node.select_all(action='DESELECT')
+                deselect_node(context)
 
                 for node in self.dependent:
                     node.select = True
@@ -253,7 +258,7 @@ class MATHP_OT_move_dependence(bpy.types.Operator):
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
             # 还原
-            bpy.ops.node.select_all(action='DESELECT')
+            deselect_node(context)
 
             for node in self.ori_selected_nodes:
                 node.select = True
