@@ -76,7 +76,6 @@ def is_blender_close() -> bool:
 
 def refresh_ui(context, screen=True):
     """刷新UI
-    # bpy.ops.wm.redraw_timer(type='DRAW', iterations=1)
     """
     if context.screen and screen:
         context.screen.update_tag()
