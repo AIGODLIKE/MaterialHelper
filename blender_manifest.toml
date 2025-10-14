@@ -11,4 +11,4 @@ version = "1.4.6"
 tags = ["3D View", "Material"]
 
 [permissions]
-files = "Load preview material file/Accessing and mofying asset catalog file"
+files = "Load preview material file/Access and modify asset catalog file"
