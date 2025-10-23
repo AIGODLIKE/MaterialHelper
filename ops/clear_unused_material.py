@@ -22,9 +22,9 @@ class ClearUnusedMaterial(bpy.types.Operator):
             else:
                 mat.asset_mark()
                 mat.asset_generate_preview()
-                mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
-                if mat.asset_data.catalog_id != MATERIAL_HELPER_ASSET_UUID:
-                    mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
-
+                if mat.asset_data:
+                    mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
+                    if mat.asset_data.catalog_id != MATERIAL_HELPER_ASSET_UUID:
+                        mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
         tag_redraw()
         return {"FINISHED"}

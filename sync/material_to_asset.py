@@ -72,7 +72,6 @@ class AssetSync:
 
     @classmethod
     def material_sync_asset(cls):
-        # import threading
         if DEBUG_SYNC:
             print("material_sync_asset")
         for mat in bpy.data.materials:
@@ -98,17 +97,13 @@ class AssetSync:
                         pass
                 if DEBUG_SYNC:
                     print("tags new\t", mat)
-                mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
-                if DEBUG_SYNC:
-                    print("catalog_id =\t", mat)
-                mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
+                if mat.asset_data:
+                    mat.asset_data.tags.new(MATERIAL_HELPER_ASSET_TAG)
+                    if DEBUG_SYNC:
+                        print("catalog_id =\t", mat)
+                    mat.asset_data.catalog_id = MATERIAL_HELPER_ASSET_UUID
 
             asset_mark(mat)
-            # Process(target=asset_mark, args=(mat,)).start()
-            # 创建子线程
-            # thread = threading.Thread(target=asset_mark, args=(mat,))
-            # # 启动子线程
-            # thread.start()
 
         tag_redraw()
 
