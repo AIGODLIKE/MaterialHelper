@@ -7,8 +7,7 @@ class AddMaterialMenu(bpy.types.Menu):
 
     @classmethod
     def poll(cls, context):
-        from ...ops.asset.poll import AssetPoll
-        return AssetPoll().poll(context)
+        return context.area.ui_type == "ASSETS"
 
     def draw(self, context):
         from ...ops.asset.add_material import MATHP_OT_add_material
