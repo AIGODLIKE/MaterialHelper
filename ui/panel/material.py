@@ -1,7 +1,6 @@
 import bpy
 
 
-
 class MaterialPanel(bpy.types.Panel):
     bl_idname = "MATERIAL_PT_Panel"
     bl_label = "Material board"
@@ -20,13 +19,15 @@ class MaterialPanel(bpy.types.Panel):
         context.scene.material_helper_property.draw_picker_material(context, layout)
 
     def draw_header_preset(self, context):
-        from ...ops.picker_material import MaterialPicker, MaterialClear
+        from ...ops.picker_material import MaterialPicker, MaterialClear, MaterialAssignByModal
         layout = self.layout
         row = layout.row(align=True)
         row.operator(MaterialPicker.bl_idname, text="", icon="EYEDROPPER", emboss=False)
+        row.operator(MaterialAssignByModal.bl_idname, text="", icon="STATUSBAR", emboss=False)
         layout.separator()
         layout.operator(MaterialClear.bl_idname, text="", icon="PANEL_CLOSE", emboss=False)
         layout.separator(factor=5)
+
 
 def register():
     bpy.utils.register_class(MaterialPanel)
