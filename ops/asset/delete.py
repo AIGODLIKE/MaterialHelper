@@ -1,15 +1,13 @@
 import bpy
 
+from .poll import AssetPoll
 
-class MATHP_OT_delete_asset(bpy.types.Operator):
+
+class MATHP_OT_delete_asset(bpy.types.Operator, AssetPoll):
     """Delete Selected Materials"""
     bl_idname = "mathp.delete_asset"
     bl_label = "Delete"
     bl_options = {"UNDO"}
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context, 'selected_assets') and context.selected_assets
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(self, event)

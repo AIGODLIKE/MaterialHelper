@@ -16,7 +16,7 @@ class MATHP_OT_add_material(bpy.types.Operator):
         return hasattr(context, "selected_assets")
 
     def execute(self, context):
-        from ..src.material import import_material
+        from ...src.material import import_material
         self.material = material = import_material(self.material_name)
         material.asset_mark()
         bpy.ops.asset.library_refresh()

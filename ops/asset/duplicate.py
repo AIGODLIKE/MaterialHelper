@@ -1,15 +1,13 @@
 import bpy
 
+from .poll import AssetPoll
 
-class MATHP_OT_duplicate_asset(bpy.types.Operator):
+
+class MATHP_OT_duplicate_asset(bpy.types.Operator, AssetPoll):
     """Duplicate Active Item"""
     bl_idname = "mathp.duplicate_asset"
     bl_label = "Duplicate"
     bl_options = {"UNDO"}
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context, 'selected_assets') and context.selected_assets
 
     def execute(self, context):
         from ...utils import get_local_selected_assets

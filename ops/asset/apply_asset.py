@@ -1,7 +1,9 @@
 import bpy
 
+from .poll import AssetPoll
 
-class ApplyAsset(bpy.types.Operator):
+
+class ApplyAsset(bpy.types.Operator, AssetPoll):
     """Apply Selected as True Assets"""
     bl_idname = "mathp.apply_asset"
     bl_label = "Apply as asset"
@@ -9,16 +11,14 @@ class ApplyAsset(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        from ...utils import get_local_selected_assets, MATERIAL_HELPER_ASSET_TAG
-        match_obj = get_local_selected_assets(context)
-        selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
-        for mat in selected_mats:
-            if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
-                return True
+        if super().poll(context):
+            from ...utils import get_local_selected_assets, MATERIAL_HELPER_ASSET_TAG
+            match_obj = get_local_selected_assets(context)
+            selected_mats = [obj for obj in match_obj if isinstance(obj, bpy.types.Material)]
+            for mat in selected_mats:
+                if MATERIAL_HELPER_ASSET_TAG in mat.asset_data.tags:
+                    return True
         return False
-
-    # def invoke(self, context, event):
-    #     return context.window_manager.invoke_confirm(self, event)
 
     def execute(self, context):
         from ...utils import get_local_selected_assets, MATERIAL_HELPER_ASSET_TAG, tag_redraw

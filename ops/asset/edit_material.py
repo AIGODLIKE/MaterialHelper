@@ -5,18 +5,16 @@ from ...utils.window import PreviewMaterialWindow
 
 window: "PreviewMaterialWindow|None" = None
 
+from .poll import AssetPoll
 
-class EditMaterial(bpy.types.Operator):
+
+class EditMaterial(bpy.types.Operator, AssetPoll):
     bl_idname = "mathp.edit_material_asset"
     bl_label = "Edit Material Asset"
 
     edit_material = None
     count = 0
     timer = None
-
-    @classmethod
-    def poll(cls, context):
-        return (hasattr(context, "selected_assets") and context.selected_assets) or context.asset
 
     def invoke(self, context, event):
         global window

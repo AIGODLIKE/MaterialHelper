@@ -6,12 +6,14 @@ from .edit_material import EditMaterial
 from .refresh_asset_preview import MATHP_OT_refresh_asset_preview
 from .apply_asset import ApplyAsset
 from .rename import MATHP_OT_rename_asset
+from .add_material import MATHP_OT_add_material
 
 class_list = [
     MATHP_OT_duplicate_asset,
     MATHP_OT_delete_asset,
     MATHP_OT_refresh_asset_preview,
     MATHP_OT_rename_asset,
+    MATHP_OT_add_material,
     EditMaterial,
     ApplyAsset,
 ]

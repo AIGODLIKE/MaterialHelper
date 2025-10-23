@@ -1,13 +1,17 @@
 import bpy
 
-from ...ops.add_material import MATHP_OT_add_material
-
 
 class AddMaterialMenu(bpy.types.Menu):
     bl_label = "Add Material"
     bl_idname = "MATERIAL_HELPER_MT_add_material_menu"
 
+    @classmethod
+    def poll(cls, context):
+        from ...ops.asset.poll import AssetPoll
+        return AssetPoll().poll(context)
+
     def draw(self, context):
+        from ...ops.asset.add_material import MATHP_OT_add_material
         from ...src.material import get_all_material
         from ...utils import get_icon
         layout = self.layout
