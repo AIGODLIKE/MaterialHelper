@@ -1,5 +1,3 @@
-from math import fabs
-
 import numpy as np
 
 
@@ -12,9 +10,9 @@ def clamp(a, b, c):
 
 
 def hsv_to_rgb(h, s, v):
-    nr = fabs(h * 6.0 - 3.0) - 1.0
-    ng = 2.0 - fabs(h * 6.0 - 2.0)
-    nb = 2.0 - fabs(h * 6.0 - 4.0)
+    nr = np.fabs(h * 6.0 - 3.0) - 1.0
+    ng = 2.0 - np.fabs(h * 6.0 - 2.0)
+    nb = 2.0 - np.fabs(h * 6.0 - 4.0)
 
     nr = clamp(nr, 0.0, 1.0)
     nb = clamp(nb, 0.0, 1.0)
