@@ -3,9 +3,12 @@ import bpy
 
 def get_mats(self, context) -> list:
     enum_mats = []
-
     for i, m in enumerate(bpy.data.materials):
-        enum_mats.append((m.name, m.name, "", m.preview.icon_id, i))
+        if not m.preview:
+            m.preview_ensure()
+
+        icon_id= m.preview.icon_id if m.preview else 0
+        enum_mats.append((m.name, m.name, "", icon_id, i))
     return enum_mats
 
 
@@ -14,7 +17,6 @@ class MATHP_OT_replace_mat(bpy.types.Operator):
     bl_idname = "mathp.replace_mat"
     bl_property = "enum_mats"
     bl_options = {"REGISTER", "UNDO"}
-
 
     @classmethod
     def poll(cls, context):
